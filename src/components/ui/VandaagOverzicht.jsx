@@ -2,18 +2,15 @@ import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
 import { TYPE_ICOON } from '../agenda/agendaWeergave.js';
+import { datumKey } from '../../utils/datum.js';
 import './VandaagOverzicht.css';
-
-function vandaagIso() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 // Prominent bij het openen van de app zichtbaar (i.p.v. push-notificaties,
 // zie docs/AGENDA.md §5, optie A) — zodat een dag met afspraken/blokken
 // niet wegvalt bij hyperfocus, zonder de extra complexiteit van
 // service-worker-push, VAPID-sleutels en een achtergrond-verstuurcomponent.
 export default function VandaagOverzicht({ onOpenAgenda }) {
-  const vandaag = vandaagIso();
+  const vandaag = datumKey();
   const blokken = useAgendaBlokken();
   const { signalen } = useAgendaSignalen(vandaag, vandaag);
   const blokInstanties = instantiesInBereik(blokken.blokken, vandaag, vandaag);

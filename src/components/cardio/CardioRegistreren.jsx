@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { isNieuweTempoPR, adviesConsistentie } from '../../lib/cardio/sessies.js';
+import { datumKey } from '../../utils/datum.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './CardioRegistreren.css';
@@ -13,7 +14,7 @@ const TYPE_OPTIES = [
 ];
 
 function vandaagIso() {
-  return new Date().toISOString().slice(0, 10);
+  return datumKey();
 }
 
 function leegFormulier() {

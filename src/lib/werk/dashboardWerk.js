@@ -1,9 +1,4 @@
-function maandagVan(datumIso) {
-  const d = new Date(datumIso);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
-}
+import { maandagVan } from '../../utils/datum.js';
 
 // Aantal afgeronde werktaken per week — voor het Werk-focus-lijntje op het
 // Dashboard. Gebruikt afgerondOp (voltooiingsdatum), niet aangemaaktOp, zodat

@@ -3,7 +3,7 @@ import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
-import { maandagVan } from '../../utils/datum.js';
+import { maandagVan, datumKey } from '../../utils/datum.js';
 import AgendaMaand from './AgendaMaand.jsx';
 import AgendaWeek from './AgendaWeek.jsx';
 import AgendaDag from './AgendaDag.jsx';
@@ -18,7 +18,7 @@ const WEERGAVEN = [
 ];
 
 function vandaagIso() {
-  return new Date().toISOString().slice(0, 10);
+  return datumKey();
 }
 
 function bereikVoorWeergave(weergave, referentieDatum) {
@@ -34,7 +34,7 @@ function bereikVoorWeergave(weergave, referentieDatum) {
     const maandag = maandagVan(referentieDatum);
     const zondag = new Date(maandag);
     zondag.setDate(zondag.getDate() + 6);
-    return { bereikStart: maandag, bereikEind: zondag.toISOString().slice(0, 10) };
+    return { bereikStart: maandag, bereikEind: datumKey(zondag) };
   }
   return { bereikStart: referentieDatum, bereikEind: referentieDatum };
 }
@@ -56,7 +56,7 @@ export default function AgendaPagina({ toonToast }) {
     if (weergave === 'maand') d.setMonth(d.getMonth() + richting);
     else if (weergave === 'week') d.setDate(d.getDate() + richting * 7);
     else d.setDate(d.getDate() + richting);
-    setReferentieDatum(d.toISOString().slice(0, 10));
+    setReferentieDatum(datumKey(d));
   }
 
   function kiesDag(datum) {

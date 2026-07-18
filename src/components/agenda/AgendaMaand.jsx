@@ -1,10 +1,11 @@
 import { maandRooster } from '../../lib/agenda/kalenderRooster.js';
+import { datumKey } from '../../utils/datum.js';
 
 const DAG_KOPPEN = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
 export default function AgendaMaand({ jaar, maand, blokInstanties, signalen, onKiesDag }) {
   const weken = maandRooster(jaar, maand);
-  const vandaag = new Date().toISOString().slice(0, 10);
+  const vandaag = datumKey();
 
   return (
     <div className="ag-maand-grid">

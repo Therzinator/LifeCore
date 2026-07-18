@@ -1,11 +1,12 @@
 import { TYPE_ICOON } from './agendaWeergave.js';
+import { datumKey } from '../../utils/datum.js';
 
 function datumLabelKort(datum) {
   return new Date(datum).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 export default function AgendaWeek({ datums, blokInstanties, signalen, onKiesDag }) {
-  const vandaag = new Date().toISOString().slice(0, 10);
+  const vandaag = datumKey();
 
   return (
     <div className="ag-week-lijst">

@@ -1,3 +1,5 @@
+import { maandagVan } from '../../utils/datum.js';
+
 const KORT_MAX_SECONDEN = 5 * 60;
 
 // Lengte-categorie wordt afgeleid van duur_seconden i.p.v. apart opgeslagen —
@@ -12,13 +14,6 @@ export function filterSessies(sessies, { themaId, lengte } = {}) {
     if (lengte && lengteCategorie(s.duur_seconden) !== lengte) return false;
     return true;
   });
-}
-
-function maandagVan(datumIso) {
-  const d = new Date(datumIso);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
 }
 
 // Voortgangsstatistieken voor de Progressie-tab: sessies per week en totale

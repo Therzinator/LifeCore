@@ -1,4 +1,4 @@
-import { maandagVan } from '../../utils/datum.js';
+import { maandagVan, datumKey } from '../../utils/datum.js';
 
 // Genereert een volledig kalenderrooster voor een maand: altijd hele weken
 // (maandag t/m zondag), inclusief de dagen uit de vorige/volgende maand die
@@ -19,7 +19,7 @@ export function maandRooster(jaar, maand) {
     const week = [];
     for (let i = 0; i < 7; i++) {
       week.push({
-        datum: cursor.toISOString().slice(0, 10),
+        datum: datumKey(cursor),
         inMaand: cursor.getMonth() === maand - 1,
       });
       cursor.setDate(cursor.getDate() + 1);
@@ -35,7 +35,7 @@ export function weekDatums(referentieDatumIso) {
   for (let i = 0; i < 7; i++) {
     const d = new Date(maandag);
     d.setDate(d.getDate() + i);
-    datums.push(d.toISOString().slice(0, 10));
+    datums.push(datumKey(d));
   }
   return datums;
 }

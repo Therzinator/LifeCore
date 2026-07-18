@@ -1,3 +1,5 @@
+import { datumKey } from '../../utils/datum.js';
+
 // Zet lokale planningsblokken om naar concrete data-instanties binnen een
 // gegeven bereik — een blok met herhaling: 'wekelijks' is één opgeslagen
 // record, maar levert meerdere zichtbare instanties op (één per week).
@@ -21,7 +23,7 @@ function instantieDatumsVoorBlok(blok, bereikStart, bereikEind) {
 
   const datums = [];
   while (cursor <= eind) {
-    datums.push(cursor.toISOString().slice(0, 10));
+    datums.push(datumKey(cursor));
     cursor.setDate(cursor.getDate() + 7);
   }
   return datums;

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
+import { datumKey } from '../utils/datum.js';
 
 const STANDAARD = {
   programma: 'sl5x5',
@@ -30,7 +31,7 @@ export function useTrainingInstellingen() {
       // Eerste keer wisselen van programma zet automatisch de overgangsdatum —
       // dat is het moment dat de kracht-grafiek als annotatie moet tonen.
       if (patch.programma && patch.programma !== huidig.programma && !huidig.programmaOvergangsdatum) {
-        volledigePatch.programmaOvergangsdatum = new Date().toISOString().slice(0, 10);
+        volledigePatch.programmaOvergangsdatum = datumKey();
       }
       const bijgewerkt = nieuwRecord({ ...huidig, ...volledigePatch });
       schrijfLokaal('training_instellingen', bijgewerkt);

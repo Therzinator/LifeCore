@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ROEI_PROGRAMMAS, totaleDuur, bouwHiitProgramma } from '../../lib/cardio/roeiProgrammas.js';
 import { useIntervalTimer } from '../../hooks/useIntervalTimer.js';
+import { datumKey } from '../../utils/datum.js';
 import './CardioRoeien.css';
 
 const NIVEAUS = [
@@ -26,12 +27,12 @@ export default function CardioRoeien({ cardio, toonToast, instellingen }) {
   const programma = niveau === 'hiit'
     ? bouwHiitProgramma(instellingen.hiitWerkSec, instellingen.hiitRustSec, instellingen.hiitRondes)
     : ROEI_PROGRAMMAS[niveau];
-  const timer = useIntervalTimer(programma.stappen, instellingen.geluidFragment);
+  const timer = useIntervalTimer(programma.stappen, instellingen.geluidFragment, niveau);
 
   function registreren() {
     const duur = totaleDuur(programma);
     cardio.voegToe({
-      datum: new Date().toISOString().slice(0, 10),
+      datum: datumKey(),
       type: 'roeien',
       omgeving: null,
       duur,
@@ -59,36 +60,36 @@ export default function CardioRoeien({ cardio, toonToast, instellingen }) {
           <button
             key={n.id}
             className={`cro-niveau ${niveau === n.id ? 'on' : ''}`}
-            onClick={() => { timer.stop(); setNiveau(n.id); }}
+            onClick={() => setNiveau(n.id)}
           >
             {n.label}
           </button>
         ))}
       </div>
 
-      {niveau === 'hiit' && (
-        <div className="card cro-timer">
-          <div className="td-label">Intervaltimer</div>
-          {timer.voltooid ? (
-            <p className="of-stap-tekst">Sessie voltooid — goed gedaan! Vergeet niet te registreren hieronder.</p>
-          ) : (
-            <>
-              <div className="cro-timer-fase">{timer.stap?.fase ?? '—'}</div>
-              <div className="cro-timer-tijd">{tijdLabel(timer.resterend)}</div>
-              <div className="cro-timer-lbl">Fase {timer.stapIndex + 1} van {timer.totaalStappen}</div>
-            </>
+      <div className="card cro-timer">
+        <div className="td-label">Intervaltimer</div>
+        {timer.voltooid ? (
+          <p className="of-stap-tekst">Sessie voltooid — goed gedaan! Vergeet niet te registreren hieronder.</p>
+        ) : (
+          <>
+            <div className="cro-timer-fase">{timer.stap?.fase ?? '—'}</div>
+            <div className="cro-timer-tijd">{tijdLabel(timer.resterend)}</div>
+            <div className="cro-timer-lbl">Fase {timer.stapIndex + 1} van {timer.totaalStappen}</div>
+          </>
+        )}
+        <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
+          <button className="btn btn-g btn-sm" disabled={timer.isEersteFase} onClick={timer.vorigeFase} aria-label="Vorige fase">⏮</button>
+          {!timer.actief && (
+            <button className="btn btn-p btn-sm" style={{ flex: 1 }} onClick={timer.start}>▶ Start</button>
           )}
-          <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
-            {!timer.actief && (
-              <button className="btn btn-p btn-sm" style={{ flex: 1 }} onClick={timer.start}>▶ Start</button>
-            )}
-            {timer.actief && (
-              <button className="btn btn-g btn-sm" style={{ flex: 1 }} onClick={timer.pauzeer}>Pauzeer</button>
-            )}
-            <button className="btn btn-g btn-sm" style={{ flex: 1 }} onClick={timer.stop}>Reset</button>
-          </div>
+          {timer.actief && (
+            <button className="btn btn-g btn-sm" style={{ flex: 1 }} onClick={timer.pauzeer}>Pauzeer</button>
+          )}
+          <button className="btn btn-g btn-sm" disabled={timer.isLaatsteFase} onClick={timer.volgendeFase} aria-label="Volgende fase">⏭</button>
         </div>
-      )}
+        <button className="btn btn-text btn-sm" style={{ marginTop: 'var(--space-xs)' }} onClick={timer.stop}>Reset</button>
+      </div>
 
       <div className="card">
         <div className="cro-titel">{programma.titel}</div>
@@ -96,7 +97,7 @@ export default function CardioRoeien({ cardio, toonToast, instellingen }) {
 
         <div className="cro-stappen">
           {programma.stappen.map((stap, i) => (
-            <div className={`cro-stap ${niveau === 'hiit' && timer.actief && i === timer.stapIndex ? 'actief' : ''}`} key={i}>
+            <div className={`cro-stap ${timer.actief && i === timer.stapIndex ? 'actief' : ''}`} key={i}>
               <div className="cro-nr">{i + 1}</div>
               <div className="cro-inhoud">
                 <div className="cro-fase-rij">

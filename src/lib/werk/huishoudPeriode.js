@@ -1,12 +1,11 @@
-function maandagVan(datum) {
-  const d = new Date(datum);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
+import { datumKey, maandagVan } from '../../utils/datum.js';
+
+function maandKey(nu) {
+  return `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export function huidigePeriodeKey(frequentie, nu = new Date()) {
-  return frequentie === 'maand' ? nu.toISOString().slice(0, 7) : maandagVan(nu);
+  return frequentie === 'maand' ? maandKey(nu) : maandagVan(nu);
 }
 
 // Percentage afgerond voor de huidige periode (deze week/maand) — voor de
@@ -31,7 +30,7 @@ export function percentagePerWeek(taken, log, weken = 12, nu = new Date()) {
   for (let i = weken - 1; i >= 0; i--) {
     const d = new Date(huidigeMaandag);
     d.setDate(d.getDate() - i * 7);
-    labels.push(d.toISOString().slice(0, 10));
+    labels.push(datumKey(d));
   }
 
   const percentages = labels.map((week) => {

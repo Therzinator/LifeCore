@@ -1,4 +1,5 @@
 import { tempoNaarSec } from './tempo.js';
+import { maandagVan } from '../../utils/datum.js';
 
 const DAG_MS = 1000 * 60 * 60 * 24;
 
@@ -96,13 +97,6 @@ export function trainingsAdviezen(sessies) {
   }
 
   return adviezen;
-}
-
-function maandagVan(datumIso) {
-  const d = new Date(datumIso);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
 }
 
 // Groepeert sessies per week (maandag als sleutel) voor de groeicurve.

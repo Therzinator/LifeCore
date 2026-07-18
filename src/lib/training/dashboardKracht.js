@@ -1,4 +1,5 @@
 import { bereken1RM } from './progressie.js';
+import { maandagVan } from '../../utils/datum.js';
 
 // Combineert alle getrainde oefeningen tot één "sterkte-totaal" per periode —
 // som van de geschatte 1RM's (Epley) van het zwaarste gewicht per oefening
@@ -15,13 +16,6 @@ function hoogsteRmPerOefening(sessies, periodeSleutel) {
     });
   });
   return perPeriode;
-}
-
-function maandagVan(datumIso) {
-  const d = new Date(datumIso);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
 }
 
 function maandVan(datumIso) {

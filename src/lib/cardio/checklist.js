@@ -1,3 +1,5 @@
+import { maandagVan } from '../../utils/datum.js';
+
 // De drie vaste buitenactiviteiten uit de interviewbeslissing — bewust geen
 // open lijst (geen stadswandelingen, geen fietsen hier): alleen gedaan/niet
 // gedaan, geen afstand/tijd. Losstaand van de rijkere cardio_sessies-log,
@@ -7,13 +9,6 @@ export const CARDIO_ACTIVITEITEN = [
   { id: 'wandelen', label: 'Wandelen met de hond (natuur)' },
   { id: 'roeien', label: 'Roeimachine (binnen)' },
 ];
-
-function maandagVan(datumIso) {
-  const d = new Date(datumIso);
-  const dag = d.getDay() || 7;
-  d.setDate(d.getDate() - (dag - 1));
-  return d.toISOString().slice(0, 10);
-}
 
 // Telt het aantal afgevinkte activiteiten per week — geschiedenis blijft
 // altijd intact (record wordt nooit gewist), een gemiste week levert

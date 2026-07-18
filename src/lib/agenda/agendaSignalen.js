@@ -1,5 +1,5 @@
 import { LIFT_DAGEN, CARDIO_DAGEN } from '../dagstructuur/weekoverzicht.js';
-import { dagIndexVan } from '../../utils/datum.js';
+import { dagIndexVan, datumKey } from '../../utils/datum.js';
 import { volgendeCheckDatum } from '../welzijn/vragenset.js';
 
 // Alle losse signalen die de Agenda toont zijn afgeleide, pure functies over
@@ -15,7 +15,7 @@ function alleDatumsInBereik(bereikStart, bereikEind) {
   const cursor = new Date(bereikStart);
   const eind = new Date(bereikEind);
   while (cursor <= eind) {
-    datums.push(cursor.toISOString().slice(0, 10));
+    datums.push(datumKey(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
   return datums;
@@ -47,7 +47,7 @@ export function welzijnSignaal(laatsteCheckDatum, cadansDagen) {
   const volgende = volgendeCheckDatum(laatsteCheckDatum, cadansDagen);
   if (!volgende) return null;
   return {
-    id: 'welzijn_check', bron: 'welzijn', datum: volgende.toISOString().slice(0, 10),
+    id: 'welzijn_check', bron: 'welzijn', datum: datumKey(volgende),
     tekst: 'Burn-out & herstel-check', type: 'welzijn',
   };
 }
