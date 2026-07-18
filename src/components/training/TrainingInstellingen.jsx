@@ -29,6 +29,14 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           <strong>SL5×5</strong> — automatische progressie: +2,5 kg na elke geslaagde training (deadlift +5 kg).<br />
           <strong>Madcow 5×5</strong> — nog geen automatische progressie; pas gewichten handmatig aan bij Mijn profiel.
         </p>
+        <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
+          <label className="ti-lbl" htmlFor="ti-overgang">Overgangsdatum (getoond als annotatie op het Dashboard)</label>
+          <input
+            id="ti-overgang" type="date" className="ti-veld"
+            value={instellingen.programmaOvergangsdatum ?? ''}
+            onChange={veld('programmaOvergangsdatum', (v) => v || null)}
+          />
+        </div>
       </div>
 
       <div className="card">

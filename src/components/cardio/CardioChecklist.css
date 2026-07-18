@@ -1,0 +1,34 @@
+.cc-lijst { display: flex; flex-direction: column; }
+
+.cc-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  color: var(--txt);
+}
+.cc-item:last-child { border-bottom: none; }
+.cc-item.gedaan { color: var(--accent); font-weight: 600; }
+
+.cc-check {
+  width: 26px; height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-sm);
+  color: var(--accent);
+}
+.cc-item.gedaan .cc-check { border-color: var(--accent); background: var(--accent-dim); }

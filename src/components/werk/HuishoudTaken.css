@@ -1,0 +1,37 @@
+.hh-freq-rij { display: flex; gap: var(--space-xs); margin-top: var(--space-sm); }
+
+.hh-lijst { display: flex; flex-direction: column; }
+
+.hh-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.hh-item:last-child { border-bottom: none; }
+
+.hh-check {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+}
+.hh-check.gedaan { background: var(--accent-dim); border-color: var(--accent); }
+
+.hh-tekst { flex: 1; font-size: var(--font-size-sm); }
+.hh-tekst.gedaan { opacity: .5; text-decoration: line-through; }
+
+.hh-verwijder {
+  background: none;
+  border: none;
+  color: var(--txt-faint);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: 0 4px;
+}
+.hh-verwijder:hover { color: var(--danger); }

@@ -9,6 +9,8 @@ const TEGELS = [
   { id: 'training', titel: 'Training', subtitel: 'Volg en start je trainingssessies' },
   { id: 'cardio', titel: 'Cardio', subtitel: 'Hardlopen, wandelen en roeien loggen' },
   { id: 'adhd', titel: 'Focus', subtitel: 'Taken, focus-timer en dag afsluiten' },
+  { id: 'werk', titel: 'Werk', subtitel: 'Werktaken en huishouden met spraakinvoer' },
+  { id: 'dashboard', titel: 'Dashboard', subtitel: 'Voortgang over alle modules heen' },
 ];
 
 export default function SnelkeuzeScherm({ onKies }) {

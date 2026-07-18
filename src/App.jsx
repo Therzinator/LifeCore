@@ -12,6 +12,8 @@ import MindfulnessPagina from './components/mindfulness/MindfulnessPagina.jsx';
 import TrainingPagina from './components/training/TrainingPagina.jsx';
 import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
+import WerkPagina from './components/werk/WerkPagina.jsx';
+import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import AlgemeneInstellingen from './components/instellingen/AlgemeneInstellingen.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
@@ -28,6 +30,8 @@ function renderModule(paginaId, toonToast, onTerug) {
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
+    case 'werk': return <WerkPagina toonToast={toonToast} />;
+    case 'dashboard': return <DashboardPagina />;
     case 'instellingen': return <AlgemeneInstellingen onTerug={onTerug} />;
     default: return null;
   }

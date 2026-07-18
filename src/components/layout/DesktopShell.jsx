@@ -19,6 +19,8 @@ const MODULES = [
   { id: 'training', label: 'Training' },
   { id: 'cardio', label: 'Cardio' },
   { id: 'adhd', label: 'Focus' },
+  { id: 'werk', label: 'Werk' },
+  { id: 'dashboard', label: 'Dashboard' },
 ];
 
 export default function DesktopShell({ pagina, setPagina, auth, children }) {
