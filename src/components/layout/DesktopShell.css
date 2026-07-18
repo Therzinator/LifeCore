@@ -171,3 +171,11 @@
   overflow-y: auto;
   padding: var(--space-xl) var(--space-lg);
 }
+
+/* Elke module-pagina gebruikt .of-wrap (max-width 560px, mobiel-breedte)
+   als root-wrapper — op het bredere desktop-scherm laat dat de content in
+   een smalle kolom hangen met veel lege ruimte ernaast. Verruimen, alleen
+   binnen de desktop-shell, zodat mobiel ongemoeid blijft. */
+.ds-content .of-wrap {
+  max-width: 900px;
+}
