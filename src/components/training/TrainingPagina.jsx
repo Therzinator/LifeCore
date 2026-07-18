@@ -7,6 +7,7 @@ import { useExtraOefeningen } from '../../hooks/useExtraOefeningen.js';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import { useProgramma } from '../../hooks/useProgramma.js';
+import { useAlgemeneInstellingen } from '../../hooks/useAlgemeneInstellingen.js';
 import { PROFIELEN, EXTRA, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import TrainingSessie from './TrainingSessie.jsx';
@@ -42,7 +43,8 @@ export default function TrainingPagina({ toonToast }) {
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useTrainingInstellingen();
   const extraOefeningen = useExtraOefeningen();
   const persoonsProfiel = usePersoonsProfiel();
-  const rustTimer = useRustTimer(instellingen.geluid);
+  const { instellingen: algemeen } = useAlgemeneInstellingen();
+  const rustTimer = useRustTimer(algemeen.geluid.training);
   const [tab, setTab] = useState('dashboard');
 
   if (!profiel.profiel.profielNaam) {

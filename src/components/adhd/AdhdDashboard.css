@@ -1,5 +1,15 @@
 .ad-hint { font-size: var(--font-size-xs); color: var(--txt-faint); margin-bottom: var(--space-sm); }
 
+.ad-banner {
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--space-sm);
+}
+.ad-banner.warn { background: var(--warn-dim); color: var(--warn); }
+
+.ad-middag-rij { display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-bottom: var(--space-xs); }
+
 .ad-energie-rij {
   display: flex;
   align-items: center;
@@ -21,6 +31,7 @@
 
 .ad-limiet-track { height: 6px; background: var(--bg-3); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
 .ad-limiet-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s ease; }
+.ad-limiet-fill.vol { background: var(--warn); }
 .ad-limiet-lbl { font-size: var(--font-size-xs); color: var(--txt-faint); }
 
 .ad-takenlijst { display: flex; flex-direction: column; margin-bottom: var(--space-sm); }

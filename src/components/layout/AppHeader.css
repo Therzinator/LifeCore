@@ -26,11 +26,30 @@
   background: var(--accent);
 }
 
+.app-header-acties {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .app-sync {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
 }
+
+.app-instellingen-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--txt-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.app-instellingen-btn:hover { color: var(--txt); }
+
+.app-instellingen-icoon { width: 20px; height: 20px; }
 
 .app-sync-btn {
   background: none;

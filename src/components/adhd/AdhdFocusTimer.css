@@ -14,3 +14,47 @@
 .aft-duur.on { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); font-weight: 600; }
 
 .aft-ring-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--space-lg) 0; }
+
+.aft-checklist {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.aft-checklist-lbl {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-faint);
+  margin-bottom: var(--space-xs);
+}
+
+.aft-check-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  color: var(--txt);
+}
+
+.aft-check-box {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+}
+.aft-check-box.gedaan { border-color: var(--accent); background: var(--accent-dim); }

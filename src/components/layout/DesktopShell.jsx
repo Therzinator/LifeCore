@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { leesLokaal, schrijfLokaal } from '../../lib/storage/lokaal.js';
-import { MODULE_ICONEN, IconChevron } from '../ui/ModuleIconen.jsx';
+import { MODULE_ICONEN, IconChevron, IconInstellingen } from '../ui/ModuleIconen.jsx';
 import './DesktopShell.css';
 
 const STATUS_LABEL = {
@@ -41,14 +41,19 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
           <span className="ds-brand-dot" aria-hidden="true" />
           LifeCore
         </div>
-        {toonSync && (
-          <div className="ds-sync">
-            <span className={`ds-sync-dot ${sync.status}`} aria-hidden="true" />
-            <button className="ds-sync-btn" onClick={sync.syncNu} disabled={sync.status === 'bezig'}>
-              {STATUS_LABEL[sync.status]}
-            </button>
-          </div>
-        )}
+        <div className="ds-topbar-acties">
+          {toonSync && (
+            <div className="ds-sync">
+              <span className={`ds-sync-dot ${sync.status}`} aria-hidden="true" />
+              <button className="ds-sync-btn" onClick={sync.syncNu} disabled={sync.status === 'bezig'}>
+                {STATUS_LABEL[sync.status]}
+              </button>
+            </div>
+          )}
+          <button className="ds-instellingen-btn" onClick={() => setPagina('instellingen')} aria-label="Algemene instellingen">
+            <IconInstellingen className="ds-instellingen-icoon" />
+          </button>
+        </div>
       </header>
 
       <nav className="ds-zijbalk">

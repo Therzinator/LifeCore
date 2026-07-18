@@ -8,6 +8,8 @@ function legeDag(datumKey) {
     taken: [],
     focusMinuten: 0,
     pauzes: 0,
+    onderbrekingen: 0,
+    middagEnergie: null,
     stemming: null,
     reflectie: '',
     morgenPrio: '',
@@ -56,6 +58,15 @@ export function useAdhdDag() {
     });
   }, [datumKey]);
 
+  const voegOnderbrekingToe = useCallback(() => {
+    setDag((huidig) => {
+      const bijgewerkt = nieuwRecord({ ...huidig, onderbrekingen: huidig.onderbrekingen + 1 });
+      schrijfLokaal(`adhd_dag_${datumKey}`, bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [datumKey]);
+
+  const setMiddagEnergie = useCallback((middagEnergie) => bewaar({ middagEnergie }), [bewaar]);
   const setStemming = useCallback((stemming) => bewaar({ stemming }), [bewaar]);
   const setReflectie = useCallback((reflectie) => bewaar({ reflectie }), [bewaar]);
   const setMorgenPrio = useCallback((morgenPrio) => bewaar({ morgenPrio }), [bewaar]);
@@ -67,6 +78,12 @@ export function useAdhdDag() {
 
   const setAfgerond = useCallback(() => bewaar({ afgerond: true }), [bewaar]);
 
+  const wis = useCallback(() => {
+    const leeg = legeDag(datumKey);
+    schrijfLokaal(`adhd_dag_${datumKey}`, leeg);
+    setDag(leeg);
+  }, [datumKey]);
+
   return {
     dag,
     voegTaakToe,
@@ -74,10 +91,13 @@ export function useAdhdDag() {
     verwijderTaak,
     voegFocusMinutenToe,
     voegPauzeToe,
+    voegOnderbrekingToe,
+    setMiddagEnergie,
     setStemming,
     setReflectie,
     setMorgenPrio,
     vinkShutdown,
     setAfgerond,
+    wis,
   };
 }

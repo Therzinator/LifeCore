@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { REK_OEFENINGEN, energieHint } from '../../lib/ochtend/activering.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
+import { useAlgemeneInstellingen } from '../../hooks/useAlgemeneInstellingen.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
 import './StapActivering.css';
@@ -12,7 +13,8 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan })
   const [pushAantal, setPushAantal] = useState(10);
   const [pushGedaan, setPushGedaan] = useState(false);
   const [toonUitleg, setToonUitleg] = useState(false);
-  const plankTimer = useRustTimer(true);
+  const { instellingen: algemeen } = useAlgemeneInstellingen();
+  const plankTimer = useRustTimer(algemeen.geluid.ochtend);
 
   useEffect(() => {
     if (plankTimer.totaal > 0 && !plankTimer.actief && plankTimer.resterend === 0) {

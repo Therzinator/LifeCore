@@ -1,20 +1,33 @@
 import { useState } from 'react';
 import { useDagdata } from '../../hooks/useDagdata.js';
-import { dagLimiet } from '../../lib/adhd/dagLimiet.js';
+import { dagLimiet, minutenTotStopmoment, middagAdvies } from '../../lib/adhd/dagLimiet.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import './AdhdDashboard.css';
 
 const ENERGIE_LABEL = { laag: 'Laag', midden: 'Midden', hoog: 'Hoog' };
+const MIDDAG_OPTIES = [
+  { id: 'laag', label: 'Lager dan vanochtend' },
+  { id: 'zelfde', label: 'Ongeveer hetzelfde' },
+  { id: 'hoog', label: 'Nog steeds goed' },
+];
 
-export default function AdhdDashboard({ adhdDag, onStartFocus }) {
+export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus }) {
   const dagdata = useDagdata();
   const [nieuweTaak, setNieuweTaak] = useState('');
-  const [toonUitleg, setToonUitleg] = useState(false);
+  const [toonUitleg, setToonUitleg] = useState(null);
 
-  const energie = dagdata.dag.checkin?.energie ?? null;
-  const limiet = dagLimiet(energie);
+  const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
+  const effectieveEnergie = adhdDag.dag.middagEnergie === 'laag' ? 'laag' : ochtendEnergie;
+  const limiet = dagLimiet(effectieveEnergie, instellingen.werkurenPerDag);
   const openTaken = adhdDag.dag.taken.filter((t) => !t.klaar).length;
-  const pct = Math.min(100, Math.round((openTaken / limiet.taken) * 100));
+  const takenPct = Math.min(100, Math.round((openTaken / limiet.taken) * 100));
+
+  const focusUren = adhdDag.dag.focusMinuten / 60;
+  const urenPct = Math.min(100, Math.round((focusUren / limiet.uren) * 100));
+  const daglimietBereikt = focusUren >= limiet.uren;
+
+  const restMinuten = minutenTotStopmoment(instellingen.eindtijd);
+  const stopmomentNadert = restMinuten > 0 && restMinuten <= 15;
 
   function toevoegen(e) {
     e.preventDefault();
@@ -28,17 +41,53 @@ export default function AdhdDashboard({ adhdDag, onStartFocus }) {
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Vandaag</div>
       <p className="of-stap-tekst">Klein en haalbaar — pas het aantal taken aan op je energie.</p>
-      <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+      <button className="ad-link" onClick={() => setToonUitleg('adhdCoaching')}>Waarom werkt dit?</button>
+
+      {stopmomentNadert && (
+        <div className="ad-banner warn">⏰ Stopmoment nadert ({instellingen.eindtijd}) — rond je huidige taak af, start niets nieuws.</div>
+      )}
+      {daglimietBereikt && (
+        <div className="ad-banner warn">
+          Je hebt je daglimiet van {limiet.uren} uur bereikt vandaag. Overweeg te stoppen — meer doen is geen must.
+        </div>
+      )}
 
       <div className="card">
         <div className="ad-energie-rij">
           <span className="ad-energie-lbl">Energie vandaag</span>
-          <span className={`ad-energie-badge ${energie || 'onbekend'}`}>{ENERGIE_LABEL[energie] ?? 'Nog niet ingevuld'}</span>
+          <span className={`ad-energie-badge ${effectieveEnergie || 'onbekend'}`}>
+            {ENERGIE_LABEL[effectieveEnergie] ?? 'Nog niet ingevuld'}
+          </span>
         </div>
-        {!energie && <p className="ad-hint">Vul je energie in bij de ochtend-check-in voor een passende daglimiet.</p>}
+        {!ochtendEnergie && <p className="ad-hint">Vul je energie in bij de ochtend-check-in voor een passende daglimiet.</p>}
 
-        <div className="ad-limiet-track"><div className="ad-limiet-fill" style={{ width: `${pct}%` }} /></div>
+        <div className="ad-limiet-track"><div className="ad-limiet-fill" style={{ width: `${takenPct}%` }} /></div>
         <div className="ad-limiet-lbl">{openTaken}/{limiet.taken} taken · focusblok {limiet.blok} min</div>
+
+        <div className="ad-limiet-track" style={{ marginTop: 'var(--space-sm)' }}>
+          <div className={`ad-limiet-fill ${daglimietBereikt ? 'vol' : ''}`} style={{ width: `${urenPct}%` }} />
+        </div>
+        <div className="ad-limiet-lbl">{focusUren.toFixed(1)}/{limiet.uren} uur vandaag</div>
+        <button className="ad-link" style={{ marginBottom: 0, marginTop: 'var(--space-xs)' }} onClick={() => setToonUitleg('werkgrenzen')}>
+          Waarom een urenlimiet en afleiding beperken?
+        </button>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Middagcheck</div>
+        <p className="of-stap-tekst">Hoe is je energie nu, vergeleken met vanochtend?</p>
+        <div className="ad-middag-rij">
+          {MIDDAG_OPTIES.map((o) => (
+            <button
+              key={o.id}
+              className={`btn btn-sm ${adhdDag.dag.middagEnergie === o.id ? 'btn-p' : 'btn-g'}`}
+              onClick={() => adhdDag.setMiddagEnergie(o.id)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        {adhdDag.dag.middagEnergie && <p className="ad-hint">{middagAdvies(adhdDag.dag.middagEnergie)}</p>}
       </div>
 
       <div className="card">
@@ -84,9 +133,13 @@ export default function AdhdDashboard({ adhdDag, onStartFocus }) {
           <div className="ml">Pauzes</div>
           <div className="mv">{adhdDag.dag.pauzes}</div>
         </div>
+        <div className="metric">
+          <div className="ml">Onderbrekingen</div>
+          <div className="mv">{adhdDag.dag.onderbrekingen}</div>
+        </div>
       </div>
 
-      {toonUitleg && <OnderbouwingModal sleutel="adhdCoaching" onClose={() => setToonUitleg(false)} />}
+      {toonUitleg && <OnderbouwingModal sleutel={toonUitleg} onClose={() => setToonUitleg(null)} />}
     </div>
   );
 }

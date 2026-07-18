@@ -1,0 +1,28 @@
+.ains-rij { display: flex; gap: var(--space-sm); }
+
+.ains-veld-grp { display: block; margin-bottom: var(--space-sm); flex: 1; }
+
+.ains-lbl {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-faint);
+  margin-bottom: 4px;
+}
+
+.ains-veld {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  padding: var(--space-sm);
+  outline: none;
+}
+.ains-veld:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }
+
+.ains-hint { font-size: var(--font-size-xs); color: var(--txt-faint); line-height: 1.5; }

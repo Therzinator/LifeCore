@@ -38,11 +38,30 @@
   background: var(--accent);
 }
 
+.ds-topbar-acties {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .ds-sync {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
 }
+
+.ds-instellingen-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--txt-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.ds-instellingen-btn:hover { color: var(--txt); }
+
+.ds-instellingen-icoon { width: 20px; height: 20px; }
 
 .ds-sync-btn {
   background: none;

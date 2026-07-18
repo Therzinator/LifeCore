@@ -106,6 +106,19 @@ const ONDERBOUWING = {
       'zowel spierspanning als ervaren angst.',
     bron: 'Jacobson (1938), Progressive Relaxation; Manzoni et al. (2008) meta-analyse.',
   },
+  werkgrenzen: {
+    titel: 'Waarom werkuren-grenzen en afleiding beperken',
+    tekst:
+      'Na een periode van minder belastbaarheid (bijvoorbeeld burn-out) werkt een geleidelijke, ' +
+      'gecontroleerde opbouw van werkuren beter dan meteen weer volledig draaien — dat is de kern ' +
+      'van "graded return to work"-programma\'s in de arbeidsgeneeskunde. Vandaar dat de daglimiet ' +
+      'hier meeschaalt met een instelbaar aantal werkuren per dag, dat je zelf wekelijks kunt ' +
+      'ophogen. Onderbrekingen zijn daarnaast duurder dan ze aanvoelen: onderzoek naar aandacht en ' +
+      'task-switching laat zien dat het gemiddeld ruim 20 minuten kost om na een afleiding weer ' +
+      'volledig terug te zijn in dezelfde focus — vandaar de nadruk op een korte checklist vóór een ' +
+      'focusblok in plaats van achteraf herstellen.',
+    bron: 'Mark, Gudith & Klocke (2008), UC Irvine — herstel van aandacht na onderbreking; graded-return-to-work-richtlijnen in de arbeidsgeneeskunde.',
+  },
   adhdCoaching: {
     titel: 'Waarom energie-gebaseerde taakplanning',
     tekst:

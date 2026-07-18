@@ -45,16 +45,7 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
               value={instellingen.rustLicht} onChange={veld('rustLicht', (v) => parseInt(v) || 90)} />
           </div>
         </div>
-        <div className="ti-toggle-rij">
-          <div>
-            <div>Geluid bij einde timer</div>
-            <div className="ti-hint">Signaal speelt als rust voorbij is</div>
-          </div>
-          <label className="te-switch">
-            <input type="checkbox" checked={instellingen.geluid} onChange={(e) => bewaar({ geluid: e.target.checked })} />
-            <span className="te-switch-track" />
-          </label>
-        </div>
+        <p className="ti-hint">Geluid voor deze timer zet je in Algemene instellingen (tandwiel bovenin).</p>
       </div>
 
       <div className="card">

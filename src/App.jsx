@@ -12,13 +12,14 @@ import MindfulnessPagina from './components/mindfulness/MindfulnessPagina.jsx';
 import TrainingPagina from './components/training/TrainingPagina.jsx';
 import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
+import AlgemeneInstellingen from './components/instellingen/AlgemeneInstellingen.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast) {
+function renderModule(paginaId, toonToast, onTerug) {
   switch (paginaId) {
     case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
@@ -27,6 +28,7 @@ function renderModule(paginaId, toonToast) {
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
+    case 'instellingen': return <AlgemeneInstellingen onTerug={onTerug} />;
     default: return null;
   }
 }
@@ -54,7 +56,7 @@ export default function App() {
     return (
       <>
         <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
-          <ErrorBoundary key={desktopPagina}>{renderModule(desktopPagina, toonToast)}</ErrorBoundary>
+          <ErrorBoundary key={desktopPagina}>{renderModule(desktopPagina, toonToast, () => setPagina('ochtend'))}</ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
       </>
@@ -63,11 +65,11 @@ export default function App() {
 
   return (
     <>
-      <AppHeader auth={auth} />
+      <AppHeader auth={auth} onInstellingen={() => setPagina('instellingen')} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
-          {renderModule(pagina, toonToast)}
+          {renderModule(pagina, toonToast, () => setPagina('snelkeuze'))}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} />

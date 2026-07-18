@@ -28,5 +28,11 @@ export function useKlusboek() {
     });
   }, []);
 
-  return { items: record.items ?? [], voegToe, verwijder };
+  const wisAlles = useCallback(() => {
+    const leeg = leegRecord();
+    schrijfLokaal('adhd_klusboek', leeg);
+    setRecordState(leeg);
+  }, []);
+
+  return { items: record.items ?? [], voegToe, verwijder, wisAlles };
 }
