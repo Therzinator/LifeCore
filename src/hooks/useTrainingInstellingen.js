@@ -11,6 +11,7 @@ const STANDAARD = {
   runKm: 25,
   programmaOvergangsdatum: null,
   geluidFragment: 'tweetonen',
+  eenheid: 'kg',
 };
 
 function standaardRecord() {

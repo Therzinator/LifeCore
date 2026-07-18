@@ -1,0 +1,93 @@
+import { useState } from 'react';
+
+const DAGEN = [
+  { nr: 1, label: 'Ma' },
+  { nr: 2, label: 'Di' },
+  { nr: 3, label: 'Wo' },
+  { nr: 4, label: 'Do' },
+  { nr: 5, label: 'Vr' },
+  { nr: 6, label: 'Za' },
+  { nr: 7, label: 'Zo' },
+];
+
+export default function WerkInstellingen({ instellingen, bewaar, voegCategorieToe, verwijderCategorie }) {
+  const [nieuweCategorie, setNieuweCategorie] = useState('');
+
+  function wisselDag(nr) {
+    const werkdagen = instellingen.werkdagen.includes(nr)
+      ? instellingen.werkdagen.filter((d) => d !== nr)
+      : [...instellingen.werkdagen, nr].sort();
+    bewaar({ werkdagen });
+  }
+
+  function categorieToevoegen() {
+    voegCategorieToe(nieuweCategorie);
+    setNieuweCategorie('');
+  }
+
+  return (
+    <div>
+      <div className="card">
+        <div className="td-label">Werkdag-check</div>
+        <div className="ti-veld-grp">
+          <label className="ti-lbl" htmlFor="wi-starttijd">Starttijd</label>
+          <input
+            id="wi-starttijd" type="time" className="ti-veld"
+            value={instellingen.starttijd} onChange={(e) => bewaar({ starttijd: e.target.value })}
+          />
+        </div>
+        <label className="ti-lbl">Werkdagen</label>
+        <div className="ti-rij">
+          {DAGEN.map((d) => (
+            <button
+              key={d.nr}
+              type="button"
+              className={`btn btn-sm ${instellingen.werkdagen.includes(d.nr) ? 'btn-p' : 'btn-g'}`}
+              style={{ flex: 1 }}
+              onClick={() => wisselDag(d.nr)}
+            >{d.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Taakcategorieën</div>
+        <div className="ti-rij">
+          {instellingen.categorieen.map((c) => (
+            <button key={c} type="button" className="btn btn-sm btn-g" onClick={() => verwijderCategorie(c)}>
+              {c} ✕
+            </button>
+          ))}
+        </div>
+        <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
+          <input
+            className="ti-veld" style={{ flex: 1 }} value={nieuweCategorie}
+            onChange={(e) => setNieuweCategorie(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') categorieToevoegen(); }}
+            placeholder="Nieuwe categorie"
+          />
+          <button type="button" className="btn btn-sm btn-p" onClick={categorieToevoegen}>Toevoegen</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Gemeente Oldambt-koppeling</div>
+        <div className="ti-rij">
+          <button
+            type="button"
+            className={`btn btn-sm ${!instellingen.oldambtModus ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ oldambtModus: false })}
+          >Uit — generiek</button>
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.oldambtModus ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ oldambtModus: true })}
+          >Aan — Oldambt</button>
+        </div>
+        <p className="ti-hint">Wisselt alleen labels en voorbeeldteksten in de Werk-module — geen koppeling met een extern systeem.</p>
+      </div>
+    </div>
+  );
+}

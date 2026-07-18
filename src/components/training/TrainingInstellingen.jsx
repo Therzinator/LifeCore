@@ -14,7 +14,6 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
 
   return (
     <div>
-      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Instellingen</div>
       <p className="of-stap-tekst">Programma, rusttijden en voorkeuren.</p>
 
       <div className="card">
@@ -59,6 +58,28 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           waarde={instellingen.geluidFragment}
           onWaarde={(v) => bewaar({ geluidFragment: v })}
         />
+      </div>
+
+      <div className="card">
+        <div className="td-label">Eenheid</div>
+        <div className="ti-rij">
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.eenheid !== 'lb' ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ eenheid: 'kg' })}
+          >kg</button>
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.eenheid === 'lb' ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ eenheid: 'lb' })}
+          >lb</button>
+        </div>
+        <p className="ti-hint">
+          Geldt voor overzichten (Dashboard, Mijn profiel). Tijdens een training blijft alles in kg —
+          dat zijn de fysieke schijven die je daadwerkelijk oplegt.
+        </p>
       </div>
 
       <div className="card">

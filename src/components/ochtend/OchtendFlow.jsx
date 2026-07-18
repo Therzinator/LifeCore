@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useOchtendflow } from '../../hooks/useOchtendflow.js';
 import { useDagdata } from '../../hooks/useDagdata.js';
 import { useOchtendInstellingen } from '../../hooks/useOchtendInstellingen.js';
@@ -11,33 +10,26 @@ import StapBrainDump from './StapBrainDump.jsx';
 import StapDagfocus from './StapDagfocus.jsx';
 import StapAfronden from './StapAfronden.jsx';
 import OchtendInstellingen from './OchtendInstellingen.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './OchtendFlow.css';
 
-export default function OchtendFlow({ toonToast, instellingenSignaal }) {
-  const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow();
+export default function OchtendFlow({ toonToast }) {
   const dagdata = useDagdata();
   const { instellingen, bewaar: bewaarInstellingen } = useOchtendInstellingen();
-  const [toonInstellingen, setToonInstellingen] = useState(false);
-
-  useEffect(() => {
-    if (instellingenSignaal) setToonInstellingen(true);
-  }, [instellingenSignaal]);
-
-  if (toonInstellingen) {
-    return (
-      <OchtendInstellingen
-        instellingen={instellingen}
-        bewaar={bewaarInstellingen}
-        onSluiten={() => setToonInstellingen(false)}
-      />
-    );
-  }
+  const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow(instellingen);
 
   const gedeeld = { dagdata, volgende, vorige, overslaan, toonToast, isEersteStap: stapIndex === 0 };
 
   return (
     <div className="of-wrap">
-      <Voortgangsbalk stapIndex={stapIndex} totaal={totaal} />
+      <div className="mik-kop-rij">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Voortgangsbalk stapIndex={stapIndex} totaal={totaal} />
+        </div>
+        <ModuleInstellingenKnop titel="Ochtendroutine-instellingen">
+          <OchtendInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} />
+        </ModuleInstellingenKnop>
+      </div>
 
       {stapNaam === 'welkom' && <StapWelkom {...gedeeld} />}
       {stapNaam === 'checkin' && <StapCheckin {...gedeeld} />}

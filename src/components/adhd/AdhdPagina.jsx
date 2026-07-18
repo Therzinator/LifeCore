@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAdhdDag } from '../../hooks/useAdhdDag.js';
 import { useKlusboek } from '../../hooks/useKlusboek.js';
 import { useAdhdInstellingen } from '../../hooks/useAdhdInstellingen.js';
@@ -7,6 +7,7 @@ import AdhdKlusboek from './AdhdKlusboek.jsx';
 import AdhdFocusTimer from './AdhdFocusTimer.jsx';
 import AdhdAfsluiten from './AdhdAfsluiten.jsx';
 import AdhdInstellingen from './AdhdInstellingen.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './AdhdPagina.css';
 
 const TABS = [
@@ -14,19 +15,14 @@ const TABS = [
   { id: 'klusboek', label: 'Klusboek' },
   { id: 'focus', label: 'Focus-timer' },
   { id: 'afsluiten', label: 'Afsluiten' },
-  { id: 'instellingen', label: 'Instellingen' },
 ];
 
-export default function AdhdPagina({ toonToast, instellingenSignaal }) {
+export default function AdhdPagina({ toonToast }) {
   const adhdDag = useAdhdDag();
   const klusboek = useKlusboek();
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useAdhdInstellingen();
   const [tab, setTab] = useState('dashboard');
   const [focusContext, setFocusContext] = useState({ taakTekst: null, blokAdvies: null });
-
-  useEffect(() => {
-    if (instellingenSignaal) setTab('instellingen');
-  }, [instellingenSignaal]);
 
   function startFocus(taakTekst, blokAdvies) {
     setFocusContext({ taakTekst, blokAdvies });
@@ -42,12 +38,17 @@ export default function AdhdPagina({ toonToast, instellingenSignaal }) {
 
   return (
     <div className="of-wrap">
-      <div className="apg-tabs">
-        {TABS.map((t) => (
-          <button key={t.id} className={`apg-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
+      <div className="mik-kop-rij">
+        <div className="apg-tabs" style={{ flex: 1, minWidth: 0 }}>
+          {TABS.map((t) => (
+            <button key={t.id} className={`apg-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <ModuleInstellingenKnop titel="Focus-instellingen">
+          <AdhdInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} onResetAlles={resetAlles} toonToast={toonToast} />
+        </ModuleInstellingenKnop>
       </div>
 
       <div className="card">
@@ -63,9 +64,6 @@ export default function AdhdPagina({ toonToast, instellingenSignaal }) {
           />
         )}
         {tab === 'afsluiten' && <AdhdAfsluiten adhdDag={adhdDag} toonToast={toonToast} />}
-        {tab === 'instellingen' && (
-          <AdhdInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} onResetAlles={resetAlles} toonToast={toonToast} />
-        )}
       </div>
     </div>
   );

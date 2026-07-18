@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react';
+import { STAPPEN_CONFIGUREERBAAR } from './useOchtendInstellingen.js';
 
-export const STAPPEN = ['welkom', 'checkin', 'ademhaling', 'activering', 'brainDump', 'dagfocus', 'afronden'];
+export function useOchtendflow(instellingen) {
+  const volgorde = instellingen?.stappenVolgorde ?? STAPPEN_CONFIGUREERBAAR;
+  const aan = instellingen?.stappenAan ?? {};
+  const stappen = ['welkom', ...volgorde.filter((id) => aan[id] !== false), 'afronden'];
 
-export function useOchtendflow() {
   const [stapIndex, setStapIndex] = useState(0);
-  const totaal = STAPPEN.length;
-  const stapNaam = STAPPEN[stapIndex];
+  const totaal = stappen.length;
+  const stapNaam = stappen[Math.min(stapIndex, totaal - 1)];
 
   const volgende = useCallback(() => {
     setStapIndex((i) => Math.min(i + 1, totaal - 1));

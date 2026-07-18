@@ -1,19 +1,27 @@
 import { useState } from 'react';
-import { ROEI_PROGRAMMAS, totaleDuur } from '../../lib/cardio/roeiProgrammas.js';
+import { ROEI_PROGRAMMAS, totaleDuur, bouwHiitProgramma } from '../../lib/cardio/roeiProgrammas.js';
 import './CardioRoeien.css';
 
 const NIVEAUS = [
   { id: 'basis', label: 'Basis' },
   { id: 'duur', label: 'Duurtraining' },
   { id: 'interval', label: 'Interval' },
+  { id: 'hiit', label: 'HIIT' },
 ];
 
-export default function CardioRoeien({ cardio, toonToast }) {
+function duurLabel(minuten) {
+  if (minuten < 1) return `${Math.round(minuten * 60)} sec`;
+  return `${minuten} min`;
+}
+
+export default function CardioRoeien({ cardio, toonToast, instellingen }) {
   const [niveau, setNiveau] = useState('basis');
-  const programma = ROEI_PROGRAMMAS[niveau];
+  const programma = niveau === 'hiit'
+    ? bouwHiitProgramma(instellingen.hiitWerkSec, instellingen.hiitRustSec, instellingen.hiitRondes)
+    : ROEI_PROGRAMMAS[niveau];
 
   function registreren() {
-    const duur = totaleDuur(niveau);
+    const duur = totaleDuur(programma);
     cardio.voegToe({
       datum: new Date().toISOString().slice(0, 10),
       type: 'roeien',
@@ -57,7 +65,7 @@ export default function CardioRoeien({ cardio, toonToast }) {
               <div className="cro-inhoud">
                 <div className="cro-fase-rij">
                   <span className="cro-fase">{stap.fase}</span>
-                  <span className="cro-duur">{stap.duur} min</span>
+                  <span className="cro-duur">{duurLabel(stap.duur)}</span>
                 </div>
                 <div className="cro-uitleg">{stap.uitleg}</div>
               </div>

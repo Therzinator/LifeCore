@@ -37,6 +37,28 @@ export const ROEI_PROGRAMMAS = {
   },
 };
 
-export function totaleDuur(niveau) {
-  return ROEI_PROGRAMMAS[niveau].stappen.reduce((som, stap) => som + stap.duur, 0);
+export function totaleDuur(programma) {
+  return programma.stappen.reduce((som, stap) => som + stap.duur, 0);
+}
+
+// HIIT is de enige variant die niet vast is: werk/rust-verhouding en aantal
+// rondes komen uit de Cardio-instellingen, dus het programma wordt bij elke
+// weergave opnieuw opgebouwd in plaats van als vaste preset opgeslagen.
+export function bouwHiitProgramma(werkSec, rustSec, rondes) {
+  const stappen = [
+    { fase: 'Warming-up', duur: 5, uitleg: 'Weerstand 3-4, opbouwend tempo. Bereidt de spieren voor op korte, harde intervallen.' },
+  ];
+  for (let r = 1; r <= rondes; r++) {
+    stappen.push({ fase: `Interval ${r}`, duur: werkSec / 60, uitleg: 'Maximale inspanning — weerstand 8-10, zo hoog mogelijk slagtempo.' });
+    if (r < rondes) {
+      stappen.push({ fase: 'Herstel', duur: rustSec / 60, uitleg: 'Weerstand 2, langzaam doorroeien of stilzitten.' });
+    }
+  }
+  stappen.push({ fase: 'Cooling-down', duur: 5, uitleg: 'Weerstand 2-3, rustig uitroeien.' });
+
+  return {
+    titel: `HIIT-roeien — ${werkSec}s werk / ${rustSec}s rust × ${rondes}`,
+    omschrijving: 'Korte, maximale intervallen met korte hersteltijd — de grootste VO2max-prikkel van de vier varianten.',
+    stappen,
+  };
 }

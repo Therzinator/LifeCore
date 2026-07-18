@@ -1,4 +1,6 @@
 import { liftcoreBibliotheekLijst } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import { detecteerStagnatie } from '../../lib/training/stagnatie.js';
+import { formatGewicht, eenheidLabel } from '../../lib/training/eenheden.js';
 import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './TrainingDashboard.css';
 
@@ -11,7 +13,7 @@ function uniekeOefeningen(programma) {
   });
 }
 
-export default function TrainingDashboard({ profiel, programma, geschiedenis, instellingen, volgendeLetter, onStart }) {
+export default function TrainingDashboard({ profiel, programma, geschiedenis, instellingen, volgendeLetter, onStart, bewaarInstellingen }) {
   const oef = programma[volgendeLetter];
   const nr = geschiedenis.sessies.length + 1;
 
@@ -19,6 +21,9 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
   const groet = uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
 
   const totaalVolume = geschiedenis.sessies.reduce((s, t) => s + (t.volume || 0), 0);
+  const eenheid = instellingen.eenheid;
+
+  const gestagneerdeOefeningen = instellingen.programma === 'sl5x5' ? detecteerStagnatie(geschiedenis.sessies) : [];
 
   return (
     <div>
@@ -26,6 +31,20 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
       <p className="of-stap-tekst">
         Volgende: Training {volgendeLetter} — {oef.map((o) => o.naam).join(', ')}
       </p>
+
+      {gestagneerdeOefeningen.length > 0 && (
+        <div className="card">
+          <div className="td-label">Vastgelopen op {gestagneerdeOefeningen.join(', ')}</div>
+          <p className="ti-hint">
+            Drie sessies op rij geen vooruitgang — de eigen regel van StrongLifts om dan over te stappen naar Madcow 5×5
+            (minder steile progressie, meer volume per week).
+          </p>
+          <button className="btn btn-p btn-sm" onClick={() => bewaarInstellingen({ programma: 'madcow' })}>
+            Wissel naar Madcow 5×5
+          </button>
+        </div>
+      )}
+
       <OefeningenBibliotheek oefeningen={liftcoreBibliotheekLijst()} titel="StrongLifts-basis — bibliotheek" />
 
       <div className="card td-volgende">
@@ -40,7 +59,7 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
         {uniekeOefeningen(programma).slice(0, 6).map((o) => (
           <div className="metric" key={o.id}>
             <div className="ml">{o.naam}</div>
-            <div className="mv">{profiel.gewichten[o.id] ?? '—'} <span className="mu">kg</span></div>
+            <div className="mv">{formatGewicht(profiel.gewichten[o.id], eenheid)} <span className="mu">{eenheidLabel(eenheid)}</span></div>
           </div>
         ))}
       </div>

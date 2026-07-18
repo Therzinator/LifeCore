@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useVragenlijstGeschiedenis } from '../../hooks/useVragenlijstGeschiedenis.js';
+import { useWelzijnInstellingen } from '../../hooks/useWelzijnInstellingen.js';
 import {
   WELZIJN_SUBSCHALEN, berekenScores, volgendeCheckDatum, checkIsVerschuldigd,
 } from '../../lib/welzijn/vragenset.js';
@@ -7,6 +8,8 @@ import { bepaalSignalen } from '../../lib/welzijn/signalering.js';
 import { relatieveTijd } from '../../utils/datum.js';
 import VragenlijstCheck from './VragenlijstCheck.jsx';
 import LijnGrafiek from '../dashboard/LijnGrafiek.jsx';
+import WelzijnInstellingen from './WelzijnInstellingen.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './WelzijnPagina.css';
 
 function datumLabel(iso) {
@@ -19,13 +22,14 @@ function afgerond(waarde) {
 
 export default function WelzijnPagina() {
   const geschiedenis = useVragenlijstGeschiedenis('welzijn_check');
+  const { instellingen, bewaar: bewaarInstellingen } = useWelzijnInstellingen();
   const [scherm, setScherm] = useState('overzicht');
 
   const afnames = geschiedenis.afnames;
   const signalen = bepaalSignalen(afnames);
   const laatsteDatum = geschiedenis.laatste?.datum ?? null;
-  const verschuldigd = checkIsVerschuldigd(laatsteDatum);
-  const volgende = volgendeCheckDatum(laatsteDatum);
+  const verschuldigd = checkIsVerschuldigd(laatsteDatum, instellingen.cadansDagen);
+  const volgende = volgendeCheckDatum(laatsteDatum, instellingen.cadansDagen);
 
   function verzend(antwoorden) {
     const scores = berekenScores(antwoorden);
@@ -53,9 +57,14 @@ export default function WelzijnPagina() {
 
   return (
     <div className="of-wrap">
-      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Burn-out &amp; herstel-check</div>
+      <div className="mik-kop-rij">
+        <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)', flex: 1, minWidth: 0 }}>Burn-out &amp; herstel-check</div>
+        <ModuleInstellingenKnop titel="Welzijn-instellingen">
+          <WelzijnInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} />
+        </ModuleInstellingenKnop>
+      </div>
       <p className="of-stap-tekst">
-        Eén tweewekelijkse check die burn-out en herstel samen meet — geen twee losse vragenlijsten.
+        Eén check die burn-out en herstel samen meet — geen twee losse vragenlijsten.
         Blijft alleen hier zichtbaar, niet op het hoofddashboard.
       </p>
 

@@ -2,21 +2,21 @@ import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 
 const STANDAARD = {
-  geluidFragment: 'tweetonen',
-  sleeptimerStandaardDuur: null,
+  cadansDagen: 14,
+  mindfulnessImpactPct: 50,
 };
 
 function standaardRecord() {
   return nieuwRecord({ ...STANDAARD });
 }
 
-export function useMindfulnessInstellingen() {
-  const [instellingen, setInstellingenState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('mindfulness_instellingen', {}) }));
+export function useWelzijnInstellingen() {
+  const [instellingen, setInstellingenState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('welzijn_instellingen', {}) }));
 
   const bewaar = useCallback((patch) => {
     setInstellingenState((huidig) => {
       const bijgewerkt = nieuwRecord({ ...huidig, ...patch });
-      schrijfLokaal('mindfulness_instellingen', bijgewerkt);
+      schrijfLokaal('welzijn_instellingen', bijgewerkt);
       return bijgewerkt;
     });
   }, []);

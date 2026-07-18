@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { IconInstellingen, IconAccount } from '../ui/ModuleIconen.jsx';
 import AccountModal from '../ui/AccountModal.jsx';
+import Modal from '../ui/Modal.jsx';
+import ProfielInstellingenModal from '../ui/ProfielInstellingenModal.jsx';
 import './AppHeader.css';
 
 const STATUS_LABEL = {
@@ -11,10 +13,11 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function AppHeader({ auth, onInstellingen }) {
+export default function AppHeader({ auth }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [toonAccount, setToonAccount] = useState(false);
+  const [toonProfiel, setToonProfiel] = useState(false);
 
   return (
     <header className="app-header">
@@ -37,13 +40,18 @@ export default function AppHeader({ auth, onInstellingen }) {
           </button>
         )}
         <div className="app-instellingen-groep">
-          <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
+          <button className="app-instellingen-btn" onClick={() => setToonProfiel(true)} aria-label="Instellingen">
             <IconInstellingen className="app-instellingen-icoon" />
           </button>
           <span className="app-versie">{__APP_VERSION__}</span>
         </div>
       </div>
       {toonAccount && <AccountModal auth={auth} onClose={() => setToonAccount(false)} />}
+      {toonProfiel && (
+        <Modal titel="Profiel-instellingen" onClose={() => setToonProfiel(false)}>
+          <ProfielInstellingenModal />
+        </Modal>
+      )}
     </header>
   );
 }

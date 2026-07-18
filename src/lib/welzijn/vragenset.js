@@ -28,16 +28,16 @@ export function berekenScores(antwoorden) {
   return scores;
 }
 
-const CADANS_DAGEN = 14;
+export const CADANS_DAGEN_STANDAARD = 14;
 
-export function volgendeCheckDatum(laatsteDatumIso) {
+export function volgendeCheckDatum(laatsteDatumIso, cadansDagen = CADANS_DAGEN_STANDAARD) {
   if (!laatsteDatumIso) return null;
   const datum = new Date(laatsteDatumIso);
-  datum.setDate(datum.getDate() + CADANS_DAGEN);
+  datum.setDate(datum.getDate() + cadansDagen);
   return datum;
 }
 
-export function checkIsVerschuldigd(laatsteDatumIso) {
-  const volgende = volgendeCheckDatum(laatsteDatumIso);
+export function checkIsVerschuldigd(laatsteDatumIso, cadansDagen = CADANS_DAGEN_STANDAARD) {
+  const volgende = volgendeCheckDatum(laatsteDatumIso, cadansDagen);
   return !volgende || volgende <= new Date();
 }

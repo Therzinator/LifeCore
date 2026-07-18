@@ -1,41 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useMindfulnessSessies } from '../../hooks/useMindfulnessSessies.js';
 import { useMindfulnessGebruik } from '../../hooks/useMindfulnessGebruik.js';
 import { useMindfulnessInstellingen } from '../../hooks/useMindfulnessInstellingen.js';
+import { useVragenlijstGeschiedenis } from '../../hooks/useVragenlijstGeschiedenis.js';
+import { useWelzijnInstellingen } from '../../hooks/useWelzijnInstellingen.js';
+import { mindfulnessSuggestieActief } from '../../lib/welzijn/mindfulnessSignaal.js';
 import MindfulnessOefeningen from './MindfulnessOefeningen.jsx';
 import SessieBrowser from './SessieBrowser.jsx';
 import SessieSpeler from './SessieSpeler.jsx';
 import MindfulnessProgressie from './MindfulnessProgressie.jsx';
 import MindfulnessInstellingen from './MindfulnessInstellingen.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './MindfulnessPagina.css';
 
 const TABS = [
   { id: 'oefeningen', label: 'Oefeningen' },
   { id: 'sessies', label: 'Sessies' },
   { id: 'progressie', label: 'Progressie' },
-  { id: 'instellingen', label: 'Instellingen' },
 ];
 
-export default function MindfulnessPagina({ toonToast, instellingenSignaal }) {
+export default function MindfulnessPagina({ toonToast }) {
   const auth = useAuth();
   const { themas, sessies, laden: sessiesLaden } = useMindfulnessSessies();
   const { laden: gebruikLaden, voegToe, stats } = useMindfulnessGebruik(auth.user?.id);
   const { instellingen, bewaar: bewaarInstellingen } = useMindfulnessInstellingen();
+  const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
+  const { instellingen: welzijnInstellingen } = useWelzijnInstellingen();
   const [tab, setTab] = useState('oefeningen');
   const [actieveSessie, setActieveSessie] = useState(null);
 
-  useEffect(() => {
-    if (instellingenSignaal) setTab('instellingen');
-  }, [instellingenSignaal]);
-
   const ingelogd = Boolean(auth.user?.id);
+  const toonWelzijnSuggestie = mindfulnessSuggestieActief(welzijnGeschiedenis.afnames, welzijnInstellingen.mindfulnessImpactPct);
 
   if (actieveSessie) {
     return (
       <div className="of-wrap">
         <div className="card">
-          <SessieSpeler sessie={actieveSessie} onTerug={() => setActieveSessie(null)} voegGebruikToe={voegToe} />
+          <SessieSpeler
+            sessie={actieveSessie}
+            onTerug={() => setActieveSessie(null)}
+            voegGebruikToe={voegToe}
+            sleeptimerStandaardDuur={instellingen.sleeptimerStandaardDuur}
+          />
         </div>
       </div>
     );
@@ -43,13 +50,24 @@ export default function MindfulnessPagina({ toonToast, instellingenSignaal }) {
 
   return (
     <div className="of-wrap">
-      <div className="mfp-tabs">
-        {TABS.map((t) => (
-          <button key={t.id} className={`mfp-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
+      <div className="mik-kop-rij">
+        <div className="mfp-tabs" style={{ flex: 1, minWidth: 0 }}>
+          {TABS.map((t) => (
+            <button key={t.id} className={`mfp-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <ModuleInstellingenKnop titel="Mindfulness-instellingen">
+          <MindfulnessInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} />
+        </ModuleInstellingenKnop>
       </div>
+
+      {toonWelzijnSuggestie && tab === 'oefeningen' && (
+        <div className="ad-banner warn">
+          Je laatste burn-out &amp; herstel-check wees op verhoogde uitputting — een korte ademoefening kan nu net dat beetje ruimte geven.
+        </div>
+      )}
 
       <div className="card">
         {tab === 'oefeningen' && <MindfulnessOefeningen toonToast={toonToast} geluidFragment={instellingen.geluidFragment} />}
@@ -63,7 +81,6 @@ export default function MindfulnessPagina({ toonToast, instellingenSignaal }) {
           />
         )}
         {tab === 'progressie' && <MindfulnessProgressie stats={stats} laden={gebruikLaden} ingelogd={ingelogd} />}
-        {tab === 'instellingen' && <MindfulnessInstellingen instellingen={instellingen} bewaar={bewaarInstellingen} />}
       </div>
     </div>
   );

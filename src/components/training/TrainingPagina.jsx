@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTrainingProfiel } from '../../hooks/useTrainingProfiel.js';
 import { useTrainingGeschiedenis } from '../../hooks/useTrainingGeschiedenis.js';
 import { useActieveTraining } from '../../hooks/useActieveTraining.js';
@@ -17,6 +17,7 @@ import TrainingGeschiedenis from './TrainingGeschiedenis.jsx';
 import TrainingInstellingen from './TrainingInstellingen.jsx';
 import TrainingProgramma from './TrainingProgramma.jsx';
 import PersoonsProfiel from './PersoonsProfiel.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './TrainingPagina.css';
 
 const TABS = [
@@ -26,7 +27,6 @@ const TABS = [
   { id: 'progressie', label: 'Progressie' },
   { id: 'geschiedenis', label: 'Geschiedenis' },
   { id: 'profiel', label: 'Mijn profiel' },
-  { id: 'instellingen', label: 'Instellingen' },
 ];
 
 function volgendeLetterUit(laatste) {
@@ -34,7 +34,7 @@ function volgendeLetterUit(laatste) {
   return laatste.letter === 'A' ? 'B' : 'A';
 }
 
-export default function TrainingPagina({ toonToast, instellingenSignaal }) {
+export default function TrainingPagina({ toonToast }) {
   const profiel = useTrainingProfiel();
   const geschiedenis = useTrainingGeschiedenis();
   const actieveTraining = useActieveTraining();
@@ -44,10 +44,6 @@ export default function TrainingPagina({ toonToast, instellingenSignaal }) {
   const persoonsProfiel = usePersoonsProfiel();
   const rustTimer = useRustTimer(instellingen.geluidFragment);
   const [tab, setTab] = useState('dashboard');
-
-  useEffect(() => {
-    if (instellingenSignaal) setTab('instellingen');
-  }, [instellingenSignaal]);
 
   if (!profiel.profiel.profielNaam) {
     return (
@@ -136,12 +132,22 @@ export default function TrainingPagina({ toonToast, instellingenSignaal }) {
 
   return (
     <div className="of-wrap">
-      <div className="tp-tabs">
-        {TABS.map((t) => (
-          <button key={t.id} className={`tp-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
+      <div className="mik-kop-rij">
+        <div className="tp-tabs" style={{ flex: 1, minWidth: 0 }}>
+          {TABS.map((t) => (
+            <button key={t.id} className={`tp-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <ModuleInstellingenKnop titel="LiftCore-instellingen">
+          <TrainingInstellingen
+            instellingen={instellingen}
+            bewaar={bewaarInstellingen}
+            onResetAlles={resetAlles}
+            toonToast={toonToast}
+          />
+        </ModuleInstellingenKnop>
       </div>
 
       <div className="card">
@@ -153,6 +159,7 @@ export default function TrainingPagina({ toonToast, instellingenSignaal }) {
             instellingen={instellingen}
             volgendeLetter={volgendeLetterUit(geschiedenis.laatste)}
             onStart={start}
+            bewaarInstellingen={bewaarInstellingen}
           />
         )}
         {tab === 'programma' && (
@@ -173,14 +180,6 @@ export default function TrainingPagina({ toonToast, instellingenSignaal }) {
             persoonsProfiel={persoonsProfiel}
             trainingProfiel={profiel}
             instellingen={instellingen}
-            toonToast={toonToast}
-          />
-        )}
-        {tab === 'instellingen' && (
-          <TrainingInstellingen
-            instellingen={instellingen}
-            bewaar={bewaarInstellingen}
-            onResetAlles={resetAlles}
             toonToast={toonToast}
           />
         )}

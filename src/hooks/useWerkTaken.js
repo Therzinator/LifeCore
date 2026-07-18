@@ -17,10 +17,10 @@ function nieuweId(prefix) {
 export function useWerkTaken() {
   const [record, setRecordState] = useState(() => leesLokaal('werk_taken', leegRecord()));
 
-  const voegMeerdereToe = useCallback((teksten, focusMinuten = null) => {
+  const voegMeerdereToe = useCallback((teksten, focusMinuten = null, categorie = null) => {
     setRecordState((huidig) => {
       const nieuwe = teksten.map((tekst) => ({
-        id: nieuweId('wt'), tekst, focusMinuten, klaar: false, aangemaaktOp: vandaagKey(), afgerondOp: null,
+        id: nieuweId('wt'), tekst, focusMinuten, categorie, klaar: false, aangemaaktOp: vandaagKey(), afgerondOp: null,
       }));
       const taken = [...(huidig.taken ?? []), ...nieuwe];
       const bijgewerkt = nieuwRecord({ taken });

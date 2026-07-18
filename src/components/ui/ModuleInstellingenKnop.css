@@ -1,0 +1,24 @@
+.mik-kop-rij {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.mik-knop {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt-muted);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.mik-knop:hover { background: var(--bg-3); color: var(--txt); }
+
+.mik-icoon { width: 16px; height: 16px; }

@@ -16,7 +16,6 @@ import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import WerkPagina from './components/werk/WerkPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
-import AlgemeneInstellingen from './components/instellingen/AlgemeneInstellingen.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
@@ -24,30 +23,23 @@ import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-// Modules die hun eigen 'Instellingen'-tab/paneel hebben — voor deze modules
-// stuurt het tandwiel-icoon een signaal naar de actieve pagina in plaats van
-// te navigeren naar de losse, algemene instellingenpagina.
-const MODULES_MET_EIGEN_INSTELLINGEN = new Set(['training', 'adhd', 'mindfulness', 'ochtend']);
-
-function renderModule(paginaId, toonToast, onTerug, instellingenSignaal) {
+function renderModule(paginaId, toonToast) {
   switch (paginaId) {
-    case 'ochtend': return <OchtendFlow toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
+    case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
     case 'welzijn': return <WelzijnPagina />;
-    case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
-    case 'training': return <TrainingPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
+    case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
+    case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
-    case 'adhd': return <AdhdPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
+    case 'adhd': return <AdhdPagina toonToast={toonToast} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
     case 'dashboard': return <DashboardPagina />;
-    case 'instellingen': return <AlgemeneInstellingen onTerug={onTerug} />;
     default: return null;
   }
 }
 
 export default function App() {
   const [pagina, setPaginaState] = useState(() => leesLokaal('actieve_pagina', 'snelkeuze'));
-  const [instellingenSignaal, setInstellingenSignaal] = useState(0);
   const { toasts, toonToast } = useToast();
   const auth = useAuth();
   const isDesktop = useIsDesktop();
@@ -81,14 +73,6 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: zet de initiële entry één keer, latere wijzigingen lopen via setPagina.
   }, []);
 
-  function naarInstellingen(actievePagina) {
-    if (MODULES_MET_EIGEN_INSTELLINGEN.has(actievePagina)) {
-      setInstellingenSignaal((n) => n + 1);
-    } else {
-      setPagina('instellingen');
-    }
-  }
-
   if (auth.enabled && !auth.laden && !auth.ingelogd) {
     return (
       <>
@@ -108,14 +92,9 @@ export default function App() {
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <InstallBanner />
-        <DesktopShell
-          pagina={desktopPagina}
-          setPagina={setPagina}
-          auth={auth}
-          onInstellingen={() => naarInstellingen(desktopPagina)}
-        >
+        <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
           <ErrorBoundary key={desktopPagina}>
-            {renderModule(desktopPagina, toonToast, () => setPagina('ochtend'), instellingenSignaal)}
+            {renderModule(desktopPagina, toonToast)}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
@@ -126,11 +105,11 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} onInstellingen={() => naarInstellingen(pagina)} />
+      <AppHeader auth={auth} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
-          {renderModule(pagina, toonToast, () => setPagina('snelkeuze'), instellingenSignaal)}
+          {renderModule(pagina, toonToast)}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} />

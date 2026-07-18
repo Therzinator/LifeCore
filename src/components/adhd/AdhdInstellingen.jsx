@@ -10,7 +10,6 @@ export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, t
 
   return (
     <div>
-      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Instellingen</div>
       <p className="of-stap-tekst">Werkuren en dagvenster — de basis voor je daglimiet en het stopmoment.</p>
 
       <div className="card">

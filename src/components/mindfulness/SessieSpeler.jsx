@@ -3,7 +3,7 @@ import { audioUrl } from '../../lib/supabase/mindfulness.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import './SessieSpeler.css';
 
-const SLEEPTIMER_OPTIES = [10, 20, 30, 45];
+export const SLEEPTIMER_OPTIES = [10, 20, 30, 45];
 const FADE_SECONDEN = 10;
 
 function tijdLabel(sec) {
@@ -12,7 +12,7 @@ function tijdLabel(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function SessieSpeler({ sessie, onTerug, voegGebruikToe }) {
+export default function SessieSpeler({ sessie, onTerug, voegGebruikToe, sleeptimerStandaardDuur = null }) {
   const audioRef = useRef(null);
   const gelogdRef = useRef(false);
   const sleeptimerRef = useRef(null);
@@ -52,6 +52,11 @@ export default function SessieSpeler({ sessie, onTerug, voegGebruikToe }) {
     logHuidigeVoortgang(false);
     clearInterval(sleeptimerRef.current);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (sleeptimerStandaardDuur != null) zetSleeptimer(sleeptimerStandaardDuur);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: past de standaardduur uit instellingen één keer toe.
+  }, []);
 
   function wisselAfspelen() {
     const el = audioRef.current;
