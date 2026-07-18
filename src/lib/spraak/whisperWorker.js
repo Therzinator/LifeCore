@@ -1,48 +1,31 @@
 import { pipeline } from '@huggingface/transformers';
 
 // Multitalig Whisper-model (nodig voor Nederlands — de .en-varianten
-// verstaan alleen Engels). 'tiny' i.p.v. 'base': ~5x minder parameters,
-// dus een veel kleinere download en veel snellere inferentie op een
-// telefoon — 'base' bleek in de praktijk onbruikbaar traag.
-const MODEL = 'onnx-community/whisper-tiny';
-
-// De standaard q8/NBits-quantisatie geeft met de onnxruntime-web-versie
-// die deze library bundelt een laadfout op de decoder ("Missing required
-// scale ... DequantizeLinear") — een bekende bug (microsoft/onnxruntime
-// #28306). We quantiseren daarom alleen de encoder (kleiner/sneller, geen
-// bekende bug daar) en houden de decoder op fp32 (waar de bug wél zit).
-const DTYPE = { encoder_model: 'q8', decoder_model_merged: 'fp32' };
+// verstaan alleen Engels).
+//
+// Teruggedraaid naar 'base' + volledig fp32: een eerdere poging om dit te
+// versnellen ('tiny'-model + gemengde q8/fp32-precisie + geforceerde
+// webgpu-device) leverde in de praktijk juist een tragere ÉN veel minder
+// accurate transcriptie op (bevestigd door de gebruiker op een echt
+// toestel — iets wat met de synthetische fake-audio in Playwright-tests
+// niet te detecteren was). 'base'+fp32 was wél accuraat, dus dat is de
+// vaste basis; snelheidswinst moet vanaf hier via een andere weg gezocht
+// worden, niet door model/precisie opnieuw te verlagen zonder dat op een
+// echt toestel te kunnen verifiëren.
+const MODEL = 'onnx-community/whisper-base';
 
 let transcriberPromise = null;
 
-async function bepaalDevice() {
-  if (self.navigator?.gpu) {
-    try {
-      const adapter = await self.navigator.gpu.requestAdapter();
-      if (adapter) return 'webgpu';
-    } catch {
-      // valt door naar wasm
-    }
-  }
-  return 'wasm';
-}
-
-async function laadTranscriber(device) {
-  return pipeline('automatic-speech-recognition', MODEL, {
-    device,
-    dtype: DTYPE,
-    progress_callback: (data) => self.postMessage({ type: 'voortgang', payload: data }),
-  });
-}
-
 function haalTranscriber() {
   if (!transcriberPromise) {
-    transcriberPromise = bepaalDevice()
-      .then((device) => {
-        self.postMessage({ type: 'device', payload: { device } });
-        return laadTranscriber(device);
-      })
-      .catch(() => laadTranscriber('wasm'));
+    transcriberPromise = pipeline('automatic-speech-recognition', MODEL, {
+      // fp32 i.p.v. de standaard q8/NBits-quantisatie: die geeft met de
+      // onnxruntime-web-versie die deze library bundelt een laadfout op de
+      // decoder ("Missing required scale ... DequantizeLinear") — een
+      // bekende bug (microsoft/onnxruntime#28306), geen fout in onze code.
+      dtype: 'fp32',
+      progress_callback: (data) => self.postMessage({ type: 'voortgang', payload: data }),
+    });
   }
   return transcriberPromise;
 }
