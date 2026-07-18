@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { OEFENINGEN_BIBLIOTHEEK } from '../../lib/training/schema.js';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './TrainingProgramma.css';
 
 const LETTERS = ['A', 'B'];
@@ -143,10 +144,13 @@ export default function TrainingProgramma({ programma, profiel, instellingen, to
 
               <label className="tpr-veld-grp">
                 <span className="tpr-veld-lbl">Naam</span>
-                <input
-                  className="tpr-veld-input" type="text" value={form.naam}
-                  onChange={(e) => setForm({ ...form, naam: e.target.value })}
-                />
+                <div className="sk-inline-rij">
+                  <input
+                    className="tpr-veld-input" type="text" value={form.naam}
+                    onChange={(e) => setForm({ ...form, naam: e.target.value })}
+                  />
+                  <SpraakKnop waarde={form.naam} onWaarde={(v) => setForm({ ...form, naam: v })} compact />
+                </div>
               </label>
 
               <div className="tpr-velden">
@@ -185,7 +189,10 @@ export default function TrainingProgramma({ programma, profiel, instellingen, to
                 </label>
                 <label className="tpr-veld-grp" style={{ flex: 2 }}>
                   <span className="tpr-veld-lbl">Spiergroep</span>
-                  <input className="tpr-veld-input" type="text" value={form.spier} onChange={(e) => setForm({ ...form, spier: e.target.value })} />
+                  <div className="sk-inline-rij">
+                    <input className="tpr-veld-input" type="text" value={form.spier} onChange={(e) => setForm({ ...form, spier: e.target.value })} />
+                    <SpraakKnop waarde={form.spier} onWaarde={(v) => setForm({ ...form, spier: v })} compact />
+                  </div>
                 </label>
               </div>
 

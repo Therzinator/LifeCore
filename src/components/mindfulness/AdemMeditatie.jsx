@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/mindfulness/meditatie.js';
+import { speelFragment } from '../../lib/geluid/fragmenten.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
 import './AdemMeditatie.css';
@@ -12,12 +13,13 @@ function schaalVoorFase(fase) {
   return fase.naam === 'inademen' ? 0.6 + 0.4 * voortgang : 1 - 0.4 * voortgang;
 }
 
-export default function AdemMeditatie({ onKlaar }) {
+export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [duurMinuten, setDuurMinuten] = useState(5);
   const [gestart, setGestart] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const intervalRef = useRef(null);
+  const geluidGespeeldRef = useRef(false);
 
   const totaleSeconden = duurMinuten * 60;
   const klaar = gestart && elapsed >= totaleSeconden;
@@ -27,6 +29,12 @@ export default function AdemMeditatie({ onKlaar }) {
     intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(intervalRef.current);
   }, [gestart, klaar]);
+
+  useEffect(() => {
+    if (!klaar || geluidGespeeldRef.current) return;
+    geluidGespeeldRef.current = true;
+    speelFragment(geluidFragment);
+  }, [klaar, geluidFragment]);
 
   const fase = gestart && !klaar ? faseOpTijdstip(elapsed) : null;
   const resterendTotaal = Math.max(totaleSeconden - elapsed, 0);

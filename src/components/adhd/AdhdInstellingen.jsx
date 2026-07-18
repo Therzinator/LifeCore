@@ -1,3 +1,4 @@
+import GeluidKiezer from '../ui/GeluidKiezer.jsx';
 import './AdhdInstellingen.css';
 
 export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, toonToast }) {
@@ -42,6 +43,15 @@ export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, t
           Bezig met reintegreren? Zet dit lager (bijv. 3–4 uur) en bouw wekelijks rustig op.
           Bij lage energie krijg je automatisch de helft van dit aantal uren, bij midden 75%.
         </p>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Geluid</div>
+        <GeluidKiezer
+          label="Geluid bij einde focusblok"
+          waarde={instellingen.geluidFragment}
+          onWaarde={(v) => bewaar({ geluidFragment: v })}
+        />
       </div>
 
       <button className="btn btn-danger btn-sm" onClick={reset}>Focus-data wissen</button>

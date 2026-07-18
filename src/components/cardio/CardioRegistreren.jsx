@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { isNieuweTempoPR, adviesConsistentie } from '../../lib/cardio/sessies.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './CardioRegistreren.css';
 
 const TYPE_OPTIES = [
@@ -127,7 +128,10 @@ export default function CardioRegistreren({ cardio, toonToast }) {
 
         <div className="cr-veldgroep">
           <label className="cr-lbl" htmlFor="cr-notities">Notities</label>
-          <input id="cr-notities" className="cr-veld" type="text" placeholder="Hoe voelde het?" value={form.notities} onChange={(e) => veld('notities', e.target.value)} />
+          <div className="sk-inline-rij">
+            <input id="cr-notities" className="cr-veld" type="text" placeholder="Hoe voelde het?" value={form.notities} onChange={(e) => veld('notities', e.target.value)} />
+            <SpraakKnop waarde={form.notities} onWaarde={(v) => veld('notities', v)} compact />
+          </div>
         </div>
 
         <button className="btn btn-p btn-full" type="submit">Sessie opslaan ✓</button>

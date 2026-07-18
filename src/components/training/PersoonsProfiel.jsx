@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PROFIELEN } from '../../lib/training/schema.js';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './PersoonsProfiel.css';
 
 const PROFIEL_INFO = {
@@ -44,7 +45,10 @@ export default function PersoonsProfiel({ persoonsProfiel, trainingProfiel, inst
         <div className="pp-grid">
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="pp-naam">Naam</label>
-            <input id="pp-naam" className="ti-veld" value={naam} onChange={(e) => setNaam(e.target.value)} placeholder="Jouw naam" />
+            <div className="sk-inline-rij">
+              <input id="pp-naam" className="ti-veld" value={naam} onChange={(e) => setNaam(e.target.value)} placeholder="Jouw naam" />
+              <SpraakKnop waarde={naam} onWaarde={setNaam} compact />
+            </div>
           </div>
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="pp-geslacht">Geslacht</label>

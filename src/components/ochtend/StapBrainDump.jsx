@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { clusterBrainDump } from '../../lib/ochtend/brainCluster.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './StapBrainDump.css';
 
 export default function StapBrainDump({ dagdata, volgende, vorige, overslaan }) {
@@ -26,13 +27,16 @@ export default function StapBrainDump({ dagdata, volgende, vorige, overslaan }) 
         Waarom werkt dit?
       </button>
 
-      <textarea
-        className="bd-textarea"
-        value={tekst}
-        onChange={(e) => setTekst(e.target.value)}
-        placeholder="Schrijf hier alles wat er in je hoofd zit..."
-        rows={6}
-      />
+      <div className="sk-inline-rij">
+        <textarea
+          className="bd-textarea"
+          value={tekst}
+          onChange={(e) => setTekst(e.target.value)}
+          placeholder="Schrijf hier alles wat er in je hoofd zit..."
+          rows={6}
+        />
+        <SpraakKnop waarde={tekst} onWaarde={setTekst} />
+      </div>
 
       {heeftClusters > 0 && (
         <div className="bd-clusters">

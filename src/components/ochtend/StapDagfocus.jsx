@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './StapDagfocus.css';
 
 function Taaklijst({ label, items, setItems }) {
@@ -32,6 +33,7 @@ function Taaklijst({ label, items, setItems }) {
           onKeyDown={(e) => e.key === 'Enter' && voegToe()}
           placeholder="Toevoegen..."
         />
+        <SpraakKnop waarde={invoer} onWaarde={setInvoer} compact />
         <button className="btn btn-g btn-sm" onClick={voegToe}>+</button>
       </div>
     </div>
@@ -53,12 +55,15 @@ export default function StapDagfocus({ dagdata, volgende, vorige, overslaan }) {
       <div className="of-stap-titel">Wat telt vandaag?</div>
       <p className="of-stap-tekst">Eén belangrijkste ding. De rest mag wachten of later.</p>
 
-      <input
-        className="df-hoofd"
-        value={hoofdprioriteit}
-        onChange={(e) => setHoofdprioriteit(e.target.value)}
-        placeholder="Het belangrijkste ding vandaag..."
-      />
+      <div className="sk-inline-rij">
+        <input
+          className="df-hoofd"
+          value={hoofdprioriteit}
+          onChange={(e) => setHoofdprioriteit(e.target.value)}
+          placeholder="Het belangrijkste ding vandaag..."
+        />
+        <SpraakKnop waarde={hoofdprioriteit} onWaarde={setHoofdprioriteit} compact />
+      </div>
 
       <Taaklijst label="Moet vandaag" items={moetVandaag} setItems={setMoetVandaag} />
       <Taaklijst label="Kan later" items={kanLater} setItems={setKanLater} />

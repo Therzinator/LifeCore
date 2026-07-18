@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAdhdDag } from '../../hooks/useAdhdDag.js';
 import { useKlusboek } from '../../hooks/useKlusboek.js';
 import { useAdhdInstellingen } from '../../hooks/useAdhdInstellingen.js';
-import { useAlgemeneInstellingen } from '../../hooks/useAlgemeneInstellingen.js';
 import AdhdDashboard from './AdhdDashboard.jsx';
 import AdhdKlusboek from './AdhdKlusboek.jsx';
 import AdhdFocusTimer from './AdhdFocusTimer.jsx';
@@ -18,13 +17,16 @@ const TABS = [
   { id: 'instellingen', label: 'Instellingen' },
 ];
 
-export default function AdhdPagina({ toonToast }) {
+export default function AdhdPagina({ toonToast, instellingenSignaal }) {
   const adhdDag = useAdhdDag();
   const klusboek = useKlusboek();
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useAdhdInstellingen();
-  const { instellingen: algemeen } = useAlgemeneInstellingen();
   const [tab, setTab] = useState('dashboard');
   const [focusContext, setFocusContext] = useState({ taakTekst: null, blokAdvies: null });
+
+  useEffect(() => {
+    if (instellingenSignaal) setTab('instellingen');
+  }, [instellingenSignaal]);
 
   function startFocus(taakTekst, blokAdvies) {
     setFocusContext({ taakTekst, blokAdvies });
@@ -56,7 +58,7 @@ export default function AdhdPagina({ toonToast }) {
             actieveTaakTekst={focusContext.taakTekst}
             blokAdvies={focusContext.blokAdvies}
             adhdDag={adhdDag}
-            geluidAan={algemeen.geluid.focus}
+            geluidFragment={instellingen.geluidFragment}
             toonToast={toonToast}
           />
         )}

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useOchtendflow } from '../../hooks/useOchtendflow.js';
 import { useDagdata } from '../../hooks/useDagdata.js';
+import { useOchtendInstellingen } from '../../hooks/useOchtendInstellingen.js';
 import Voortgangsbalk from '../ui/Voortgangsbalk.jsx';
 import StapWelkom from './StapWelkom.jsx';
 import StapCheckin from './StapCheckin.jsx';
@@ -8,11 +10,28 @@ import StapActivering from './StapActivering.jsx';
 import StapBrainDump from './StapBrainDump.jsx';
 import StapDagfocus from './StapDagfocus.jsx';
 import StapAfronden from './StapAfronden.jsx';
+import OchtendInstellingen from './OchtendInstellingen.jsx';
 import './OchtendFlow.css';
 
-export default function OchtendFlow({ toonToast }) {
+export default function OchtendFlow({ toonToast, instellingenSignaal }) {
   const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow();
   const dagdata = useDagdata();
+  const { instellingen, bewaar: bewaarInstellingen } = useOchtendInstellingen();
+  const [toonInstellingen, setToonInstellingen] = useState(false);
+
+  useEffect(() => {
+    if (instellingenSignaal) setToonInstellingen(true);
+  }, [instellingenSignaal]);
+
+  if (toonInstellingen) {
+    return (
+      <OchtendInstellingen
+        instellingen={instellingen}
+        bewaar={bewaarInstellingen}
+        onSluiten={() => setToonInstellingen(false)}
+      />
+    );
+  }
 
   const gedeeld = { dagdata, volgende, vorige, overslaan, toonToast, isEersteStap: stapIndex === 0 };
 
@@ -23,7 +42,7 @@ export default function OchtendFlow({ toonToast }) {
       {stapNaam === 'welkom' && <StapWelkom {...gedeeld} />}
       {stapNaam === 'checkin' && <StapCheckin {...gedeeld} />}
       {stapNaam === 'ademhaling' && <StapAdemhaling {...gedeeld} />}
-      {stapNaam === 'activering' && <StapActivering {...gedeeld} />}
+      {stapNaam === 'activering' && <StapActivering {...gedeeld} geluidFragment={instellingen.geluidFragment} />}
       {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} />}
       {stapNaam === 'dagfocus' && <StapDagfocus {...gedeeld} />}
       {stapNaam === 'afronden' && <StapAfronden {...gedeeld} />}

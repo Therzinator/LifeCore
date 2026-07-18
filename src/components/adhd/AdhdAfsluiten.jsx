@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SHUTDOWN_ITEMS, stemmingReactie } from '../../lib/adhd/afsluiten.js';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdAfsluiten.css';
 
 const STEMMING_OPTIES = [
@@ -73,21 +74,27 @@ export default function AdhdAfsluiten({ adhdDag, toonToast }) {
 
       <div className="card">
         <label className="td-label" htmlFor="aa-reflectie">Reflectie</label>
-        <textarea
-          id="aa-reflectie"
-          className="aa-textarea"
-          placeholder="Wat viel je op vandaag?"
-          value={reflectie}
-          onChange={(e) => setReflectieLokaal(e.target.value)}
-        />
+        <div className="sk-inline-rij">
+          <textarea
+            id="aa-reflectie"
+            className="aa-textarea"
+            placeholder="Wat viel je op vandaag?"
+            value={reflectie}
+            onChange={(e) => setReflectieLokaal(e.target.value)}
+          />
+          <SpraakKnop waarde={reflectie} onWaarde={setReflectieLokaal} />
+        </div>
         <label className="td-label" htmlFor="aa-morgen">Morgen als eerste</label>
-        <textarea
-          id="aa-morgen"
-          className="aa-textarea"
-          placeholder="Eén prioriteit voor morgen..."
-          value={morgenPrio}
-          onChange={(e) => setMorgenPrioLokaal(e.target.value)}
-        />
+        <div className="sk-inline-rij">
+          <textarea
+            id="aa-morgen"
+            className="aa-textarea"
+            placeholder="Eén prioriteit voor morgen..."
+            value={morgenPrio}
+            onChange={(e) => setMorgenPrioLokaal(e.target.value)}
+          />
+          <SpraakKnop waarde={morgenPrio} onWaarde={setMorgenPrioLokaal} />
+        </div>
       </div>
 
       <div className="of-acties">

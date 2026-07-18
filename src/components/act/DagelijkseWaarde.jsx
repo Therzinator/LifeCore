@@ -1,4 +1,5 @@
 import { waardeById } from '../../lib/act/waarden.js';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './DagelijkseWaarde.css';
 
 export default function DagelijkseWaarde({ profiel, dag, setWaardeVandaag, setWaardeTerugblik }) {
@@ -50,12 +51,15 @@ export default function DagelijkseWaarde({ profiel, dag, setWaardeVandaag, setWa
       <div className="dw-terugblik-vraag">
         Vond je hier vandaag ruimte voor? Er is geen goed of fout antwoord — schrijf gerust niets op.
       </div>
-      <textarea
-        className="dw-terugblik"
-        value={dag.waardeTerugblik}
-        onChange={(e) => setWaardeTerugblik(e.target.value)}
-        placeholder="Optioneel..."
-      />
+      <div className="sk-inline-rij">
+        <textarea
+          className="dw-terugblik"
+          value={dag.waardeTerugblik}
+          onChange={(e) => setWaardeTerugblik(e.target.value)}
+          placeholder="Optioneel..."
+        />
+        <SpraakKnop waarde={dag.waardeTerugblik} onWaarde={setWaardeTerugblik} />
+      </div>
 
       <button
         className="dw-opnieuw"

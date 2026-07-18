@@ -17,10 +17,10 @@ function tijdLabel(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function AdhdFocusTimer({ actieveTaakTekst, blokAdvies, adhdDag, geluidAan, toonToast }) {
+export default function AdhdFocusTimer({ actieveTaakTekst, blokAdvies, adhdDag, geluidFragment, toonToast }) {
   const [duur, setDuur] = useState(blokAdvies || 25);
   const [checklist, setChecklist] = useState(() => new Set());
-  const timer = useRustTimer(geluidAan);
+  const timer = useRustTimer(geluidFragment);
   const verwerktRef = useRef(false);
 
   useEffect(() => {

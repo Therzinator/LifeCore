@@ -1,3 +1,4 @@
+import GeluidKiezer from '../ui/GeluidKiezer.jsx';
 import './TrainingInstellingen.css';
 
 export default function TrainingInstellingen({ instellingen, bewaar, onResetAlles, toonToast }) {
@@ -53,7 +54,11 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
               value={instellingen.rustLicht} onChange={veld('rustLicht', (v) => parseInt(v) || 90)} />
           </div>
         </div>
-        <p className="ti-hint">Geluid voor deze timer zet je in Algemene instellingen (tandwiel bovenin).</p>
+        <GeluidKiezer
+          label="Geluid bij einde rusttimer"
+          waarde={instellingen.geluidFragment}
+          onWaarde={(v) => bewaar({ geluidFragment: v })}
+        />
       </div>
 
       <div className="card">

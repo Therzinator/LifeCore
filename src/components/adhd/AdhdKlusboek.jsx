@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdKlusboek.css';
 
 export default function AdhdKlusboek({ klusboek, adhdDag, toonToast }) {
@@ -35,6 +36,7 @@ export default function AdhdKlusboek({ klusboek, adhdDag, toonToast }) {
             value={naam}
             onChange={(e) => setNaam(e.target.value)}
           />
+          <SpraakKnop waarde={naam} onWaarde={setNaam} compact />
           <input
             className="ak-veld ak-veld-min"
             type="number"

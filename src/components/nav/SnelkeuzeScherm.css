@@ -20,6 +20,19 @@
   margin-top: 4px;
 }
 
+.sk-categorie { margin-top: var(--space-lg); }
+.sk-categorie:first-of-type { margin-top: 0; }
+
+.sk-categorie-titel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--txt-faint);
+  margin-bottom: var(--space-sm);
+  padding-left: 2px;
+}
+
 .sk-grid {
   display: flex;
   flex-direction: column;

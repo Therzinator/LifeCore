@@ -21,15 +21,20 @@ import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast, onTerug) {
+// Modules die hun eigen 'Instellingen'-tab/paneel hebben — voor deze modules
+// stuurt het tandwiel-icoon een signaal naar de actieve pagina in plaats van
+// te navigeren naar de losse, algemene instellingenpagina.
+const MODULES_MET_EIGEN_INSTELLINGEN = new Set(['training', 'adhd', 'mindfulness', 'ochtend']);
+
+function renderModule(paginaId, toonToast, onTerug, instellingenSignaal) {
   switch (paginaId) {
-    case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
+    case 'ochtend': return <OchtendFlow toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
     case 'waarden': return <WaardenPagina />;
     case 'welzijn': return <WelzijnPagina />;
-    case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
-    case 'training': return <TrainingPagina toonToast={toonToast} />;
+    case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
+    case 'training': return <TrainingPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
-    case 'adhd': return <AdhdPagina toonToast={toonToast} />;
+    case 'adhd': return <AdhdPagina toonToast={toonToast} instellingenSignaal={instellingenSignaal} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
     case 'dashboard': return <DashboardPagina />;
     case 'instellingen': return <AlgemeneInstellingen onTerug={onTerug} />;
@@ -39,6 +44,7 @@ function renderModule(paginaId, toonToast, onTerug) {
 
 export default function App() {
   const [pagina, setPaginaState] = useState(() => leesLokaal('actieve_pagina', 'snelkeuze'));
+  const [instellingenSignaal, setInstellingenSignaal] = useState(0);
   const { toasts, toonToast } = useToast();
   const auth = useAuth();
   const isDesktop = useIsDesktop();
@@ -46,6 +52,14 @@ export default function App() {
   function setPagina(nieuwePagina) {
     setPaginaState(nieuwePagina);
     schrijfLokaal('actieve_pagina', nieuwePagina);
+  }
+
+  function naarInstellingen(actievePagina) {
+    if (MODULES_MET_EIGEN_INSTELLINGEN.has(actievePagina)) {
+      setInstellingenSignaal((n) => n + 1);
+    } else {
+      setPagina('instellingen');
+    }
   }
 
   if (auth.enabled && !auth.laden && !auth.ingelogd) {
@@ -59,8 +73,15 @@ export default function App() {
     const desktopPagina = pagina === 'snelkeuze' ? 'ochtend' : pagina;
     return (
       <>
-        <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
-          <ErrorBoundary key={desktopPagina}>{renderModule(desktopPagina, toonToast, () => setPagina('ochtend'))}</ErrorBoundary>
+        <DesktopShell
+          pagina={desktopPagina}
+          setPagina={setPagina}
+          auth={auth}
+          onInstellingen={() => naarInstellingen(desktopPagina)}
+        >
+          <ErrorBoundary key={desktopPagina}>
+            {renderModule(desktopPagina, toonToast, () => setPagina('ochtend'), instellingenSignaal)}
+          </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
       </>
@@ -69,11 +90,11 @@ export default function App() {
 
   return (
     <>
-      <AppHeader auth={auth} onInstellingen={() => setPagina('instellingen')} />
+      <AppHeader auth={auth} onInstellingen={() => naarInstellingen(pagina)} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
-          {renderModule(pagina, toonToast, () => setPagina('snelkeuze'))}
+          {renderModule(pagina, toonToast, () => setPagina('snelkeuze'), instellingenSignaal)}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} />

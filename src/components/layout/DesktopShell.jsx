@@ -23,7 +23,7 @@ const MODULES = [
   { id: 'dashboard', label: 'Dashboard' },
 ];
 
-export default function DesktopShell({ pagina, setPagina, auth, children }) {
+export default function DesktopShell({ pagina, setPagina, auth, onInstellingen, children }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [ingeklapt, setIngeklapt] = useState(() => leesLokaal('zijbalk_ingeklapt', false));
@@ -52,7 +52,7 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
               </button>
             </div>
           )}
-          <button className="ds-instellingen-btn" onClick={() => setPagina('instellingen')} aria-label="Algemene instellingen">
+          <button className="ds-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
             <IconInstellingen className="ds-instellingen-icoon" />
           </button>
         </div>

@@ -11,10 +11,10 @@ const OEFENINGEN = [
   { id: 'pmr', titel: 'Spierontspanning', omschrijving: 'Voor fysieke spanning in je lichaam.' },
 ];
 
-export default function MindfulnessOefeningen({ toonToast }) {
+export default function MindfulnessOefeningen({ toonToast, geluidFragment }) {
   const [actief, setActief] = useState(null);
 
-  if (actief === 'meditatie') return <AdemMeditatie onKlaar={() => setActief(null)} />;
+  if (actief === 'meditatie') return <AdemMeditatie geluidFragment={geluidFragment} onKlaar={() => setActief(null)} />;
   if (actief === 'urge') return <UrgeSurfing toonToast={toonToast} onKlaar={() => setActief(null)} />;
   if (actief === 'grounding') return <GroundingOefening toonToast={toonToast} onKlaar={() => setActief(null)} />;
   if (actief === 'pmr') return <SpierontspanningOefening onKlaar={() => setActief(null)} />;

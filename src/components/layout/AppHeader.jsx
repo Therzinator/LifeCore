@@ -28,7 +28,7 @@ export default function AppHeader({ auth, onInstellingen }) {
             </button>
           </div>
         )}
-        <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Algemene instellingen">
+        <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
           <IconInstellingen className="app-instellingen-icoon" />
         </button>
       </div>

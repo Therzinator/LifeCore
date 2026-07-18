@@ -10,6 +10,7 @@ const STANDAARD = {
   stangCurl: 10,
   runKm: 25,
   programmaOvergangsdatum: null,
+  geluidFragment: 'tweetonen',
 };
 
 function standaardRecord() {
@@ -17,7 +18,10 @@ function standaardRecord() {
 }
 
 export function useTrainingInstellingen() {
-  const [instellingen, setInstellingenState] = useState(() => leesLokaal('training_instellingen', standaardRecord()));
+  // Spread standaardRecord() eerst zodat een ouder, lokaal opgeslagen record dat nog
+  // geen geluidFragment (of een andere later toegevoegde instelling) kent, gewoon
+  // op de standaardwaarde terugvalt in plaats van undefined te blijven.
+  const [instellingen, setInstellingenState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('training_instellingen', {}) }));
 
   const bewaar = useCallback((patch) => {
     setInstellingenState((huidig) => {

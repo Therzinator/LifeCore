@@ -1,0 +1,22 @@
+.sk-inline-rij { display: flex; gap: var(--space-sm); align-items: center; }
+.sk-inline-rij > input, .sk-inline-rij > textarea { flex: 1; }
+
+.sk-btn {
+  width: 48px; height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.sk-btn:hover { background: var(--bg-3); }
+.sk-btn.actief { background: var(--danger-dim); border-color: var(--danger); animation: sk-puls 1.2s ease infinite; }
+
+.sk-btn.sk-compact { width: 36px; height: 36px; font-size: var(--font-size-base); }
+
+@keyframes sk-puls {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .6; }
+}

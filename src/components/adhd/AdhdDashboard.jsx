@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDagdata } from '../../hooks/useDagdata.js';
 import { dagLimiet, minutenTotStopmoment, middagAdvies } from '../../lib/adhd/dagLimiet.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdDashboard.css';
 
 const ENERGIE_LABEL = { laag: 'Laag', midden: 'Midden', hoog: 'Hoog' };
@@ -116,6 +117,7 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus }) {
             value={nieuweTaak}
             onChange={(e) => setNieuweTaak(e.target.value)}
           />
+          <SpraakKnop waarde={nieuweTaak} onWaarde={setNieuweTaak} compact />
           <button className="btn btn-g btn-sm" type="submit">Toevoegen</button>
         </form>
       </div>

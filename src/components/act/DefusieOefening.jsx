@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { defusieStappen } from '../../lib/act/defusie.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
+import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './DefusieOefening.css';
 
 export default function DefusieOefening() {
@@ -34,12 +35,15 @@ export default function DefusieOefening() {
 
       {stappen.length === 0 && (
         <>
-          <textarea
-            className="do-input"
-            value={gedachte}
-            onChange={(e) => setGedachte(e.target.value)}
-            placeholder="Bijvoorbeeld: ik ga dit niet redden..."
-          />
+          <div className="sk-inline-rij">
+            <textarea
+              className="do-input"
+              value={gedachte}
+              onChange={(e) => setGedachte(e.target.value)}
+              placeholder="Bijvoorbeeld: ik ga dit niet redden..."
+            />
+            <SpraakKnop waarde={gedachte} onWaarde={setGedachte} />
+          </div>
           <button className="btn btn-p btn-full" onClick={begin} disabled={!gedachte.trim()}>
             Bekijk het van een afstand
           </button>

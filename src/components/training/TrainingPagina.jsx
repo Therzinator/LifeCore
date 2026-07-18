@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTrainingProfiel } from '../../hooks/useTrainingProfiel.js';
 import { useTrainingGeschiedenis } from '../../hooks/useTrainingGeschiedenis.js';
 import { useActieveTraining } from '../../hooks/useActieveTraining.js';
@@ -7,7 +7,6 @@ import { useExtraOefeningen } from '../../hooks/useExtraOefeningen.js';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import { useProgramma } from '../../hooks/useProgramma.js';
-import { useAlgemeneInstellingen } from '../../hooks/useAlgemeneInstellingen.js';
 import { PROFIELEN, EXTRA, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import TrainingSessie from './TrainingSessie.jsx';
@@ -35,7 +34,7 @@ function volgendeLetterUit(laatste) {
   return laatste.letter === 'A' ? 'B' : 'A';
 }
 
-export default function TrainingPagina({ toonToast }) {
+export default function TrainingPagina({ toonToast, instellingenSignaal }) {
   const profiel = useTrainingProfiel();
   const geschiedenis = useTrainingGeschiedenis();
   const actieveTraining = useActieveTraining();
@@ -43,9 +42,12 @@ export default function TrainingPagina({ toonToast }) {
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useTrainingInstellingen();
   const extraOefeningen = useExtraOefeningen();
   const persoonsProfiel = usePersoonsProfiel();
-  const { instellingen: algemeen } = useAlgemeneInstellingen();
-  const rustTimer = useRustTimer(algemeen.geluid.training);
+  const rustTimer = useRustTimer(instellingen.geluidFragment);
   const [tab, setTab] = useState('dashboard');
+
+  useEffect(() => {
+    if (instellingenSignaal) setTab('instellingen');
+  }, [instellingenSignaal]);
 
   if (!profiel.profiel.profielNaam) {
     return (
