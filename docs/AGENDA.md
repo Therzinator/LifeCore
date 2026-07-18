@@ -1,10 +1,9 @@
-# LifeCore — Agenda-module (ontwerpvoorstel, nog niet gebouwd)
+# LifeCore — Agenda-module
 
-Status: **voorstel, wacht op akkoord**. Dit document wordt gepresenteerd
-zoals gevraagd — er is nog geen implementatiecode voor deze module. Bouw
-start pas na een expliciet akkoord op de keuzes hieronder, met name de
-Google-koppeling (die vraagt om een stap die je zelf buiten deze sessie om
-moet zetten, zie §3).
+Status: **v1 gebouwd en live** (lokale planningsblokken, maand/week/dag,
+bestaande-module-signalen, "Vandaag"-overzicht op het startscherm). Alleen
+§3 (Google Calendar-koppeling) staat nog open — die vraagt een stap die je
+zelf buiten deze sessie om moet zetten (Google Cloud Console).
 
 ## 1. Probleem
 
@@ -102,28 +101,18 @@ planning):
   tijdstip, planningsblokken met tijdstip, en de niet-tijdgebonden signalen
   (welzijn-check, huishoud-klussen) onderaan als "vandaag ook relevant".
 
-## 5. Het kernprobleem: voorkomen dat je het vergeet
+## 5. Het kernprobleem: voorkomen dat je het vergeet — beslist: optie A
 
-Een agenda die je alleen ziet als je 'm zelf opent, lost hyperfocus-
-vergeetachtigheid maar deels op. Twee opties, geen van beide al gekozen:
+**Geïmplementeerd**: `VandaagOverzicht` bovenaan `SnelkeuzeScherm` (het
+mobiele startscherm) — toont vandaag's blokken + signalen zodra je de app
+opent, met één tik door naar de volledige Agenda. Geen extra permissies of
+infrastructuur nodig.
 
-**A. Prominent bij het openen van de app** (geen extra complexiteit)
-Het startscherm (`SnelkeuzeScherm`) toont vandaag's agenda-samenvatting
-bovenaan, zodat je het sowieso ziet zodra je de app opent voor iets anders
-— vergelijkbaar met hoe "Deze week" nu al bovenaan staat.
-
-**B. Push-notificaties** (aanzienlijk meer bouwwerk)
-Een échte herinnering die afgaat zonder dat je de app hoeft te openen,
-vereist Web Push: een service-worker-uitbreiding, VAPID-sleutels, expliciete
-notificatie-toestemming van de gebruiker, en (voor betrouwbare aflevering
-op Android) een always-on stukje infrastructuur dat op het juiste moment
-pusht — dat laatste past niet in de huidige puur-client-side/geen-
-backend-behalve-Supabase-architectuur zonder een nieuwe achtergrond-taak
-(bv. een Supabase Edge Function op een cron-schema).
-
-**Aanbeveling**: optie A eerst (past in de bestaande architectuur, geen
-nieuwe permissies/infrastructuur), optie B als bewuste vervolgstap als A
-in de praktijk niet genoeg blijkt.
+Optie B (push-notificaties) is expliciet **niet** gekozen — geannuleerd na
+overweging: zou een service-worker-uitbreiding, VAPID-sleutels, een nieuwe
+Supabase-tabel voor subscripties, en een always-on achtergrond-component
+(Edge Function op een `pg_cron`-schema) hebben gevraagd. Alleen relevant
+mocht optie A in de praktijk toch niet genoeg blijken.
 
 ## 6. Wat dit niet is
 
@@ -136,12 +125,10 @@ in de praktijk niet genoeg blijkt.
   huishoud-signaal in de Agenda linkt door naar de Huishouden-module zelf,
   waar het al afvinkbaar is. Voorkomt dubbele afvink-logica op twee plekken.
 
-## 7. Openstaande vraag vóór bouw
+## 7. Status
 
-Eén ding is nog niet expliciet gevraagd en bepaalt hoeveel v1 kan doen
-zonder op jou te wachten: **ga je de Google Cloud-stappen uit §3 zelf
-zetten, en zo ja — wil je eerst de rest van de Agenda (lokale
-planningsblokken + maand/week/dag-weergave + bestaande-module-signalen)
-zonder Google-koppeling, en Google er later bij, of in één keer?**
-Bouwen zonder Google is een kleinere, onafhankelijke eerste stap die niet
-op jouw Cloud Console-setup hoeft te wachten.
+v1 is gebouwd en live: lokale planningsblokken, maand/week/dag-weergave,
+bestaande-module-signalen, en het "Vandaag"-overzicht op het startscherm —
+allemaal zonder Google-koppeling, zoals gekozen (§3 blijft een latere
+stap, te zetten zodra je de Google Cloud Console-stappen hierboven hebt
+doorlopen).
