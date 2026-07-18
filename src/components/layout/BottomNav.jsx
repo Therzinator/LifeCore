@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { MODULE_ICONEN, IconSnelkeuze, IconChevron } from '../ui/ModuleIconen.jsx';
+import { MODULE_ICONEN, IconSnelkeuze, IconChevron, IconInstellingen } from '../ui/ModuleIconen.jsx';
 import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
 import './BottomNav.css';
 
 export default function BottomNav({ pagina, setPagina }) {
   const [uitgeklapt, setUitgeklapt] = useState(false);
 
-  const HuidigIcoon = pagina === 'snelkeuze' ? IconSnelkeuze : MODULE_ICONEN[pagina];
-  const huidigLabel = pagina === 'snelkeuze' ? 'Start' : (MODULES[pagina]?.label ?? pagina);
+  // pagina is niet altijd een module-id — bv. 'snelkeuze' en 'instellingen'
+  // zijn losse schermen zonder eigen entry in MODULE_ICONEN. Zonder fallback
+  // crasht het renderen van een undefined component hier de hele app (buiten
+  // bereik van de ErrorBoundary, want BottomNav zit daar niet binnen).
+  const HuidigIcoon = pagina === 'snelkeuze' ? IconSnelkeuze : (MODULE_ICONEN[pagina] ?? IconInstellingen);
+  const huidigLabel = pagina === 'snelkeuze' ? 'Start' : (MODULES[pagina]?.label ?? 'Instellingen');
 
   function kies(id) {
     setPagina(id);
