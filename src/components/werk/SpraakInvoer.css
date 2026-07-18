@@ -26,6 +26,8 @@
 }
 .si-mic-btn:hover { background: var(--bg-3); }
 .si-mic-btn.actief { background: var(--danger-dim); border-color: var(--danger); animation: si-puls 1.2s ease infinite; }
+.si-mic-btn.verwerkt { background: var(--accent-dim); border-color: var(--accent-mid); cursor: default; animation: si-puls 1s ease infinite; }
+.si-mic-btn:disabled { cursor: default; }
 
 @keyframes si-puls {
   0%, 100% { opacity: 1; }

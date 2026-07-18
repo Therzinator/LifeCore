@@ -1,81 +1,78 @@
-import { useEffect, useRef, useState } from 'react';
-
-function haalSpeechRecognition() {
-  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-}
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { transcribeer, onVoortgang } from '../lib/spraak/whisperClient.js';
+import { blobNaarFloat32 } from '../lib/spraak/audioOpname.js';
 
 export function useSpraakHerkenning(waarde, onWaarde) {
   const [opnemen, setOpnemen] = useState(false);
-  const herkenningRef = useRef(null);
-  const basisTekstRef = useRef('');
-  const huidigeTekstRef = useRef('');
-  const luisterenActiefRef = useRef(false);
+  const [verwerken, setVerwerken] = useState(false);
+  const [laadVoortgang, setLaadVoortgang] = useState(null);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const streamRef = useRef(null);
 
-  const ondersteund = Boolean(haalSpeechRecognition());
+  const ondersteund = Boolean(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+
+  useEffect(() => onVoortgang((data) => {
+    if (data.status === 'progress' && typeof data.progress === 'number') {
+      setLaadVoortgang(Math.round(data.progress));
+    } else if (data.status === 'done' || data.status === 'ready') {
+      setLaadVoortgang(null);
+    }
+  }), []);
 
   useEffect(() => () => {
-    luisterenActiefRef.current = false;
-    herkenningRef.current?.stop();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
 
-  function maakHerkenning() {
-    const Herkenning = haalSpeechRecognition();
-    const herkenning = new Herkenning();
-    herkenning.lang = 'nl-NL';
-    herkenning.continuous = true;
-    herkenning.interimResults = true;
+  const startOpnemen = useCallback(async () => {
+    if (!ondersteund) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      chunksRef.current = [];
 
-    herkenning.onresult = (event) => {
-      // Chrome levert elke afgeronde zin als los resultaat aan; zonder expliciete
-      // spatie tussen die resultaten plakken woorden uit opeenvolgende zinnen aan elkaar.
-      let tekst = '';
-      for (let i = 0; i < event.results.length; i++) {
-        const segment = event.results[i][0].transcript.trim();
-        if (!segment) continue;
-        tekst += (tekst ? ' ' : '') + segment;
-      }
-      huidigeTekstRef.current = basisTekstRef.current + tekst;
-      onWaarde(huidigeTekstRef.current);
-    };
-    herkenning.onerror = (event) => {
-      if (event.error === 'no-speech' || event.error === 'aborted') return;
-      luisterenActiefRef.current = false;
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setOpnemen(true);
+    } catch {
+      // Microfoontoegang geweigerd of niet beschikbaar — stilletjes negeren,
+      // net als bij de vorige (Web Speech API-)implementatie.
       setOpnemen(false);
-    };
-    herkenning.onend = () => {
-      if (!luisterenActiefRef.current) {
-        setOpnemen(false);
-        return;
+    }
+  }, [ondersteund]);
+
+  const stopOpnemen = useCallback(() => {
+    const recorder = recorderRef.current;
+    if (!recorder) return;
+
+    recorder.onstop = async () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      setOpnemen(false);
+
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+      chunksRef.current = [];
+      if (blob.size === 0) return;
+
+      setVerwerken(true);
+      try {
+        const audio = await blobNaarFloat32(blob);
+        const tekst = await transcribeer(audio);
+        if (tekst) {
+          onWaarde(waarde ? `${waarde} ${tekst}` : tekst);
+        }
+      } catch (err) {
+        console.error('Transcriptie mislukt', err);
+      } finally {
+        setVerwerken(false);
       }
-      // Chrome sluit een continue sessie soms zelf af na een korte stilte —
-      // naadloos herstarten zodat een langere dictatie niet stilzwijgend afbreekt.
-      basisTekstRef.current = huidigeTekstRef.current ? `${huidigeTekstRef.current} ` : '';
-      const nieuw = maakHerkenning();
-      herkenningRef.current = nieuw;
-      nieuw.start();
     };
+    recorder.stop();
+  }, [waarde, onWaarde]);
 
-    return herkenning;
-  }
-
-  function startOpnemen() {
-    if (!haalSpeechRecognition()) return;
-
-    basisTekstRef.current = waarde ? `${waarde} ` : '';
-    huidigeTekstRef.current = waarde || '';
-    luisterenActiefRef.current = true;
-
-    const herkenning = maakHerkenning();
-    herkenningRef.current = herkenning;
-    herkenning.start();
-    setOpnemen(true);
-  }
-
-  function stopOpnemen() {
-    luisterenActiefRef.current = false;
-    herkenningRef.current?.stop();
-    setOpnemen(false);
-  }
-
-  return { ondersteund, opnemen, startOpnemen, stopOpnemen };
+  return { ondersteund, opnemen, verwerken, laadVoortgang, startOpnemen, stopOpnemen };
 }

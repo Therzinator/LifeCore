@@ -21,6 +21,11 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly',
+        Worker: 'readonly',
+        MediaRecorder: 'readonly',
+        OfflineAudioContext: 'readonly',
       },
     },
     plugins: {
@@ -37,5 +42,12 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
     settings: { react: { version: 'detect' } },
+  },
+  {
+    // Web Worker-context: geen window/document, wel self als globale scope.
+    files: ['**/*Worker.js'],
+    languageOptions: {
+      globals: { self: 'readonly' },
+    },
   },
 ];
