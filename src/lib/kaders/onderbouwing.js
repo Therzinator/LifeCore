@@ -68,6 +68,17 @@ const ONDERBOUWING = {
       'afname van de REQ — een persoonlijk hulpmiddel, geen gevalideerd meetinstrument.',
     bron: 'Sonnentag & Fritz (2007), The Recovery Experience Questionnaire.',
   },
+  mindfulnessSessies: {
+    titel: 'Waarom begeleide mindfulness-sessies werken',
+    tekst:
+      'Voor mindfulness als geheel is het bewijs voor stress- en burn-outreductie sterk — sterker dan ' +
+      'voor de meeste andere onderdelen van deze app. Het effect wordt meestal pas merkbaar na ongeveer ' +
+      'acht weken consistente praktijk, en blijft daarna nog tot drie maanden aanwezig, ook als je ' +
+      'minder oefent. Dat maakt consistentie (een paar keer per week, ook kort) belangrijker dan de ' +
+      'duur van een enkele sessie — vandaar dat er hier bewust ook korte sessies van 2 tot 5 minuten ' +
+      'zijn, naast langere van 10 tot 15 minuten.',
+    bron: 'Meta-analyses van mindfulness-based interventies (o.a. MBSR/MBCT) bij stress- en burn-outklachten; effectbehoud tot 3 maanden na afloop van het programma.',
+  },
   ademMeditatie: {
     titel: 'Waarom ademmeditatie werkt',
     tekst:

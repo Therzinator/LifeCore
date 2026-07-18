@@ -1,0 +1,29 @@
+.mfp-tabs {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  margin-bottom: var(--space-md);
+  padding-bottom: 2px;
+}
+
+.mfp-tab {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: var(--tx);
+  white-space: nowrap;
+}
+.mfp-tab:hover { color: var(--txt); }
+.mfp-tab.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}

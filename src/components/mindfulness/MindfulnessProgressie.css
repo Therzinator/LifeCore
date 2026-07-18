@@ -1,0 +1,4 @@
+.mp-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.mp-bar { flex: 1; min-width: 0; border-radius: 3px 3px 0 0; background: var(--accent-mid); }
+.mp-chart-labels { display: flex; gap: 4px; margin-top: 5px; }
+.mp-chart-lbl { flex: 1; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-faint); text-align: center; overflow: hidden; white-space: nowrap; }

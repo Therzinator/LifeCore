@@ -1,54 +1,33 @@
 import { useState } from 'react';
-import AdemMeditatie from './AdemMeditatie.jsx';
-import GroundingOefening from './GroundingOefening.jsx';
-import SpierontspanningOefening from './SpierontspanningOefening.jsx';
-import UrgeSurfing from './UrgeSurfing.jsx';
+import { useAuth } from '../../hooks/useAuth.js';
+import { useMindfulnessSessies } from '../../hooks/useMindfulnessSessies.js';
+import { useMindfulnessGebruik } from '../../hooks/useMindfulnessGebruik.js';
+import MindfulnessOefeningen from './MindfulnessOefeningen.jsx';
+import SessieBrowser from './SessieBrowser.jsx';
+import SessieSpeler from './SessieSpeler.jsx';
+import MindfulnessProgressie from './MindfulnessProgressie.jsx';
+import './MindfulnessPagina.css';
 
-const SESSIES = [
-  { id: 'meditatie', titel: 'Ademmeditatie', omschrijving: 'Rustig ademen, op je eigen tempo.' },
-  { id: 'urge', titel: 'Urge surfing', omschrijving: 'Bij een drang — laat hem opkomen en zakken.' },
-  { id: 'grounding', titel: '5-4-3-2-1 Grounding', omschrijving: 'Voor piekeren of overweldiging.' },
-  { id: 'pmr', titel: 'Spierontspanning', omschrijving: 'Voor fysieke spanning in je lichaam.' },
+const TABS = [
+  { id: 'oefeningen', label: 'Oefeningen' },
+  { id: 'sessies', label: 'Sessies' },
+  { id: 'progressie', label: 'Progressie' },
 ];
 
 export default function MindfulnessPagina({ toonToast }) {
-  const [actief, setActief] = useState(null);
+  const auth = useAuth();
+  const { themas, sessies, laden: sessiesLaden } = useMindfulnessSessies();
+  const { laden: gebruikLaden, voegToe, stats } = useMindfulnessGebruik(auth.user?.id);
+  const [tab, setTab] = useState('oefeningen');
+  const [actieveSessie, setActieveSessie] = useState(null);
 
-  if (actief === 'meditatie') {
+  const ingelogd = Boolean(auth.user?.id);
+
+  if (actieveSessie) {
     return (
       <div className="of-wrap">
         <div className="card">
-          <AdemMeditatie onKlaar={() => setActief(null)} />
-        </div>
-      </div>
-    );
-  }
-
-  if (actief === 'urge') {
-    return (
-      <div className="of-wrap">
-        <div className="card">
-          <UrgeSurfing toonToast={toonToast} onKlaar={() => setActief(null)} />
-        </div>
-      </div>
-    );
-  }
-
-  if (actief === 'grounding') {
-    return (
-      <div className="of-wrap">
-        <div className="card">
-          <GroundingOefening toonToast={toonToast} onKlaar={() => setActief(null)} />
-        </div>
-      </div>
-    );
-  }
-
-  if (actief === 'pmr') {
-    return (
-      <div className="of-wrap">
-        <div className="card">
-          <SpierontspanningOefening onKlaar={() => setActief(null)} />
+          <SessieSpeler sessie={actieveSessie} onTerug={() => setActieveSessie(null)} voegGebruikToe={voegToe} />
         </div>
       </div>
     );
@@ -56,13 +35,27 @@ export default function MindfulnessPagina({ toonToast }) {
 
   return (
     <div className="of-wrap">
-      {SESSIES.map((s) => (
-        <div className="card" key={s.id}>
-          <div className="wp-titel">{s.titel}</div>
-          <div className="wp-laatst">{s.omschrijving}</div>
-          <button className="btn btn-p btn-full" onClick={() => setActief(s.id)}>Starten</button>
-        </div>
-      ))}
+      <div className="mfp-tabs">
+        {TABS.map((t) => (
+          <button key={t.id} className={`mfp-tab ${tab === t.id ? 'on' : ''}`} onClick={() => setTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="card">
+        {tab === 'oefeningen' && <MindfulnessOefeningen toonToast={toonToast} />}
+        {tab === 'sessies' && (
+          <SessieBrowser
+            themas={themas}
+            sessies={sessies}
+            laden={sessiesLaden}
+            ingelogd={ingelogd}
+            onKies={setActieveSessie}
+          />
+        )}
+        {tab === 'progressie' && <MindfulnessProgressie stats={stats} laden={gebruikLaden} ingelogd={ingelogd} />}
+      </div>
     </div>
   );
 }

@@ -1,0 +1,38 @@
+.ss-speler { text-align: center; }
+
+.ss-tijd-rij {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  margin-bottom: var(--space-xs);
+}
+
+.ss-seek {
+  width: 100%;
+  accent-color: var(--accent);
+  margin-bottom: var(--space-md);
+}
+
+.ss-play-btn {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-txt);
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-md);
+  transition: var(--tx);
+}
+.ss-play-btn:hover { filter: brightness(1.08); }
+
+.ss-voortgang-track { height: 4px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+.ss-voortgang-fill { height: 100%; background: var(--accent); transition: width .2s linear; }
+
+.ss-sleeptimer-rij { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+.ss-sleeptimer-lbl { font-size: var(--font-size-xs); color: var(--txt-faint); margin-top: var(--space-sm); }
