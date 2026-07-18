@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { EXTRA } from '../../lib/training/schema.js';
-import { SPANNING_OEFENINGEN } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import { SPANNING_OEFENINGEN, extraOefeningMetAfbeelding } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import OefeningPopup from '../ui/OefeningPopup.jsx';
+import Modal from '../ui/Modal.jsx';
+import OefeningDetail from '../ui/OefeningDetail.jsx';
 import './TrainingExtra.css';
 
 const GROEPEN = {
@@ -9,13 +11,20 @@ const GROEPEN = {
   B: [['B-push', 'Schouders & triceps (push)'], ['B-pull', 'Posterieure keten (pull)']],
 };
 
+const ALLE_EXTRA = Object.values(EXTRA).flat();
+
 export default function TrainingExtra({ extraOefeningen }) {
   const [tab, setTab] = useState('A');
+  const [detailId, setDetailId] = useState(null);
+
+  const detailOefening = detailId
+    ? extraOefeningMetAfbeelding(ALLE_EXTRA.find((e) => e.id === detailId))
+    : null;
 
   return (
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Extra oefeningen</div>
-      <p className="of-stap-tekst">Thuisuitvoerbaar — dumbbells of barbell, geen gymtoestellen vereist.</p>
+      <p className="of-stap-tekst">Thuisuitvoerbaar — dumbbells of barbell, geen gymtoestellen vereist. Tik op een naam voor uitleg en een afbeelding.</p>
 
       <div className="te-tabs">
         <button className={`te-tab ${tab === 'A' ? 'on' : ''}`} onClick={() => setTab('A')}>Training A</button>
@@ -27,10 +36,10 @@ export default function TrainingExtra({ extraOefeningen }) {
           <div className="td-label">{titel}</div>
           {EXTRA[key].map((e) => (
             <div className="te-item" key={e.id}>
-              <div>
+              <button type="button" className="te-info" onClick={() => setDetailId(e.id)}>
                 <div className="te-naam">{e.naam}</div>
                 <div className="te-spier">{e.spier} · <span className="te-equip">{e.equip}</span></div>
-              </div>
+              </button>
               <label className="te-switch">
                 <input
                   type="checkbox"
@@ -54,6 +63,12 @@ export default function TrainingExtra({ extraOefeningen }) {
           <OefeningPopup key={oef.id} oefening={oef} />
         ))}
       </div>
+
+      {detailOefening && (
+        <Modal titel={detailOefening.naam} onClose={() => setDetailId(null)}>
+          <OefeningDetail oefening={detailOefening} />
+        </Modal>
+      )}
     </div>
   );
 }

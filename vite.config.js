@@ -36,21 +36,7 @@ export default defineConfig({
       injectRegister: false,
       workbox: {
         clientsClaim: true,
-        // De WASM-runtime van onnxruntime-web (Whisper-inference) is ~23MB —
-        // die moet niet standaard bij installatie geprecached worden (zou de
-        // eerste app-install onnodig zwaar maken voor wie nooit spraakinvoer
-        // gebruikt). In plaats daarvan cachen we 'm lazily via runtimeCaching
-        // zodra iemand de mic daadwerkelijk voor het eerst gebruikt.
-        globIgnores: ['**/whisperWorker-*.js', '**/*.wasm'],
         runtimeCaching: [
-          {
-            urlPattern: ({ url }) => url.pathname.endsWith('.wasm') || url.pathname.includes('whisperWorker'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'lifecore-whisper-runtime',
-              expiration: { maxEntries: 10, maxAgeSeconds: 180 * 24 * 60 * 60 },
-            },
-          },
           {
             // Oefening-afbeeldingen (Free Exercise DB) — na de eerste keer
             // bekijken ook offline beschikbaar, i.p.v. elke keer opnieuw op te

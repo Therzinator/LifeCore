@@ -5,6 +5,7 @@ const STANDAARD = {
   hiitWerkSec: 30,
   hiitRustSec: 30,
   hiitRondes: 8,
+  geluidFragment: 'tweetonen',
 };
 
 function standaardRecord() {

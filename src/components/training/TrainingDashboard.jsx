@@ -1,4 +1,4 @@
-import { liftcoreBibliotheekLijst } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import { volledigeBibliotheekLijst } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { detecteerStagnatie } from '../../lib/training/stagnatie.js';
 import { formatGewicht, eenheidLabel } from '../../lib/training/eenheden.js';
 import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
@@ -45,7 +45,7 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
         </div>
       )}
 
-      <OefeningenBibliotheek oefeningen={liftcoreBibliotheekLijst()} titel="StrongLifts-basis — bibliotheek" />
+      <OefeningenBibliotheek oefeningen={volledigeBibliotheekLijst()} titel="StrongLifts-basis — bibliotheek" />
 
       <div className="card td-volgende">
         <div className="td-label">Volgende training</div>

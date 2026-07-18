@@ -5,12 +5,58 @@
 // (langere, Engelstalige) FED-instructies, om aan te sluiten bij de rest
 // van de stijl van de app (kort, direct).
 
-import { SCHEMA } from '../training/schema.js';
+import { OEFENINGEN_BIBLIOTHEEK } from '../training/schema.js';
+import { vindFedAfbeelding } from './fedMatcher.js';
 
 const FED_BASIS = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
 
 function fedAfbeelding(fedId) {
   return `${FED_BASIS}/${fedId}/0.jpg`;
+}
+
+// Handmatig gecontroleerde fedId's voor de bibliotheek-alternatieven en
+// accessoire-oefeningen — geverifieerd tegen de Free Exercise DB-index i.p.v.
+// blind op de automatische fuzzy-match (fedMatcher.js) te vertrouwen. Die
+// fuzzy-match is de fallback voor oefeningen die HIER niet in staan (met
+// name eigen/custom oefeningen die de gebruiker zelf toevoegt).
+const BIBLIOTHEEK_OVERRIDES = {
+  'front-squat': 'Front_Barbell_Squat',
+  'goblet-squat': 'Goblet_Squat',
+  'incline-bench': 'Smith_Machine_Incline_Bench_Press',
+  'close-grip-bench': 'Close-Grip_Barbell_Bench_Press',
+  // Pendlay Row heeft geen eigen entry in de FED — de dead-stop-variant van
+  // de gewone barbell row, dus hergebruik van diezelfde afbeelding.
+  'pendlay-row': 'Bent_Over_Barbell_Row',
+  'push-press': 'Push_Press',
+  'romanian-deadlift': 'Romanian_Deadlift',
+  'sumo-deadlift': 'Sumo_Deadlift',
+};
+
+const EXTRA_OVERRIDES = {
+  'floor-press': 'Dumbbell_Floor_Press',
+  'chest-flye': 'Dumbbell_Flyes',
+  'closegrip-fp': 'Close-Grip_Dumbbell_Press',
+  // Diamond Push-ups staat niet in de FED — geen afbeelding, fedMatcher
+  // vindt hier ook niets betrouwbaars voor.
+  'chin-ups': 'Chin-Up',
+  'inv-row': 'Inverted_Row',
+  'db-row': 'One-Arm_Dumbbell_Row',
+  'rear-delt': 'Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench',
+  'bicep-curl': 'Barbell_Curl',
+  'lat-raise': 'Side_Lateral_Raise',
+  'front-raise': 'Front_Dumbbell_Raise',
+  'arnold-press': 'Arnold_Dumbbell_Press',
+  'skull-crusher': 'Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head',
+  rdl: 'Romanian_Deadlift',
+  'good-morning': 'Good_Morning',
+  shrugs: 'Barbell_Shrug',
+  superman: 'Superman',
+};
+
+function afbeeldingVoorOefening(id, naam, overrides) {
+  const fedId = overrides[id];
+  if (fedId) return fedAfbeelding(fedId);
+  return vindFedAfbeelding(naam);
 }
 
 // StrongLifts 5×5-basisoefeningen — koppelt aan de id's uit lib/training/schema.js.
@@ -144,24 +190,36 @@ export function spanningOefeningKernSet() {
   return SPANNING_OEFENINGEN.filter((o) => o.kern);
 }
 
-// Combineert de StrongLifts-basisoefeningen (naam uit schema.js) met de
-// FED-afbeelding/uitleg hierboven, in de vorm die OefeningenBibliotheek
-// verwacht — voor de bibliotheek-knop in LiftCore.
-export function liftcoreBibliotheekLijst() {
-  const uniek = new Map();
-  [...SCHEMA.A, ...SCHEMA.B].forEach((oef) => {
-    if (uniek.has(oef.id)) return;
-    const metadata = LIFTCORE_OEFENINGEN[oef.id];
-    if (!metadata) return;
-    uniek.set(oef.id, {
-      id: oef.id,
-      naam: oef.naam,
-      categorie: 'basis',
-      kort: metadata.kort,
-      uitleg: metadata.uitleg,
-      afbeelding: metadata.afbeelding,
-      equipment: null,
-    });
-  });
-  return Array.from(uniek.values());
+// Eén gedeelde vorm-opbouw voor elke oefening die niet tot de 5 kern-lifts
+// behoort (LIFTCORE_OEFENINGEN heeft daarvoor al een rijke, handgeschreven
+// Nederlandse uitleg — die wordt hier hergebruikt als hij bestaat). Voor de
+// rest wordt een korte, eerlijke samenvatting opgebouwd uit spier/equip
+// (die al Nederlands zijn in schema.js) i.p.v. te doen alsof er evenveel
+// diepgang is als bij de kern-lifts.
+function metAfbeelding(oef, overrides) {
+  const curatie = LIFTCORE_OEFENINGEN[oef.id];
+  if (curatie) {
+    return { id: oef.id, naam: oef.naam, kort: curatie.kort, uitleg: curatie.uitleg, afbeelding: curatie.afbeelding, equipment: null };
+  }
+  return {
+    id: oef.id,
+    naam: oef.naam,
+    kort: `Traint: ${oef.spier}`,
+    uitleg: `Hoofdspiergroep: ${oef.spier}${oef.equip ? ` · Materiaal: ${oef.equip}` : ''}. Zie de afbeelding voor de uitvoering.`,
+    afbeelding: afbeeldingVoorOefening(oef.id, oef.naam, overrides),
+    equipment: oef.equip ?? null,
+  };
+}
+
+// Alle bibliotheek-alternatieven (13, inclusief de 5 kern-lifts) — voor de
+// bibliotheek-knop in LiftCore. Was voorheen beperkt tot de 5 kern-lifts.
+export function volledigeBibliotheekLijst() {
+  return OEFENINGEN_BIBLIOTHEEK.map((oef) => ({ ...metAfbeelding(oef, BIBLIOTHEEK_OVERRIDES), categorie: oef.categorie }));
+}
+
+// Eén EXTRA-accessoire-oefening (uit lib/training/schema.js) verrijkt met
+// afbeelding/kort/uitleg, in de vorm die OefeningPopup/OefeningDetail
+// verwachten — gebruikt door TrainingExtra.jsx om per item een popup te tonen.
+export function extraOefeningMetAfbeelding(oef) {
+  return metAfbeelding(oef, EXTRA_OVERRIDES);
 }

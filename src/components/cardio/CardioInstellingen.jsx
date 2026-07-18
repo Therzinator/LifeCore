@@ -1,3 +1,5 @@
+import GeluidKiezer from '../ui/GeluidKiezer.jsx';
+
 export default function CardioInstellingen({ instellingen, bewaar }) {
   function veld(key, parse = (v) => v) {
     return (e) => bewaar({ [key]: parse(e.target.value) });
@@ -37,6 +39,11 @@ export default function CardioInstellingen({ instellingen, bewaar }) {
           {instellingen.hiitRustSec}s rust × {instellingen.hiitRondes} rondes duurt de sessie in totaal ongeveer{' '}
           {Math.round(10 + (instellingen.hiitWerkSec * instellingen.hiitRondes + instellingen.hiitRustSec * (instellingen.hiitRondes - 1)) / 60)} min.
         </p>
+        <GeluidKiezer
+          label="Geluid bij faseovergang"
+          waarde={instellingen.geluidFragment}
+          onWaarde={(v) => bewaar({ geluidFragment: v })}
+        />
       </div>
     </div>
   );

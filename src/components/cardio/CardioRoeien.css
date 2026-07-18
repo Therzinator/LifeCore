@@ -24,6 +24,12 @@
   border-bottom: 1px solid var(--border);
 }
 .cro-stap:last-child { border-bottom: none; }
+.cro-stap.actief { background: var(--accent-dim); border-radius: var(--r-sm); padding-left: var(--space-sm); padding-right: var(--space-sm); }
+
+.cro-timer { text-align: center; }
+.cro-timer-fase { font-size: var(--font-size-base); font-weight: 600; color: var(--accent); margin-top: 4px; }
+.cro-timer-tijd { font-family: var(--font-mono); font-size: var(--font-size-2xl); font-weight: 700; margin: var(--space-xs) 0; }
+.cro-timer-lbl { font-size: var(--font-size-xs); color: var(--txt-muted); }
 
 .cro-nr {
   width: 24px; height: 24px;
