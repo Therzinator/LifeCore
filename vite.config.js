@@ -1,8 +1,26 @@
+import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Build-identifier voor de versie-weergave onder het instellingen-tandwiel.
+// package.json's versienummer wordt in dit project nooit bijgewerkt, dus
+// daar kun je niet aan zien of een nieuwe deploy live staat — de commit-
+// hash verandert wél bij elke deploy. VERCEL_GIT_COMMIT_SHA is beschikbaar
+// tijdens elke Vercel-build; lokaal valt dit terug op git zelf.
+function haalBuildVersie() {
+  if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return 'dev';
+  }
+}
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(haalBuildVersie()),
+  },
   plugins: [
     react(),
     VitePWA({

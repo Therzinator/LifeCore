@@ -36,9 +36,12 @@ export default function AppHeader({ auth, onInstellingen }) {
             <IconAccount className="app-instellingen-icoon" />
           </button>
         )}
-        <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
-          <IconInstellingen className="app-instellingen-icoon" />
-        </button>
+        <div className="app-instellingen-groep">
+          <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
+            <IconInstellingen className="app-instellingen-icoon" />
+          </button>
+          <span className="app-versie">v{__APP_VERSION__}</span>
+        </div>
       </div>
       {toonAccount && <AccountModal auth={auth} onClose={() => setToonAccount(false)} />}
     </header>

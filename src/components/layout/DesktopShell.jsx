@@ -48,9 +48,12 @@ export default function DesktopShell({ pagina, setPagina, auth, onInstellingen, 
               <IconAccount className="ds-instellingen-icoon" />
             </button>
           )}
-          <button className="ds-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
-            <IconInstellingen className="ds-instellingen-icoon" />
-          </button>
+          <div className="ds-instellingen-groep">
+            <button className="ds-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
+              <IconInstellingen className="ds-instellingen-icoon" />
+            </button>
+            <span className="ds-versie">v{__APP_VERSION__}</span>
+          </div>
         </div>
       </header>
 

@@ -26,6 +26,7 @@ export default [
         Worker: 'readonly',
         MediaRecorder: 'readonly',
         OfflineAudioContext: 'readonly',
+        __APP_VERSION__: 'readonly',
       },
     },
     plugins: {
@@ -48,6 +49,13 @@ export default [
     files: ['**/*Worker.js'],
     languageOptions: {
       globals: { self: 'readonly' },
+    },
+  },
+  {
+    // Draait in Node (build-time), niet in de browser.
+    files: ['vite.config.js'],
+    languageOptions: {
+      globals: { process: 'readonly' },
     },
   },
 ];

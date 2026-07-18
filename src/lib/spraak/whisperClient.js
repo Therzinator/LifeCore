@@ -27,9 +27,17 @@ export function transcribeer(audioData) {
         voortgangListeners.forEach((fn) => fn(payload));
         return;
       }
-      w.removeEventListener('message', opBericht);
-      if (type === 'resultaat') resolve(payload.tekst);
-      else reject(new Error(payload?.bericht ?? 'Transcriptie mislukt'));
+      if (type === 'resultaat') {
+        w.removeEventListener('message', opBericht);
+        resolve(payload.tekst);
+        return;
+      }
+      if (type === 'fout') {
+        w.removeEventListener('message', opBericht);
+        reject(new Error(payload?.bericht ?? 'Transcriptie mislukt'));
+        return;
+      }
+      // Onbekend berichttype (bv. 'device') — negeren, niet de belofte beslechten.
     }
 
     w.addEventListener('message', opBericht);
