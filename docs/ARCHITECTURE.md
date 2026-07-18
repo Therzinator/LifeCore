@@ -11,7 +11,7 @@ document beschrijft hoe die patronen concreet zijn toegepast in dít project.
 |---|---|
 | `components/ochtend/` | Ochtendflow: check-in, brain dump, dagfocus, ademhaling, afronden |
 | `components/act/` | ACT: waardenverheldering, dagelijkse waarde, defusie-oefening |
-| `components/welzijn/` | Vragenlijst-check (MBI/REQ), resultaat + trend |
+| `components/welzijn/` | Tweewekelijkse burn-out/herstel-check (CBI/REQ, gecombineerd), trendgrafieken + actieve signalering |
 | `components/mindfulness/` | Ademmeditatie, grounding, spierontspanning (PMR) |
 | `components/training/` | Trainingsschema, sessie, geschiedenis, schijven-weergave |
 | `components/auth/` | Inlogscherm |

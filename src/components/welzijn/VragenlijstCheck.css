@@ -2,6 +2,15 @@
   font-style: italic;
 }
 
+.vc-sectie-titel {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+.vc-sectie-titel:first-of-type { border-top: none; padding-top: 0; }
+
 .vc-subschaal {
   margin-top: var(--space-lg);
 }

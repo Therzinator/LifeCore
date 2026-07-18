@@ -49,24 +49,22 @@ const ONDERBOUWING = {
       'verminderen, zonder dat je hoeft te vechten tegen de gedachte zelf.',
     bron: 'Masuda et al. (2004); Hayes et al. (2006) meta-analyse over ACT-processen.',
   },
-  mbiGS: {
-    titel: 'Waarom deze vragen (burn-out)',
+  welzijnCheck: {
+    titel: 'Waarom deze vragen (burn-out & herstel)',
     tekst:
-      'Deze check is geïnspireerd op de Maslach Burnout Inventory – General Survey (MBI-GS), die ' +
-      'burn-out beschrijft langs drie dimensies: uitputting, cynisme/distantie en (verminderde) ' +
-      'effectiviteit. Dit is geen medisch instrument en geen letterlijke afname van de MBI-GS — ' +
-      'de vragen zijn eigen bewoordingen langs dezelfde dimensies, bedoeld als persoonlijk ' +
-      'hulpmiddel om patronen bij jezelf op te merken, niet om te diagnosticeren.',
-    bron: 'Maslach & Jackson (1981); Schaufeli et al. (1996), Maslach Burnout Inventory – General Survey.',
-  },
-  reqHerstel: {
-    titel: 'Waarom deze vragen (herstel)',
-    tekst:
-      'Deze check is geïnspireerd op Sonnentag & Fritz\' Recovery Experience Questionnaire (REQ), ' +
-      'dat herstel van vermoeidheid beschrijft langs vier dimensies: onthechting, ontspanning, ' +
-      'mastery en controle. Dit zijn eigen bewoordingen langs dezelfde dimensies, geen letterlijke ' +
-      'afname van de REQ — een persoonlijk hulpmiddel, geen gevalideerd meetinstrument.',
-    bron: 'Sonnentag & Fritz (2007), The Recovery Experience Questionnaire.',
+      'Deze check combineert twee kaders in één meting. Burn-out wordt gemeten via de Copenhagen ' +
+      'Burnout Inventory (CBI) — persoonlijke en werkgerelateerde uitputting; de cliëntgerelateerde ' +
+      'schaal uit de CBI is weggelaten omdat die niet van toepassing is zonder cliëntcontact. ' +
+      'Herstel wordt gemeten via Sonnentag & Fritz\' Recovery Experience Questionnaire (REQ) — ' +
+      'onthechting, ontspanning, mastery en controle. Dit zijn eigen bewoordingen langs dezelfde ' +
+      'dimensies, geen letterlijke afname van CBI of REQ — een persoonlijk hulpmiddel om patronen ' +
+      'bij jezelf op te merken, geen diagnostisch instrument. De check is bewust tweewekelijks: ' +
+      'burn-out en herstel veranderen niet van dag tot dag, en een vaste tussenperiode maakt de ' +
+      'trend over tijd betekenisvoller dan losse momentopnames. De ochtendroutine dekt de ' +
+      'dagelijkse "hoe voel ik me al" al.',
+    bron:
+      'Kristensen, Borritz, Villadsen & Christensen (2005), The Copenhagen Burnout Inventory; ' +
+      'Sonnentag & Fritz (2007), The Recovery Experience Questionnaire.',
   },
   mindfulnessSessies: {
     titel: 'Waarom begeleide mindfulness-sessies werken',
