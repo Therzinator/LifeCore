@@ -1,9 +1,11 @@
 const SCHIJVEN = [20, 10, 5, 2.5, 1.25];
-const STANG_RECHT = 20;
-const STANG_CURL = 10;
+const STANG_RECHT_STD = 20;
+const STANG_CURL_STD = 10;
 
-export function berekenSchijven(totaalGewicht, stangType = 'recht') {
-  const stangGewicht = stangType === 'curl' ? STANG_CURL : STANG_RECHT;
+export function berekenSchijven(totaalGewicht, stangType = 'recht', instStangen = {}) {
+  const stangGewicht = stangType === 'curl'
+    ? (instStangen.stangCurl ?? STANG_CURL_STD)
+    : (instStangen.stangRecht ?? STANG_RECHT_STD);
   let perKant = (totaalGewicht - stangGewicht) / 2;
 
   const schijven = [];

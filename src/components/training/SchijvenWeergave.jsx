@@ -1,8 +1,8 @@
 import { berekenSchijven } from '../../lib/training/schijven.js';
 import './SchijvenWeergave.css';
 
-export default function SchijvenWeergave({ totaalGewicht, stangType }) {
-  const { ok, stangGewicht, schijven } = berekenSchijven(totaalGewicht, stangType);
+export default function SchijvenWeergave({ totaalGewicht, stangType, instStangen }) {
+  const { ok, stangGewicht, schijven } = berekenSchijven(totaalGewicht, stangType, instStangen);
 
   if (!ok) {
     return <div className="sw-waarschuwing">⚠ Dit gewicht is niet exact te maken met deze schijven.</div>;

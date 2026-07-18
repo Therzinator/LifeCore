@@ -56,6 +56,30 @@ export function IconTraining(props) {
   );
 }
 
+export function IconCardio(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <circle cx="16.5" cy="5" r="2" fill="currentColor" />
+      <path
+        d="M4 20l3.5-5 3-2.5 2 2.5 4-6M9 8l2.5 1.5-2 3.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconAdhd(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function IconSnelkeuze(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" {...props}>
@@ -81,4 +105,6 @@ export const MODULE_ICONEN = {
   welzijn: IconWelzijn,
   mindfulness: IconMindfulness,
   training: IconTraining,
+  cardio: IconCardio,
+  adhd: IconAdhd,
 };

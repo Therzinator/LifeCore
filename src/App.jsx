@@ -10,6 +10,8 @@ import WaardenPagina from './components/act/WaardenPagina.jsx';
 import WelzijnPagina from './components/welzijn/WelzijnPagina.jsx';
 import MindfulnessPagina from './components/mindfulness/MindfulnessPagina.jsx';
 import TrainingPagina from './components/training/TrainingPagina.jsx';
+import CardioPagina from './components/cardio/CardioPagina.jsx';
+import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
@@ -22,7 +24,9 @@ function renderModule(paginaId, toonToast) {
     case 'waarden': return <WaardenPagina />;
     case 'welzijn': return <WelzijnPagina />;
     case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
-    case 'training': return <TrainingPagina />;
+    case 'training': return <TrainingPagina toonToast={toonToast} />;
+    case 'cardio': return <CardioPagina toonToast={toonToast} />;
+    case 'adhd': return <AdhdPagina toonToast={toonToast} />;
     default: return null;
   }
 }
@@ -61,7 +65,7 @@ export default function App() {
     <>
       <AppHeader auth={auth} />
       <ErrorBoundary key={pagina}>
-        <main>
+        <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
           {renderModule(pagina, toonToast)}
         </main>

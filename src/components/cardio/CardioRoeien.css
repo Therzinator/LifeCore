@@ -1,0 +1,52 @@
+.cro-niveaus { display: flex; gap: var(--space-xs); margin-bottom: var(--space-md); flex-wrap: wrap; }
+.cro-niveau {
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: var(--tx);
+}
+.cro-niveau:hover { background: var(--bg-3); }
+.cro-niveau.on { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); font-weight: 600; }
+
+.cro-titel { font-size: var(--font-size-lg); font-weight: 700; margin-bottom: 4px; }
+.cro-omschrijving { font-size: var(--font-size-sm); color: var(--txt-muted); margin-bottom: var(--space-md); }
+
+.cro-stappen { display: flex; flex-direction: column; }
+.cro-stap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.cro-stap:last-child { border-bottom: none; }
+
+.cro-nr {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-mid);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+}
+
+.cro-inhoud { flex: 1; }
+.cro-fase-rij { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 2px; }
+.cro-fase { font-size: var(--font-size-sm); font-weight: 600; }
+.cro-duur {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-mid);
+  padding: 1px 7px;
+  border-radius: var(--r-sm);
+}
+.cro-uitleg { font-size: var(--font-size-sm); color: var(--txt-muted); line-height: 1.55; }

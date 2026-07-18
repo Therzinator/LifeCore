@@ -1,0 +1,32 @@
+.cg-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.cg-bar { flex: 1; min-width: 0; border-radius: 3px 3px 0 0; background: var(--accent-mid); }
+.cg-chart-labels { display: flex; gap: 4px; margin-top: 5px; }
+.cg-chart-lbl { flex: 1; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-faint); text-align: center; overflow: hidden; white-space: nowrap; }
+
+.cg-omgeving-bar {
+  display: flex;
+  height: 24px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+.cg-omgeving-deel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--accent-txt);
+}
+.cg-omgeving-deel.natuur { background: var(--accent); }
+.cg-omgeving-deel.stad { background: var(--txt-faint); }
+.cg-omgeving-deel.onbekend { background: var(--border-2); color: var(--txt-muted); }
+
+.cg-omgeving-legenda { display: flex; gap: var(--space-md); font-size: var(--font-size-sm); color: var(--txt-muted); }
+.cg-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.cg-dot.natuur { background: var(--accent); }
+.cg-dot.stad { background: var(--txt-faint); }
+
+.cg-advies-rij { font-size: var(--font-size-sm); color: var(--txt-muted); line-height: 1.6; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.cg-advies-rij:last-child { border-bottom: none; }
+.cg-advies-rij strong { color: var(--txt); }

@@ -16,6 +16,10 @@ body {
 
 #root { min-height: 100vh; }
 
+.app-main {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
 button, input, textarea { font-family: inherit; }
 
 .sr-only {
@@ -47,6 +51,8 @@ button, input, textarea { font-family: inherit; }
 .btn-g:hover:not(:disabled) { background: var(--bg-2); border-color: var(--accent-mid); }
 .btn-text     { background: none; color: var(--txt-muted); padding: 8px 10px; font-size: var(--font-size-sm); font-weight: 500; }
 .btn-text:hover:not(:disabled) { color: var(--txt); }
+.btn-danger   { background: var(--danger-dim); border: 1px solid var(--danger); color: var(--danger); }
+.btn-danger:hover:not(:disabled) { background: var(--danger); color: var(--accent-txt); }
 .btn-sm       { padding: 8px 12px; font-size: var(--font-size-sm); }
 
 /* ── Gedeelde card ──────────────────────────────────────────── */
@@ -58,3 +64,15 @@ button, input, textarea { font-family: inherit; }
   margin-bottom: var(--space-lg);
   box-shadow: var(--shadow-sm);
 }
+
+/* ── Gedeelde metric-tile ───────────────────────────────────── */
+.metric {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm);
+}
+.ml { font-size: var(--font-size-xs); color: var(--txt-faint); letter-spacing: .04em; margin-bottom: 4px; }
+.mv { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 700; line-height: 1.2; }
+.mu { font-size: var(--font-size-sm); color: var(--txt-muted); }
+.ms { font-size: var(--font-size-xs); color: var(--txt-faint); margin-top: 3px; }

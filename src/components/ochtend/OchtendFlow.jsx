@@ -4,6 +4,7 @@ import Voortgangsbalk from '../ui/Voortgangsbalk.jsx';
 import StapWelkom from './StapWelkom.jsx';
 import StapCheckin from './StapCheckin.jsx';
 import StapAdemhaling from './StapAdemhaling.jsx';
+import StapActivering from './StapActivering.jsx';
 import StapBrainDump from './StapBrainDump.jsx';
 import StapDagfocus from './StapDagfocus.jsx';
 import StapAfronden from './StapAfronden.jsx';
@@ -22,6 +23,7 @@ export default function OchtendFlow({ toonToast }) {
       {stapNaam === 'welkom' && <StapWelkom {...gedeeld} />}
       {stapNaam === 'checkin' && <StapCheckin {...gedeeld} />}
       {stapNaam === 'ademhaling' && <StapAdemhaling {...gedeeld} />}
+      {stapNaam === 'activering' && <StapActivering {...gedeeld} />}
       {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} />}
       {stapNaam === 'dagfocus' && <StapDagfocus {...gedeeld} />}
       {stapNaam === 'afronden' && <StapAfronden {...gedeeld} />}

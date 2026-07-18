@@ -23,5 +23,24 @@ export function useTrainingProfiel() {
     });
   }, []);
 
-  return { profiel, kiesProfiel, setGewicht };
+  // Herbereken alle startgewichten vanuit een profiel + een gelijke aanpassing (kg) erbovenop —
+  // gebruikt door het persoonsprofielscherm om in één keer alle lifts te herijken.
+  const stelGewichtenIn = useCallback((profielNaam, delta = 0) => {
+    const basis = PROFIELEN[profielNaam];
+    const gewichten = {};
+    Object.entries(basis).forEach(([id, gewicht]) => {
+      gewichten[id] = Math.max(1.25, Math.round((gewicht + delta) * 100) / 100);
+    });
+    const bijgewerkt = nieuwRecord({ profielNaam, gewichten });
+    schrijfLokaal('training_profiel', bijgewerkt);
+    setProfielState(bijgewerkt);
+  }, []);
+
+  const wisProfiel = useCallback(() => {
+    const leeg = leegProfiel();
+    schrijfLokaal('training_profiel', leeg);
+    setProfielState(leeg);
+  }, []);
+
+  return { profiel, kiesProfiel, setGewicht, stelGewichtenIn, wisProfiel };
 }

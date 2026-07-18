@@ -1,0 +1,42 @@
+.us-voortgang-track {
+  height: 4px;
+  background: var(--bg-3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: var(--space-lg);
+}
+.us-voortgang-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width .4s ease;
+}
+
+.us-kop {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.us-instructie {
+  font-size: var(--font-size-lg);
+  line-height: 1.65;
+  margin-bottom: var(--space-md);
+}
+
+.us-detail {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+  line-height: 1.7;
+  background: var(--bg-2);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+
+.us-klaar { text-align: center; padding: var(--space-lg) 0; }
+.us-klaar-icoon { font-size: var(--font-size-2xl); margin-bottom: var(--space-sm); }
+.us-klaar-titel { font-size: var(--font-size-xl); font-weight: 700; color: var(--accent); margin-bottom: var(--space-sm); }

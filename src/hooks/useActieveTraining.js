@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 
 function legeTraining() {
-  return nieuwRecord({ letter: null, oefeningen: null });
+  return nieuwRecord({ letter: null, oefeningen: null, extras: null, wuRoei: false, wuMob: false });
 }
 
 export function useActieveTraining() {
@@ -16,12 +16,20 @@ export function useActieveTraining() {
     });
   }, []);
 
-  const startTraining = useCallback((letter, oefeningen) => {
-    bewaar({ letter, oefeningen });
+  const startTraining = useCallback((letter, oefeningen, extras) => {
+    bewaar({ letter, datum: new Date().toISOString(), oefeningen, extras, wuRoei: false, wuMob: false });
   }, [bewaar]);
 
   const setOefeningen = useCallback((oefeningen) => {
     bewaar({ oefeningen });
+  }, [bewaar]);
+
+  const setExtras = useCallback((extras) => {
+    bewaar({ extras });
+  }, [bewaar]);
+
+  const setWarmup = useCallback((patch) => {
+    bewaar(patch);
   }, [bewaar]);
 
   const wisTraining = useCallback(() => {
@@ -30,5 +38,5 @@ export function useActieveTraining() {
     setTrainingState(leeg);
   }, []);
 
-  return { training, startTraining, setOefeningen, wisTraining };
+  return { training, startTraining, setOefeningen, setExtras, setWarmup, wisTraining };
 }

@@ -1,0 +1,16 @@
+.aft-duur-rij { display: flex; gap: var(--space-xs); margin-bottom: var(--space-md); }
+.aft-duur {
+  flex: 1;
+  padding: var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: var(--tx);
+}
+.aft-duur:hover { background: var(--bg-3); }
+.aft-duur.on { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); font-weight: 600; }
+
+.aft-ring-wrap { display: flex; flex-direction: column; align-items: center; padding: var(--space-lg) 0; }

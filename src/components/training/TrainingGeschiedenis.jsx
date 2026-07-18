@@ -1,6 +1,6 @@
 import './TrainingGeschiedenis.css';
 
-export default function TrainingGeschiedenis({ sessies, onTerug }) {
+export default function TrainingGeschiedenis({ sessies }) {
   const omgekeerd = [...sessies].reverse();
 
   return (
@@ -11,18 +11,21 @@ export default function TrainingGeschiedenis({ sessies, onTerug }) {
         {omgekeerd.map((sessie, i) => (
           <div className="tg-item" key={i}>
             <div className="tg-datum">
-              {new Date(sessie.datum).toLocaleDateString('nl-NL')} — Training {sessie.letter}
+              {new Date(sessie.datum).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })} — Training {sessie.letter}
             </div>
             <div className="tg-oefeningen">
               {sessie.oefeningen
                 .map((o) => `${o.naam} ${o.gewicht}kg (${o.setsGedaan}/${o.setsTotaal})`)
                 .join(' · ')}
             </div>
+            {sessie.extraOefeningen?.length > 0 && (
+              <div className="tg-extra">
+                {sessie.extraOefeningen.map((e) => `${e.naam} ${e.gewicht}kg (${e.sets} sets)`).join(' · ')}
+              </div>
+            )}
+            <div className="tg-volume">Volume: {(sessie.volume || 0).toLocaleString('nl-NL')} kg</div>
           </div>
         ))}
-      </div>
-      <div className="of-acties">
-        <button className="btn btn-text" onClick={onTerug}>Terug</button>
       </div>
     </div>
   );

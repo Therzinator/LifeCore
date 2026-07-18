@@ -16,8 +16,14 @@ export function useTrainingGeschiedenis() {
     });
   }, []);
 
+  const wis = useCallback(() => {
+    const leeg = leegGeschiedenis();
+    schrijfLokaal('training_geschiedenis', leeg);
+    setGeschiedenis(leeg);
+  }, []);
+
   const sessies = geschiedenis.sessies ?? [];
   const laatste = sessies.length ? sessies[sessies.length - 1] : null;
 
-  return { sessies, laatste, voegToe };
+  return { sessies, laatste, voegToe, wis };
 }

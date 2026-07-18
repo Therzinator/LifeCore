@@ -17,6 +17,8 @@ const MODULES = [
   { id: 'welzijn', label: 'Welzijn' },
   { id: 'mindfulness', label: 'Mindfulness' },
   { id: 'training', label: 'Training' },
+  { id: 'cardio', label: 'Cardio' },
+  { id: 'adhd', label: 'Focus' },
 ];
 
 export default function DesktopShell({ pagina, setPagina, auth, children }) {

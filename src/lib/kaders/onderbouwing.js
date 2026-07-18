@@ -9,6 +9,17 @@ const ONDERBOUWING = {
       'sneller kalmerend effect dan gelijkverdeelde patronen zoals box breathing.',
     bron: 'Zaccaro et al. (2018), Frontiers in Human Neuroscience — effecten van langzame ademhaling op het autonome zenuwstelsel.',
   },
+  ochtendActivering: {
+    titel: 'Waarom ochtendactivering (rek, plank, push-ups)',
+    tekst:
+      'Het bewijs voor ochtendrek specifiek is zwak en grotendeels anekdotisch — er zijn geen ' +
+      'sterke gecontroleerde trials die stressreductie aantonen. Zie dit onderdeel daarom niet als ' +
+      'een bewezen interventie, maar als een laagdrempelige manier om je lichaam wakker te maken: ' +
+      'rek verbetert kortdurend de mobiliteit, en een korte krachtprikkel zoals plank of push-ups ' +
+      'kan energie geven zonder dat je naar de sportschool hoeft. Sla gerust over wat niet past bij ' +
+      'je energieniveau vandaag.',
+    bron: 'Bewust voorzichtige framing — geen sterk RCT-bewijs specifiek voor deze combinatie, in tegenstelling tot bijvoorbeeld de ademhalingsoefening.',
+  },
   brainDump: {
     titel: 'Waarom een brain dump werkt',
     tekst:
@@ -66,6 +77,17 @@ const ONDERBOUWING = {
       'gedachten, stressgevoelens en piekeren kan verminderen — vooral bij regelmatige oefening.',
     bron: 'Zeidan et al. (2010); Kabat-Zinn, Mindfulness-Based Stress Reduction (MBSR).',
   },
+  urgeSurfing: {
+    titel: 'Waarom urge surfing werkt',
+    tekst:
+      'Een drang voelt vaak als iets dat je meteen moet opvolgen of moet bevechten — beide houden ' +
+      'de aandacht erop gericht en kunnen hem sterker laten voelen. Urge surfing benadert een drang ' +
+      'als een golf: hij komt op, bereikt een piek en zakt vanzelf weer, meestal binnen 5 tot 20 ' +
+      'minuten, ongeacht wat je doet. Door de drang alleen waar te nemen — in je lichaam, zonder ' +
+      'oordeel — in plaats van ertegen te vechten, is er vaak niets anders nodig dan wachten tot hij ' +
+      'zakt.',
+    bron: 'Marlatt & Gordon (1985), Relapse Prevention; Bowen, Chawla & Marlatt (2010) over mindfulness-based relapse prevention.',
+  },
   grounding54321: {
     titel: 'Waarom 5-4-3-2-1 grounding werkt',
     tekst:
@@ -83,6 +105,35 @@ const ONDERBOUWING = {
       'meteen probeert te "ontspannen". Onderzoek laat consistent een verlagend effect zien op ' +
       'zowel spierspanning als ervaren angst.',
     bron: 'Jacobson (1938), Progressive Relaxation; Manzoni et al. (2008) meta-analyse.',
+  },
+  adhdCoaching: {
+    titel: 'Waarom energie-gebaseerde taakplanning',
+    tekst:
+      'Onderzoek naar ADHD/ADD-coaching is positief maar nog zwak onderbouwd — kleine studies, geen ' +
+      'sterke gerandomiseerde trials. Zie deze module daarom als een ondersteunend hulpmiddel, niet ' +
+      'als een bewezen behandeling. Wat wel goed onderbouwd is: coaching werkt het best in combinatie ' +
+      'met therapie of andere interventies, niet als vervanging daarvan. Het idee achter de daglimiet ' +
+      'is simpel: je energieniveau bepaalt realistisch hoeveel je aankunt — minder taken bij weinig ' +
+      'energie is geen falen, maar aanpassen aan wat er is.',
+    bron: 'Zwak-positieve evidentie voor ADHD-coaching (kleine studies); combinatie-effect met therapie is het best onderbouwde element.',
+  },
+  hardlopen: {
+    titel: 'Waarom hardlopen (en bewegen in het algemeen) werkt',
+    tekst:
+      'Gestructureerd hardlopen, twee tot drie keer per week, laat in onderzoek een effect op ' +
+      'depressie en angstklachten zien dat vergelijkbaar is met dat van antidepressiva — naast de ' +
+      'bekende fysieke gezondheidswinst. Het effect hangt vooral samen met consistentie: hoe vaak je ' +
+      'beweegt, telt zwaarder mee dan hoe hard of hoe ver. Elke sessie telt, ook een korte.',
+    bron: 'Schuch et al. (2016), American Journal of Psychiatry — meta-analyse lichaamsbeweging bij depressie.',
+  },
+  natuurWandelen: {
+    titel: 'Waarom de omgeving verschil maakt',
+    tekst:
+      'Wandelen of lopen in een groene omgeving geeft een grotere daling van het stresshormoon ' +
+      'cortisol dan een vergelijkbare wandeling in een stedelijke omgeving — bij dezelfde inspanning ' +
+      'en duur. Door natuur/stad bij te houden wordt dit patroon voor jezelf zichtbaar, zonder dat ' +
+      'het een verplichting wordt: beide tellen, natuur geeft alleen net iets meer herstel.',
+    bron: 'Bratman et al. (2015), PNAS; Beute & de Kort (2018) — natuurblootstelling en stressherstel.',
   },
 };
 

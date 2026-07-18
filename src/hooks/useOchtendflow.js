@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-export const STAPPEN = ['welkom', 'checkin', 'ademhaling', 'brainDump', 'dagfocus', 'afronden'];
+export const STAPPEN = ['welkom', 'checkin', 'ademhaling', 'activering', 'brainDump', 'dagfocus', 'afronden'];
 
 export function useOchtendflow() {
   const [stapIndex, setStapIndex] = useState(0);

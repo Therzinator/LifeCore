@@ -7,6 +7,8 @@ const TEGELS = [
   { id: 'welzijn', titel: 'Welzijn', subtitel: 'Burn-out check en herstelcheck' },
   { id: 'mindfulness', titel: 'Mindfulness', subtitel: 'Adem, grounding en ontspanning' },
   { id: 'training', titel: 'Training', subtitel: 'Volg en start je trainingssessies' },
+  { id: 'cardio', titel: 'Cardio', subtitel: 'Hardlopen, wandelen en roeien loggen' },
+  { id: 'adhd', titel: 'Focus', subtitel: 'Taken, focus-timer en dag afsluiten' },
 ];
 
 export default function SnelkeuzeScherm({ onKies }) {

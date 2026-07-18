@@ -22,3 +22,15 @@
   font-size: var(--font-size-sm);
   color: var(--txt-muted);
 }
+
+.tg-extra {
+  font-size: var(--font-size-xs);
+  color: var(--warn);
+  margin-top: 2px;
+}
+
+.tg-volume {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  margin-top: 4px;
+}

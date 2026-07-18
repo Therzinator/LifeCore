@@ -1,0 +1,13 @@
+.tp-huidig-rij { display: flex; align-items: baseline; gap: var(--space-sm); margin-bottom: 4px; }
+.tp-huidig { font-family: var(--font-mono); font-size: var(--font-size-2xl); font-weight: 700; }
+.tp-huidig-lbl { font-size: var(--font-size-sm); color: var(--txt-muted); }
+
+.tp-stijg { font-size: var(--font-size-sm); color: var(--txt-muted); margin-bottom: var(--space-md); }
+
+.tp-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.tp-bar { flex: 1; min-width: 0; border-radius: 3px 3px 0 0; background: var(--accent-mid); }
+.tp-bar.pr { background: var(--accent); }
+.tp-chart-labels { display: flex; gap: 4px; margin-top: 5px; }
+.tp-chart-lbl { flex: 1; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-faint); text-align: center; overflow: hidden; white-space: nowrap; }
+
+.tp-epley-hint { font-size: var(--font-size-xs); color: var(--txt-faint); margin-top: var(--space-sm); }

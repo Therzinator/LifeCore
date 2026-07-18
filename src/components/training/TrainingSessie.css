@@ -1,3 +1,89 @@
+.ts-kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.ts-voortgang-track {
+  height: 4px;
+  background: var(--bg-3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.ts-voortgang-fill { height: 100%; background: var(--accent); transition: width .4s ease; }
+.ts-voortgang-lbl {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  text-align: right;
+  margin-bottom: var(--space-md);
+}
+
+/* ── Warming-up ─────────────────────────────────────────── */
+.ts-warmup {
+  background: var(--warn-dim);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.ts-warmup-titel {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--warn);
+  margin-bottom: var(--space-xs);
+}
+.ts-warmup-stap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  text-align: left;
+  padding: var(--space-xs) 0;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--txt);
+}
+.ts-warmup-stap:first-of-type { border-top: none; }
+.ts-warmup-stap.gedaan { opacity: .55; }
+.ts-warmup-detail { font-size: var(--font-size-xs); color: var(--txt-muted); }
+.ts-warmup-check {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--warn);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+}
+.ts-warmup-stap.gedaan .ts-warmup-check { background: var(--warn); color: var(--accent-txt); }
+
+/* ── Hele training ± ──────────────────────────────────────── */
+.ts-hele-training {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+.ts-hele-training-lbl {
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.ts-hele-training-stap { font-size: var(--font-size-xs); color: var(--txt-muted); }
+
+/* ── Oefening ─────────────────────────────────────────────── */
 .ts-oefening {
   margin-bottom: var(--space-lg);
   padding-bottom: var(--space-lg);
@@ -5,9 +91,7 @@
 }
 .ts-oefening:last-of-type { border-bottom: none; }
 
-.ts-oefening-kop {
-  margin-bottom: var(--space-sm);
-}
+.ts-oefening-kop { margin-bottom: var(--space-sm); }
 
 .ts-oefening-naam {
   font-size: var(--font-size-lg);
@@ -26,29 +110,18 @@
   border-radius: 999px;
 }
 
-.ts-oefening-spier {
+.ts-oefening-sub {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
   font-size: var(--font-size-sm);
   color: var(--txt-muted);
 }
 
-.ts-gewicht-kies {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  margin: var(--space-sm) 0;
-}
+.ts-extra-equip { color: var(--warn); font-size: var(--font-size-xs); }
 
-.ts-gewicht-waarde {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  min-width: 90px;
-  text-align: center;
-}
-
-.ts-opbouw {
-  margin-bottom: var(--space-sm);
-}
-
+/* ── Opbouwsets ───────────────────────────────────────────── */
+.ts-opbouw { margin: var(--space-sm) 0; }
 .ts-opbouw-lbl {
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -57,33 +130,82 @@
   color: var(--txt-faint);
   margin-bottom: 4px;
 }
-
 .ts-opbouw-set {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  text-align: left;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  border-top: 1px dashed var(--border);
+  cursor: pointer;
   font-size: var(--font-size-sm);
+  color: var(--txt);
+  font-family: inherit;
+}
+.ts-opbouw-set:first-of-type { border-top: none; }
+.ts-opbouw-set.gedaan { opacity: .5; text-decoration: line-through; }
+.ts-opbouw-label { font-size: var(--font-size-xs); color: var(--warn); width: 70px; flex-shrink: 0; }
+.ts-opbouw-check { margin-left: auto; }
+
+/* ── Alle sets ± ──────────────────────────────────────────── */
+.ts-alle-sets {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  font-size: var(--font-size-xs);
   color: var(--txt-muted);
 }
 
-.ts-sets {
+/* ── Werksets ─────────────────────────────────────────────── */
+.ts-sets-tbl { display: flex; flex-direction: column; gap: var(--space-xs); }
+.ts-set-rij {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
-  margin-top: var(--space-sm);
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  transition: var(--tx);
 }
-
-.ts-set-check {
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--r-sm);
+.ts-set-rij.gedaan { opacity: .5; }
+.ts-set-nr { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--txt-muted); width: 16px; }
+.ts-set-ctrl { display: flex; align-items: center; gap: 4px; }
+.ts-set-waarde { font-family: var(--font-mono); font-size: var(--font-size-sm); min-width: 56px; text-align: center; }
+.ts-mini-btn {
+  width: 24px; height: 24px;
+  border-radius: 6px;
   border: 1px solid var(--border-2);
   background: var(--bg-2);
   color: var(--txt);
-  font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: var(--tx);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  flex-shrink: 0;
 }
-.ts-set-check:hover { background: var(--bg-3); }
-.ts-set-check.gedaan {
-  background: var(--accent-dim);
-  border-color: var(--accent-mid);
-  color: var(--accent);
+.ts-mini-btn:hover { background: var(--bg-3); }
+.ts-set-check {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: transparent;
+  cursor: pointer;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.ts-set-check.gedaan { background: var(--accent); border-color: var(--accent); color: var(--accent-txt); font-weight: 700; }
+
+/* ── Extra oefeningen ─────────────────────────────────────── */
+.ts-extra-sectie { margin-top: var(--space-md); }
+.ts-extra-titel {
+  font-size: var(--font-size-xs);
   font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--warn);
+  margin-bottom: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border);
 }
+.ts-oefening-extra { border-left: 3px solid var(--warn); padding-left: var(--space-sm); }
