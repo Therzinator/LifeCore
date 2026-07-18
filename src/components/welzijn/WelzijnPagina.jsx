@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useVragenlijstGeschiedenis } from '../../hooks/useVragenlijstGeschiedenis.js';
 import { useWelzijnInstellingen } from '../../hooks/useWelzijnInstellingen.js';
+import { useKruisSignalen } from '../../hooks/useKruisSignalen.js';
 import {
   WELZIJN_SUBSCHALEN, berekenScores, volgendeCheckDatum, checkIsVerschuldigd,
 } from '../../lib/welzijn/vragenset.js';
@@ -23,6 +24,8 @@ function afgerond(waarde) {
 export default function WelzijnPagina() {
   const geschiedenis = useVragenlijstGeschiedenis('welzijn_check');
   const { instellingen, bewaar: bewaarInstellingen } = useWelzijnInstellingen();
+  const { signalen: kruisSignalen } = useKruisSignalen({ welzijnVroegCheck: instellingen.toonVroegeCheckSuggestie });
+  const werkSuggestie = kruisSignalen.find((s) => s.doel === 'welzijn');
   const [scherm, setScherm] = useState('overzicht');
 
   const afnames = geschiedenis.afnames;
@@ -71,6 +74,7 @@ export default function WelzijnPagina() {
       {signalen.map((signaal) => (
         <div className="ad-banner warn" key={signaal.id}>{signaal.tekst}</div>
       ))}
+      {werkSuggestie && <div className="ad-banner">{werkSuggestie.tekst}</div>}
 
       <div className="card">
         <div className="wp-titel">{afnames.length ? 'Volgende check' : 'Eerste check'}</div>

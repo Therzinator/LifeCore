@@ -45,6 +45,25 @@ export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, t
       </div>
 
       <div className="card">
+        <div className="td-label">Kruismodule-koppeling</div>
+        <div className="ti-rij">
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.pasDaglimietAanBijUitputting ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ pasDaglimietAanBijUitputting: true })}
+          >Aan</button>
+          <button
+            type="button"
+            className={`btn btn-sm ${!instellingen.pasDaglimietAanBijUitputting ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ pasDaglimietAanBijUitputting: false })}
+          >Uit</button>
+        </div>
+        <p className="ains-hint">Pas daglimiet aan bij aanhoudende uitputting (Welzijn-check) — telt als lage energie, ook als je ochtend-check-in iets anders zegt.</p>
+      </div>
+
+      <div className="card">
         <div className="td-label">Geluid</div>
         <GeluidKiezer
           label="Geluid bij einde focusblok"

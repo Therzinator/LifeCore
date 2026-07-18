@@ -8,7 +8,7 @@ import OefeningPopup from '../ui/OefeningPopup.jsx';
 import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './StapActivering.css';
 
-export default function StapActivering({ dagdata, volgende, vorige, overslaan, geluidFragment }) {
+export default function StapActivering({ dagdata, volgende, vorige, overslaan, geluidFragment, trainingsherinnering }) {
   const [rekGedaan, setRekGedaan] = useState(() => new Set());
   const [plankDoel, setPlankDoel] = useState(30);
   const [plankGedaan, setPlankGedaan] = useState(false);
@@ -45,6 +45,7 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
       </div>
 
       {hint && <div className="sa-hint">{hint}</div>}
+      {trainingsherinnering && <div className="sa-hint">{trainingsherinnering}</div>}
 
       <div className="card">
         <div className="sa-kop">

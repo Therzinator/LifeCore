@@ -1,9 +1,33 @@
 # LifeCore — Kruismodule-signalenlaag
 
-Ontwerpdocument, geschreven vóórafgaand aan de bouw van Module 3 (Welzijn:
-burn-out/herstel-check), op expliciet verzoek: LifeCore's overkoepelende
-doel is structuur en reïntegratie, en de modules moeten daarvoor met elkaar
-in verbinding staan — niet naast elkaar bestaan als losse eilanden.
+**Status: geïmplementeerd.** Oorspronkelijk geschreven als ontwerpdocument
+vóórafgaand aan de bouw van Module 3 (Welzijn: burn-out/herstel-check), op
+expliciet verzoek: LifeCore's overkoepelende doel is structuur en
+reïntegratie, en de modules moeten daarvoor met elkaar in verbinding staan
+— niet naast elkaar bestaan als losse eilanden. Bouw is bewust uitgesteld
+tot na Module 3, 4 en 5 ("eerst de losse modules, dan heroverwegen"); na
+afronding van Module 5 is dit voorstel opnieuw bekeken en alsnog gebouwd
+zoals hieronder beschreven.
+
+## Implementatie — waar het staat
+
+- `src/lib/signalen/kruisverbanden.js` — koppeling 2-5 als pure functies.
+- `src/hooks/useKruisSignalen.js` — dunne hook, leest de bron-geschiedenissen
+  (Welzijn-afnames, Training-geschiedenis, Werk-taken) en geeft per aanroep
+  alleen de koppeling(en) terug waarvoor de aanroeper een actieve toggle
+  doorgeeft.
+- **Koppeling 1 (Welzijn → Mindfulness) is een uitzondering**: die is al vóór
+  dit bestand gebouwd, in Module 5, met een instelbaar *impactpercentage*
+  in plaats van de simpele aan/uit die dit document oorspronkelijk voorstelde
+  — expliciet zo gevraagd ("niet alleen aan/uit, maar hoe sterk"). Die
+  implementatie staat apart in `src/lib/welzijn/mindfulnessSignaal.js` en is
+  bewust niet verplaatst naar `kruisverbanden.js`, om de al geteste, werkende
+  versie niet te hoeven aanraken.
+- Elke koppeling-toggle leeft in de instellingen van de **doel**-module (zie
+  tabel hieronder), precies zoals in de sectie "Guilt-free" beschreven —
+  behalve koppeling 1, waarvan de instelling (bewust, op verzoek) in Welzijn's
+  eigen instellingen staat omdat het om een percentage gaat dat de bron
+  bepaalt, niet een simpele doel-toggle.
 
 ## Het probleem
 
@@ -107,8 +131,16 @@ geen losse "kruisverbanden-instellingen"-pagina die niemand vindt.
 
 ## Vervolg
 
-Module 3 (Welzijn) implementeert zelf Signaal A en B (zie apart ontwerp).
-Zodra dat er is, is koppeling 1-3 hierboven triviaal: `useKruisSignalen()`
-roept simpelweg `useVragenlijstGeschiedenis('welzijn_check').afnames` aan en
-geeft het resultaat van Module 3's eigen `bepaalSignalen()` door. Koppeling
-4 en 5 kunnen na Module 3 in een aparte, kleine vervolgstap.
+Alle vijf koppelingen zijn gebouwd. Overzicht van waar elke toggle staat:
+
+| # | Toggle-naam | Instellingen van |
+|---|-------------|-------------------|
+| 1 | Impactpercentage (0-100%) | Welzijn (bron-module, bewuste uitzondering) |
+| 2 | "Toon suggesties vanuit de welzijnscheck" | Waarden |
+| 3 | "Pas daglimiet aan bij aanhoudende uitputting" | Focus |
+| 4 | "Toon trainingsherinnering in ochtendroutine" | Ochtend |
+| 5 | "Toon vroege-check-suggestie" | Welzijn |
+
+Alle vijf staan standaard **aan** (behalve koppeling 1's percentage, dat op
+een gematigde 50% start). Uitzetten kost één tik in de instellingen van de
+module waar je de suggestie tegenkomt — geen aparte "kruisverbanden"-pagina.

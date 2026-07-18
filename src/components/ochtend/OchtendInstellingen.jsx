@@ -62,6 +62,25 @@ export default function OchtendInstellingen({ instellingen, bewaar }) {
       </div>
 
       <div className="card">
+        <div className="td-label">Kruismodule-koppeling</div>
+        <div className="ti-rij">
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.toonTrainingsherinnering ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ toonTrainingsherinnering: true })}
+          >Aan</button>
+          <button
+            type="button"
+            className={`btn btn-sm ${!instellingen.toonTrainingsherinnering ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ toonTrainingsherinnering: false })}
+          >Uit</button>
+        </div>
+        <p className="ti-hint">Toon trainingsherinnering in ochtendroutine — bij de activering-stap, als het 3+ weken geleden is sinds je laatste training.</p>
+      </div>
+
+      <div className="card">
         <div className="td-label">Geluid</div>
         <GeluidKiezer
           label="Geluid bij einde plank-timer"

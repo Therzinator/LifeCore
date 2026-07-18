@@ -2,22 +2,20 @@ import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 
 const STANDAARD = {
-  cadansDagen: 14,
-  mindfulnessImpactPct: 50,
-  toonVroegeCheckSuggestie: true,
+  toonWelzijnSuggesties: true,
 };
 
 function standaardRecord() {
   return nieuwRecord({ ...STANDAARD });
 }
 
-export function useWelzijnInstellingen() {
-  const [instellingen, setInstellingenState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('welzijn_instellingen', {}) }));
+export function useWaardenInstellingen() {
+  const [instellingen, setInstellingenState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('waarden_instellingen', {}) }));
 
   const bewaar = useCallback((patch) => {
     setInstellingenState((huidig) => {
       const bijgewerkt = nieuwRecord({ ...huidig, ...patch });
-      schrijfLokaal('welzijn_instellingen', bijgewerkt);
+      schrijfLokaal('waarden_instellingen', bijgewerkt);
       return bijgewerkt;
     });
   }, []);

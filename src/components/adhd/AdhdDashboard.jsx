@@ -12,13 +12,13 @@ const MIDDAG_OPTIES = [
   { id: 'hoog', label: 'Nog steeds goed' },
 ];
 
-export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus }) {
+export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, focusMoetVerlagen = false }) {
   const dagdata = useDagdata();
   const [nieuweTaak, setNieuweTaak] = useState('');
   const [toonUitleg, setToonUitleg] = useState(null);
 
   const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
-  const effectieveEnergie = adhdDag.dag.middagEnergie === 'laag' ? 'laag' : ochtendEnergie;
+  const effectieveEnergie = (adhdDag.dag.middagEnergie === 'laag' || focusMoetVerlagen) ? 'laag' : ochtendEnergie;
   const limiet = dagLimiet(effectieveEnergie, instellingen.werkurenPerDag);
   const openTaken = adhdDag.dag.taken.filter((t) => !t.klaar).length;
   const takenPct = Math.min(100, Math.round((openTaken / limiet.taken) * 100));
@@ -61,6 +61,9 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus }) {
           </span>
         </div>
         {!ochtendEnergie && <p className="ad-hint">Vul je energie in bij de ochtend-check-in voor een passende daglimiet.</p>}
+        {focusMoetVerlagen && (
+          <p className="ad-hint">Je burn-out/herstel-check wees op aanhoudende uitputting — de daglimiet staat daarom op laag.</p>
+        )}
 
         <div className="ad-limiet-track"><div className="ad-limiet-fill" style={{ width: `${takenPct}%` }} /></div>
         <div className="ad-limiet-lbl">{openTaken}/{limiet.taken} taken · focusblok {limiet.blok} min</div>

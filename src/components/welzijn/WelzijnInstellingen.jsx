@@ -31,6 +31,25 @@ export default function WelzijnInstellingen({ instellingen, bewaar }) {
           0% zet de koppeling volledig uit.
         </p>
       </div>
+
+      <div className="card">
+        <div className="td-label">Koppeling vanuit Werk</div>
+        <div className="ti-rij">
+          <button
+            type="button"
+            className={`btn btn-sm ${instellingen.toonVroegeCheckSuggestie ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ toonVroegeCheckSuggestie: true })}
+          >Aan</button>
+          <button
+            type="button"
+            className={`btn btn-sm ${!instellingen.toonVroegeCheckSuggestie ? 'btn-p' : 'btn-g'}`}
+            style={{ flex: 1 }}
+            onClick={() => bewaar({ toonVroegeCheckSuggestie: false })}
+          >Uit</button>
+        </div>
+        <p className="ti-hint">Toon vroege-check-suggestie — als deze week ongebruikelijk veel werktaken zijn afgerond, mag je de check ook eerder doen dan gepland.</p>
+      </div>
     </div>
   );
 }

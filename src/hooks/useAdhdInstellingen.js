@@ -6,6 +6,7 @@ const STANDAARD = {
   eindtijd: '17:00',
   werkurenPerDag: 8,
   geluidFragment: 'tweetonen',
+  pasDaglimietAanBijUitputting: true,
 };
 
 function standaardRecord() {

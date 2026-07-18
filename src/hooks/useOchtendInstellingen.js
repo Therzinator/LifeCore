@@ -18,6 +18,7 @@ const STANDAARD = {
   starttijd: '07:00',
   stappenVolgorde: [...STAPPEN_CONFIGUREERBAAR],
   stappenAan: { checkin: true, ademhaling: true, activering: true, brainDump: true, dagfocus: true },
+  toonTrainingsherinnering: true,
 };
 
 function standaardRecord() {

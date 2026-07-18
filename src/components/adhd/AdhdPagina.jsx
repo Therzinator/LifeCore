@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAdhdDag } from '../../hooks/useAdhdDag.js';
 import { useKlusboek } from '../../hooks/useKlusboek.js';
 import { useAdhdInstellingen } from '../../hooks/useAdhdInstellingen.js';
+import { useKruisSignalen } from '../../hooks/useKruisSignalen.js';
 import AdhdDashboard from './AdhdDashboard.jsx';
 import AdhdKlusboek from './AdhdKlusboek.jsx';
 import AdhdFocusTimer from './AdhdFocusTimer.jsx';
@@ -21,6 +22,7 @@ export default function AdhdPagina({ toonToast }) {
   const adhdDag = useAdhdDag();
   const klusboek = useKlusboek();
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useAdhdInstellingen();
+  const { focusMoetVerlagen } = useKruisSignalen({ focus: instellingen.pasDaglimietAanBijUitputting });
   const [tab, setTab] = useState('dashboard');
   const [focusContext, setFocusContext] = useState({ taakTekst: null, blokAdvies: null });
 
@@ -52,7 +54,9 @@ export default function AdhdPagina({ toonToast }) {
       </div>
 
       <div className="card">
-        {tab === 'dashboard' && <AdhdDashboard adhdDag={adhdDag} instellingen={instellingen} onStartFocus={startFocus} />}
+        {tab === 'dashboard' && (
+          <AdhdDashboard adhdDag={adhdDag} instellingen={instellingen} onStartFocus={startFocus} focusMoetVerlagen={focusMoetVerlagen} />
+        )}
         {tab === 'klusboek' && <AdhdKlusboek klusboek={klusboek} adhdDag={adhdDag} toonToast={toonToast} />}
         {tab === 'focus' && (
           <AdhdFocusTimer
