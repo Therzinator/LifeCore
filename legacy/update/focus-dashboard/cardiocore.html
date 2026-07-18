@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CardioCore</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0B;--bg-2:#111113;--bg-3:#18181C;--bg-4:#1E1E24;--bg-5:#25252D;
+  --border:rgba(255,255,255,.07);--border-2:rgba(255,255,255,.12);--border-3:rgba(255,255,255,.2);
+  --acc:#7b6ef6;--acc-glow:rgba(123,110,246,.15);
+  --run:#47E8FF;--run-dim:rgba(71,232,255,.1);--run-b:rgba(71,232,255,.25);
+  --lift:#C8FF47;--lift-dim:rgba(200,255,71,.1);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,.12);--green-b:rgba(62,207,142,.25);
+  --amber:#f0a347;--amber-dim:rgba(240,163,71,.12);--amber-b:rgba(240,163,71,.25);
+  --red:#f04747;--red-dim:rgba(240,71,71,.12);--red-b:rgba(240,71,71,.25);
+  --txt:#F0F0F4;--muted:rgba(255,255,255,.38);--faint:rgba(255,255,255,.14);
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+  --r:8px;--rl:14px;--rx:20px;--tx:all .15s cubic-bezier(.4,0,.2,1);
+  --topbar-h:58px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,11,.92);backdrop-filter:blur(16px);z-index:50;height:var(--topbar-h);gap:10px}
+.brand{font-family:var(--head);font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;padding-top:.12em;overflow:visible;flex-shrink:0;color:var(--run)}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em}
+.nav-chip:hover{border-color:var(--border-2);color:var(--txt)}
+.nav-chip.cur{border-color:rgba(71,232,255,.35);color:var(--run);background:var(--run-dim)}
+.wrap{max-width:640px;margin:0 auto;padding:24px 20px 80px}
+.ph{margin-bottom:20px}
+.ph-over{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.ph-title{font-family:var(--head);font-size:28px;font-weight:700;letter-spacing:-.02em;padding-top:.12em;overflow:visible;line-height:1.2;color:var(--run)}
+.ph-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
+.card-run{border-left:3px solid var(--run)}
+.clabel{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.clabel::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--body);font-size:13px;font-weight:500;padding:10px 18px;transition:var(--tx);white-space:nowrap;text-decoration:none}
+.btn-run{background:var(--run);color:#000;width:100%}.btn-run:hover{background:#6aefff;transform:translateY(-1px)}
+.btn-g{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}.btn-g:hover{background:var(--bg-4)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.f-grp{margin-bottom:12px}
+.f-lbl{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+.f-input{background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:14px;padding:10px 13px;outline:none;transition:var(--tx);width:100%}
+.f-input:focus{border-color:rgba(71,232,255,.45);box-shadow:0 0 0 3px var(--run-dim)}
+select.f-input{cursor:pointer}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:14px}
+.metric{background:var(--bg-3);border-radius:var(--r);padding:12px 14px;border:1px solid var(--border)}
+.m-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.m-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--txt)}
+.m-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sessie-rij{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.sessie-rij:last-child{border:none}
+.sess-type{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--run-dim);border:1px solid var(--run-b)}
+.sess-info{flex:1}
+.sess-datum{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.sess-type-lbl{font-size:13px;font-weight:500;margin:2px 0}
+.sess-stats{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.badge-rij{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.badge{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.badge-run{background:var(--run-dim);border:1px solid var(--run-b);color:var(--run)}
+.badge-row{background:var(--lift-dim);border:1px solid rgba(200,255,71,.25);color:var(--lift)}
+.badge-pr{background:rgba(62,207,142,.12);border:1px solid var(--green-b);color:var(--green)}
+.grafiek-wrap{height:120px;position:relative;margin:14px 0}
+canvas{width:100%!important}
+.progr-ring{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.progr-info{flex:1}
+.progr-lbl{font-size:12px;color:var(--muted);margin-bottom:4px}
+.progr-bar-wrap{background:var(--bg-3);border-radius:4px;height:6px;overflow:hidden}
+.progr-bar{background:var(--run);height:6px;border-radius:4px;transition:width .6s ease}
+.advies-blok{background:var(--run-dim);border:1px solid var(--run-b);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+.advies-blok strong{color:var(--run)}
+.roei-oef{display:flex;flex-direction:column;gap:8px}
+.roei-stap{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.roei-stap:last-child{border:none}
+.roei-nr{width:24px;height:24px;border-radius:50%;background:var(--run-dim);border:1px solid var(--run-b);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--run);flex-shrink:0;margin-top:1px}
+.toast-c{position:fixed;top:68px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}
+.toast.wn{background:var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)}
+.tabs{display:flex;gap:0;background:var(--bg-3);border-radius:var(--r);padding:3px;margin-bottom:16px}
+.tab-btn{flex:1;padding:7px;text-align:center;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-radius:6px;transition:var(--tx);border:none;background:none}
+.tab-btn.on{background:var(--bg-2);color:var(--txt)}
+@media(max-width:480px){.topbar-nav{display:none}.wrap{padding:16px 12px 80px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🏃 CardioCore</div>
+  <nav class="topbar-nav">
+    <a href="index.html"    class="nav-chip">Dashboard</a>
+    <a href="liftcore.html" class="nav-chip">LiftCore</a>
+    <a href="cardiocore.html" class="nav-chip cur">CardioCore</a>
+    <a href="resetcore.html" class="nav-chip">ResetCore</a>
+    <a href="workcore.html" class="nav-chip">WorkCore</a>
+  <button onclick="exporteerData()" style="font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:var(--tx);margin-left:4px" title="Exporteer data als JSON" onmouseover="this.style.borderColor='var(--border-2)';this.style.color='var(--txt)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↓ export</button>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="ph">
+    <div class="ph-over">Cardio</div>
+    <div class="ph-title">CardioCore</div>
+    <div class="ph-sub">Trainingen bijhouden · Groeicurve · Roeimachine</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="wissel('registreer')">Registreren</button>
+    <button class="tab-btn"    onclick="wissel('historie')">Historie</button>
+    <button class="tab-btn"    onclick="wissel('groei')">Groeicurve</button>
+    <button class="tab-btn"    onclick="wissel('roeien')">Roeioefening</button>
+  </div>
+
+  <!-- ══ TAB: REGISTREREN ══ -->
+  <div id="tab-registreer">
+    <div class="card card-run">
+      <div class="clabel">Nieuwe sessie</div>
+      <div class="f-grp">
+        <label class="f-lbl">Type training</label>
+        <select id="inp-type" class="f-input">
+          <option value="hardlopen">🏃 Hardlopen</option>
+          <option value="roeien">🚣 Roeimachine</option>
+          <option value="wandelen">🚶 Wandelen</option>
+          <option value="fietsen">🚴 Fietsen</option>
+          <option value="anders">⚡ Anders</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="f-grp">
+          <label class="f-lbl">Datum</label>
+          <input type="date" id="inp-datum" class="f-input">
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">Duur (min)</label>
+          <input type="number" id="inp-duur" class="f-input" placeholder="45" min="1" max="300">
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">Afstand (km)</label>
+          <input type="number" id="inp-afstand" class="f-input" placeholder="5.0" step="0.1" min="0">
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">Gemiddeld tempo (min/km)</label>
+          <input type="text" id="inp-tempo" class="f-input" placeholder="5:30" pattern="[0-9]+:[0-5][0-9]">
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">Gem. hartslag (bpm)</label>
+          <input type="number" id="inp-hartslag" class="f-input" placeholder="148" min="50" max="220">
+        </div>
+        <div class="f-grp">
+          <label class="f-lbl">RPE (1–10)</label>
+          <input type="number" id="inp-rpe" class="f-input" placeholder="6" min="1" max="10">
+        </div>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl">Notities</label>
+        <input type="text" id="inp-notities" class="f-input" placeholder="Hoe voelde het?">
+      </div>
+      <button class="btn btn-run" onclick="slaSessionOp()">Sessie opslaan ✓</button>
+    </div>
+
+    <!-- Advies op basis van laatste sessies -->
+    <div id="advies-blok" style="display:none" class="advies-blok card"></div>
+  </div>
+
+  <!-- ══ TAB: HISTORIE ══ -->
+  <div id="tab-historie" style="display:none">
+    <div class="card">
+      <div class="clabel">Recente sessies</div>
+      <div id="sessie-lijst"><div style="color:var(--muted);font-size:13px">Nog geen sessies geregistreerd.</div></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: GROEICURVE ══ -->
+  <div id="tab-groei" style="display:none">
+    <div class="card">
+      <div class="clabel">Afstand per week (km)</div>
+      <div class="grafiek-wrap"><canvas id="grafiek-afstand"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="clabel">Gemiddeld tempo (min/km)</div>
+      <div class="grafiek-wrap"><canvas id="grafiek-tempo"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="clabel">Progressie samenvatting</div>
+      <div id="progressie-stats"></div>
+    </div>
+
+    <!-- Trainingsadvies op basis van progressie -->
+    <div id="trainingsadvies" class="card" style="display:none">
+      <div class="clabel">Suggesties op basis van jouw prestaties</div>
+      <div id="advies-inhoud" class="advies-blok" style="border:none;padding:0;background:none"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: ROEIOEFENING ══ -->
+  <div id="tab-roeien" style="display:none">
+    <div class="card card-run">
+      <div class="clabel">Roeimachine — cardio alternatief voor hardlopen</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        Roeien geeft gelijkwaardige cardio als hardlopen, zonder belasting op knieën en enkels.
+        Gebruik dit programma op dagen dat het regent of als herstel.
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="f-lbl">Kies niveau</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm roei-niveau on" onclick="kiesNiveau('basis')" id="niv-basis">Basis</button>
+          <button class="btn btn-g btn-sm roei-niveau" onclick="kiesNiveau('duur')" id="niv-duur">Duurtraining</button>
+          <button class="btn btn-g btn-sm roei-niveau" onclick="kiesNiveau('interval')" id="niv-interval">Interval</button>
+        </div>
+      </div>
+
+      <div id="roei-programma"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-c" id="toast-c"></div>
+
+<script>
+'use strict';
+
+/* ══ DATA ══ */
+const LS_KEY = 'cardiocore_v1';
+const SCHEMA_KEY = 'focus_schema';
+
+function laad(){
+  try{const r=localStorage.getItem(LS_KEY);return r?JSON.parse(r):{sessies:[]};}
+  catch(e){return{sessies:[]};}
+}
+function slaOp(d){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(d));}
+  catch(e){toast('Opslaan mislukt','wn');}
+  if(typeof Core!=='undefined') Core.sync.planAutoSync('cardiocore',d);
+}
+
+let D = laad();
+let huidigNiveau = D.huidig_niveau || 'basis';
+
+/* ══ ROEIPROGRAMMAS ══ */
+const ROEI_PROGRAMMAS = {
+  basis: {
+    titel: 'Basis cardioroeien — 20 min',
+    omschr: 'Goed alternatief voor een makkelijke loopdag. Lage hartslag, techniek staan centraal.',
+    stappen: [
+      {fase:'Warming-up',duur:'5 min',uitleg:'Roeien op lage weerstand (3-4). Rustig tempo, focus op technische uitvoering: duw eerst met benen, dan lean back, dan armen.'},
+      {fase:'Hoofdblok',duur:'12 min',uitleg:'Verhoog naar weerstand 5-6. Streef naar 22-24 slagen/min. Hartslag zone 2 (60-70% max). Adem uit bij elke trekkende beweging.'},
+      {fase:'Cooling-down',duur:'3 min',uitleg:'Verlaag weerstand, vertraag slag-ritme tot 18/min. Rustig uitroeien.'},
+    ]
+  },
+  duur: {
+    titel: 'Duurtraining — 35 min',
+    omschr: 'Vervangt een middellange looprun. Goede aerobe basis, laag blessurerisico.',
+    stappen: [
+      {fase:'Warming-up',duur:'8 min',uitleg:'Weerstand 3-4, opbouwend naar 5. Slagen per minuut: 20 opbouwen naar 22.'},
+      {fase:'Duurblok 1',duur:'10 min',uitleg:'Weerstand 5-6. Stabiel tempo, 22-24 slagen/min. Zone 2 hartslag. Let op: recht houden, niet met rug compenseren.'},
+      {fase:'Rustblok',duur:'2 min',uitleg:'Verlagen naar weerstand 3, herstel hartslag.'},
+      {fase:'Duurblok 2',duur:'10 min',uitleg:'Zelfde intensiteit als blok 1. Probeer iets consistenter te zijn dan de eerste ronde.'},
+      {fase:'Cooling-down',duur:'5 min',uitleg:'Weerstand naar beneden, 18-20 slagen/min. Rustig afronden.'},
+    ]
+  },
+  interval: {
+    titel: 'Intervaltraining — 25 min',
+    omschr: 'Equivalent van een hardloopinterval. Verhoogt lactaatdrempel, vergelijkbaar met 5x400m.',
+    stappen: [
+      {fase:'Warming-up',duur:'7 min',uitleg:'Weerstand 4-5, opbouwen naar comfortabel tempo (20-22 slagen/min).'},
+      {fase:'Interval 1',duur:'2 min',uitleg:'HARD roeien — weerstand 7-8, 26-28 slagen/min. Geef alles.'},
+      {fase:'Herstel',duur:'2 min',uitleg:'Weerstand 2, langzaam roeien. Herstel hartslag.'},
+      {fase:'Interval 2',duur:'2 min',uitleg:'HARD — zelfde als interval 1. Probeer zelfde tempo te houden.'},
+      {fase:'Herstel',duur:'2 min',uitleg:'Weerstand 2, rustig.'},
+      {fase:'Interval 3',duur:'2 min',uitleg:'Laatste sprint — geef alles wat je nog hebt.'},
+      {fase:'Cooling-down',duur:'6 min',uitleg:'Weerstand 2-3, langzaam terugkomen. Strek armen en benen goed.'},
+    ]
+  }
+};
+
+
+function kiesNiveau(n){
+  huidigNiveau = n;
+  D.huidig_niveau = n; slaOp(D);
+  document.querySelectorAll('.roei-niveau').forEach(b=>b.classList.toggle('on',b.id==='niv-'+n));
+  bouwRoeiProgramma(n);
+}
+
+function bouwRoeiProgramma(n){
+  const prog = ROEI_PROGRAMMAS[n];
+  const c = document.getElementById('roei-programma');
+  c.innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:600;color:var(--run);margin-bottom:4px">${prog.titel}</div>
+      <div style="font-size:12px;color:var(--muted)">${prog.omschr}</div>
+    </div>
+    <div class="roei-oef">
+      ${prog.stappen.map((s,i)=>`
+        <div class="roei-stap">
+          <div class="roei-nr">${i+1}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <span style="font-size:13px;font-weight:500">${s.fase}</span>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--run);background:var(--run-dim);border:1px solid var(--run-b);padding:1px 7px;border-radius:4px">${s.duur}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.55">${s.uitleg}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="btn btn-run" style="margin-top:14px" onclick="slaRoeiOp()">Roeisessie registreren ✓</button>`;
+}
+
+function slaRoeiOp(){
+  const prog = ROEI_PROGRAMMAS[huidigNiveau];
+  const totaalMin = prog.stappen.reduce((s,st)=>s+parseInt(st.duur),0);
+  const sessie = {
+    id: Date.now(),
+    datum: new Date().toISOString().slice(0,10),
+    type: 'roeien',
+    duur: totaalMin,
+    niveau: huidigNiveau,
+    notities: `Roeiprogramma: ${prog.titel}`,
+  };
+  D.sessies.unshift(sessie);
+  slaOp(D);
+  toast(`Roeisessie (${totaalMin} min) opgeslagen ✓`, 'ok');
+}
+
+/* ══ SESSIE OPSLAAN ══ */
+function slaSessionOp(){
+  const type     = document.getElementById('inp-type').value;
+  const datum    = document.getElementById('inp-datum').value;
+  const duur     = parseInt(document.getElementById('inp-duur').value);
+  const afstand  = parseFloat(document.getElementById('inp-afstand').value)||0;
+  const tempo    = document.getElementById('inp-tempo').value.trim();
+  const hartslag = parseInt(document.getElementById('inp-hartslag').value)||0;
+  const rpe      = parseInt(document.getElementById('inp-rpe').value)||0;
+  const notities = document.getElementById('inp-notities').value.trim();
+
+  if(!datum)      { toast('Kies een datum','wn'); return; }
+  if(!duur||duur<1){ toast('Vul de duur in','wn'); return; }
+
+  // Controleer of dit een PR is (snelste tempo voor dit type)
+  let isPR = false;
+  if(afstand > 0 && tempo){
+    const eigenMinPerKm = tempoNaarSec(tempo);
+    const eerdere = D.sessies.filter(s=>s.type===type&&s.afstand>0&&s.tempo);
+    if(eerdere.length === 0) isPR = true;
+    else{
+      const besteTempo = Math.min(...eerdere.map(s=>tempoNaarSec(s.tempo)).filter(t=>t>0));
+      if(eigenMinPerKm > 0 && eigenMinPerKm < besteTempo) isPR = true;
+    }
+  }
+
+  const sessie = { id:Date.now(), datum, type, duur, afstand, tempo, hartslag, rpe, notities, pr:isPR };
+  D.sessies.unshift(sessie);
+  slaOp(D);
+
+  // Reset form
+  document.getElementById('inp-afstand').value='';
+  document.getElementById('inp-tempo').value='';
+  document.getElementById('inp-hartslag').value='';
+  document.getElementById('inp-rpe').value='';
+  document.getElementById('inp-notities').value='';
+
+  toast(isPR ? '🏆 Nieuwe PR! Sessie opgeslagen' : 'Sessie opgeslagen ✓', 'ok');
+  toonAdvies();
+}
+
+function tempoNaarSec(s){
+  if(!s) return 0;
+  const [m,sec] = s.split(':').map(Number);
+  return (m||0)*60+(sec||0);
+}
+
+function tempoLabel(sec){
+  if(!sec) return '—';
+  const m=Math.floor(sec/60), s=sec%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+/* ══ ADVIES ══ */
+function toonAdvies(){
+  const el = document.getElementById('advies-blok');
+  if(!el) return;
+  const advies = berekenAdvies();
+  if(!advies){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.innerHTML = advies;
+}
+
+function berekenAdvies(){
+  const sessies = D.sessies.filter(s=>s.type==='hardlopen'||s.type==='roeien');
+  if(sessies.length < 3) return null;
+
+  const laatste = sessies.slice(0,5);
+  const gemRpe = laatste.reduce((s,r)=>s+(r.rpe||5),0)/laatste.length;
+  const aantalDezePeriode = sessies.filter(s=>{
+    const d = new Date(s.datum);
+    const nu = new Date();
+    const diff = (nu-d)/(1000*60*60*24);
+    return diff <= 7;
+  }).length;
+
+  let advies = '';
+  if(gemRpe >= 8) advies += '<strong>Hoge belasting</strong> — gemiddelde RPE de laatste sessies is hoog. Plan een herstelsessie of roei rustig. ';
+  if(aantalDezePeriode >= 5) advies += '<strong>Veel volume</strong> — 5+ sessies deze week. Overweeg een rustdag. ';
+  if(aantalDezePeriode === 0) advies += '<strong>Geen sessies deze week</strong> — zelfs een korte wandeling telt. ';
+
+  const afstanden = sessies.slice(0,4).filter(s=>s.afstand>0).map(s=>s.afstand);
+  if(afstanden.length >= 2){
+    const groei = (afstanden[0]-afstanden[afstanden.length-1])/afstanden[afstanden.length-1]*100;
+    if(groei > 25) advies += '<strong>Snelle afstandsgroei</strong> — meer dan 25% in korte tijd. Houd 10%-regel aan per week. ';
+    if(groei < -10) advies += '<strong>Terugval in volume</strong> — korte sessies zijn prima als herstel, maar probeer consistentie te bouwen. ';
+  }
+
+  const liftSt = laadLiftcoreStatus();
+  if(liftSt && liftSt.isRecent && liftSt.volume > 8000)
+    advies += '<strong>Hersteldag aanbevolen.</strong> Zware krachtraining recent — doe alleen lichte cardio of rust. ';
+
+  return advies || '<strong>Goed bezig.</strong> Blijf consistent — dat is de belangrijkste factor voor progressie.';
+}
+
+/* ══ GROEICURVE ══ */
+function bouwGroei(){
+  const sessies = [...D.sessies].filter(s=>s.afstand>0).sort((a,b)=>a.datum.localeCompare(b.datum));
+
+  // Groepeer per week
+  const weken = {};
+  sessies.forEach(s=>{
+    const d = new Date(s.datum);
+    const maandag = new Date(d);
+    maandag.setDate(d.getDate() - ((d.getDay()||7)-1));
+    const key = maandag.toISOString().slice(0,10);
+    if(!weken[key]) weken[key]={afstand:0,tempos:[],sessies:0};
+    weken[key].afstand += s.afstand;
+    if(s.tempo) weken[key].tempos.push(tempoNaarSec(s.tempo));
+    weken[key].sessies++;
+  });
+
+  const labels = Object.keys(weken).slice(-12);
+  const afstData = labels.map(k=>weken[k].afstand.toFixed(1));
+  const tempoData = labels.map(k=>{
+    const t = weken[k].tempos;
+    return t.length ? (t.reduce((a,b)=>a+b,0)/t.length/60).toFixed(2) : null;
+  });
+
+  bouwGrafiek('grafiek-afstand', labels, afstData, 'Km', 'rgba(71,232,255,0.7)', 'rgba(71,232,255,0.15)');
+  bouwGrafiek('grafiek-tempo',   labels, tempoData, 'Min/km', 'rgba(200,255,71,0.7)', 'rgba(200,255,71,0.1)');
+
+  // Statistieken
+  const totaalKm = sessies.reduce((s,r)=>s+r.afstand,0);
+  const totaalSessies = D.sessies.length;
+  const alleTempos = sessies.filter(s=>s.tempo).map(s=>tempoNaarSec(s.tempo));
+  const besteTempo = alleTempos.length ? Math.min(...alleTempos) : 0;
+  const el = document.getElementById('progressie-stats');
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px">
+      <div class="metric"><div class="m-lbl">Totaal km</div><div class="m-val">${totaalKm.toFixed(0)}</div></div>
+      <div class="metric"><div class="m-lbl">Sessies</div><div class="m-val">${totaalSessies}</div></div>
+      <div class="metric"><div class="m-lbl">Beste tempo</div><div class="m-val" style="font-size:15px">${besteTempo?tempoLabel(besteTempo)+'/km':'—'}</div></div>
+    </div>`;
+
+  // Trainingsadvies
+  bouwTrainingsadvies();
+}
+
+function bouwGrafiek(id, labels, data, label, kleur, fill){
+  // Gebruik SVG voor betere kwaliteit en hover-support
+  const wrap = document.getElementById(id)?.parentElement;
+  const existingSvg = document.getElementById(id+'-svg');
+  if(existingSvg) existingSvg.remove();
+
+  const canvas = document.getElementById(id);
+  if(canvas) canvas.style.display='none';
+
+  const H=120, W=wrap?.offsetWidth||320;
+  const vals = data.map(Number);
+  const geldig = vals.filter(v=>!isNaN(v)&&v>0);
+  if(!geldig.length){
+    const div=document.createElement('div');
+    div.id=id+'-svg';
+    div.style.cssText='height:120px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.2);font-size:12px';
+    div.textContent='Nog geen data';
+    if(wrap) wrap.appendChild(div);
+    return;
+  }
+
+  const mn=Math.min(...geldig)*0.85, mx=Math.max(...geldig)*1.1||1;
+  const pad={l:32,r:8,t:10,b:22};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const step=cW/Math.max(vals.length-1,1);
+
+  const pts=vals.map((v,i)=>{
+    const y = isNaN(v)||v<=0 ? null : pad.t+cH-(((v)-mn)/(mx-mn))*cH;
+    return [pad.l+i*step, y];
+  });
+
+  // Y-grid lijnen
+  const gridLines=[0,.25,.5,.75,1].map(pct=>{
+    const yVal = mn + pct*(mx-mn);
+    const y = pad.t+cH - pct*cH;
+    return {y, val: yVal.toFixed(1)};
+  });
+
+  // SVG opbouwen
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.id=id+'-svg';
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.style.cssText='display:block;overflow:visible;cursor:crosshair';
+
+  // Grid
+  gridLines.forEach(gl=>{
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',pad.l); line.setAttribute('x2',W-pad.r);
+    line.setAttribute('y1',gl.y); line.setAttribute('y2',gl.y);
+    line.setAttribute('stroke','rgba(255,255,255,.05)'); line.setAttribute('stroke-width','1');
+    svg.appendChild(line);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',pad.l-3); txt.setAttribute('y',gl.y+3);
+    txt.setAttribute('text-anchor','end'); txt.setAttribute('fill','rgba(255,255,255,.25)');
+    txt.setAttribute('font-size','8'); txt.setAttribute('font-family','DM Mono');
+    txt.textContent=gl.val;
+    svg.appendChild(txt);
+  });
+
+  // Fill area
+  const geldige_pts = pts.filter(p=>p[1]!==null);
+  if(geldige_pts.length>1){
+    const fillPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+    let d=`M${geldige_pts[0][0]},${geldige_pts[0][1]}`;
+    geldige_pts.slice(1).forEach(([x,y])=>d+=` L${x},${y}`);
+    d+=` L${geldige_pts[geldige_pts.length-1][0]},${pad.t+cH} L${geldige_pts[0][0]},${pad.t+cH} Z`;
+    fillPath.setAttribute('d',d); fillPath.setAttribute('fill',fill);
+    svg.appendChild(fillPath);
+
+    // Lijn
+    const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+    let ld=`M${geldige_pts[0][0]},${geldige_pts[0][1]}`;
+    geldige_pts.slice(1).forEach(([x,y])=>ld+=` L${x},${y}`);
+    line.setAttribute('d',ld); line.setAttribute('fill','none');
+    line.setAttribute('stroke',kleur); line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-linejoin','round');
+    svg.appendChild(line);
+  }
+
+  // Punten + hover tooltip
+  const tooltip=document.createElementNS('http://www.w3.org/2000/svg','g');
+  tooltip.id=id+'-tooltip'; tooltip.style.display='none';
+  const tRect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  tRect.setAttribute('rx','4'); tRect.setAttribute('fill','rgba(20,20,25,.9)');
+  tRect.setAttribute('stroke','rgba(255,255,255,.15)'); tRect.setAttribute('stroke-width','1');
+  const tTxt=document.createElementNS('http://www.w3.org/2000/svg','text');
+  tTxt.setAttribute('fill','#fff'); tTxt.setAttribute('font-size','10');
+  tTxt.setAttribute('font-family','DM Mono');
+  tooltip.appendChild(tRect); tooltip.appendChild(tTxt);
+  svg.appendChild(tooltip);
+
+  pts.forEach(([x,y],i)=>{
+    if(y===null) return;
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',x); dot.setAttribute('cy',y);
+    dot.setAttribute('r','4'); dot.setAttribute('fill',kleur);
+    dot.setAttribute('stroke','rgba(10,10,11,.8)'); dot.setAttribute('stroke-width','2');
+    dot.style.cursor='pointer';
+    dot.addEventListener('mouseenter',function(){
+      tooltip.style.display='block';
+      const lbl=labels[i]?.slice(5)||'';
+      const val=vals[i]?.toFixed?.(1)||'';
+      tTxt.textContent=`${lbl}: ${val}`;
+      const tw=tTxt.getComputedTextLength()+16||80;
+      const tx=Math.min(x-tw/2, W-tw-4);
+      const ty=y-28;
+      tRect.setAttribute('x',tx); tRect.setAttribute('y',ty);
+      tRect.setAttribute('width',tw); tRect.setAttribute('height','18');
+      tTxt.setAttribute('x',tx+8); tTxt.setAttribute('y',ty+13);
+    });
+    dot.addEventListener('mouseleave',()=>{ tooltip.style.display='none'; });
+    svg.appendChild(dot);
+  });
+
+  // X labels
+  const labelStep=Math.max(1,Math.floor(labels.length/4));
+  labels.forEach((l,i)=>{
+    if(i%labelStep===0){
+      const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x',pad.l+i*step); txt.setAttribute('y',H-4);
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('fill','rgba(255,255,255,.25)');
+      txt.setAttribute('font-size','8'); txt.setAttribute('font-family','DM Mono');
+      txt.textContent=l?.slice(5)||'';
+      svg.appendChild(txt);
+    }
+  });
+
+  if(wrap) wrap.appendChild(svg);
+}
+
+function bouwTrainingsadvies(){
+  const el = document.getElementById('trainingsadvies');
+  const inhoud = document.getElementById('advies-inhoud');
+  const sessies = D.sessies.filter(s=>s.type==='hardlopen'&&s.afstand>0);
+  if(sessies.length < 5){ el.style.display='none'; return; }
+  el.style.display='block';
+
+  const afstanden = sessies.slice(0,8).map(s=>s.afstand);
+  const gemAfstand = afstanden.reduce((a,b)=>a+b,0)/afstanden.length;
+  const alleTempos = sessies.filter(s=>s.tempo).map(s=>tempoNaarSec(s.tempo));
+  const gemTempo = alleTempos.length ? alleTempos.reduce((a,b)=>a+b)/alleTempos.length : 0;
+
+  let adviezen = [];
+
+  // 10% regel
+  const recenteKm = sessies.slice(0,2).reduce((s,r)=>s+r.afstand,0);
+  const oudeKm    = sessies.slice(2,4).reduce((s,r)=>s+r.afstand,0);
+  if(oudeKm > 0 && (recenteKm-oudeKm)/oudeKm > 0.12)
+    adviezen.push('⚠️ <strong>Verhoog volume geleidelijk</strong> — meer dan 10% stijging per periode vergroot blessurerisico.');
+
+  // Tempo zones
+  if(gemTempo > 0 && gemTempo < 300) // onder 5 min/km
+    adviezen.push('🏃 <strong>Goed tempo</strong> — focus nu op volume en consistentie voor verdere verbetering.');
+  if(gemTempo >= 360) // 6+ min/km
+    adviezen.push('🐢 <strong>Inclusief makkelijke runs</strong> — 80% van je training op makkelijk tempo (kuntpraten). Voeg 1x per week een tempo-run toe.');
+
+  // Polarized advies
+  const rpe_hoog = sessies.slice(0,6).filter(s=>s.rpe&&s.rpe>=7).length;
+  const rpe_pct  = rpe_hoog/Math.min(sessies.length,6);
+  if(rpe_pct > 0.5)
+    adviezen.push('⚡ <strong>Te veel hard trainen</strong> — meer dan 50% van sessies op hoge intensiteit. Polarized model: 80% makkelijk, 20% intensief.');
+  if(rpe_pct < 0.1 && sessies.length >= 5)
+    adviezen.push('💤 <strong>Voeg intensiteit toe</strong> — 1 interval- of tempotraining per week stimuleert lactaatdrempel en snelheid.');
+
+  // Volume suggestie
+  if(gemAfstand < 4)
+    adviezen.push('📈 <strong>Bouw afstand op</strong> — richt je op 5 km basis voordat je tempo traint. Consistentie gaat boven snelheid.');
+  else if(gemAfstand >= 8)
+    adviezen.push('🎯 <strong>Goed volume</strong> — overweeg een specifiek doel: 10K of halvemarathon als motivator.');
+
+  inhoud.innerHTML = adviezen.length
+    ? adviezen.map(a=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6">${a}</div>`).join('')
+    : '<div style="color:var(--muted)">Blijf sessies bijhouden voor persoonlijke adviezen.</div>';
+}
+
+/* ══ HISTORIE ══ */
+function bouwHistorie(){
+  const el = document.getElementById('sessie-lijst');
+  if(!D.sessies.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:13px">Nog geen sessies geregistreerd.</div>';
+    return;
+  }
+  const typeIcon = {hardlopen:'🏃',roeien:'🚣',wandelen:'🚶',fietsen:'🚴',anders:'⚡'};
+  el.innerHTML = D.sessies.slice(0,20).map(s=>`
+    <div class="sessie-rij">
+      <div class="sess-type">${typeIcon[s.type]||'⚡'}</div>
+      <div class="sess-info">
+        <div class="sess-datum">${new Date(s.datum).toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'})}</div>
+        <div class="sess-type-lbl">${s.type.charAt(0).toUpperCase()+s.type.slice(1)}${s.niveau?' — '+s.niveau:''}</div>
+        <div class="sess-stats">${s.duur} min${s.afstand?` · ${s.afstand} km`:''}${s.tempo?` · ${s.tempo}/km`:''}${s.hartslag?` · ${s.hartslag} bpm`:''}${s.rpe?` · RPE ${s.rpe}`:''}</div>
+        <div class="badge-rij">
+          ${s.type==='hardlopen'?'<span class="badge badge-run">lopen</span>':''}
+          ${s.type==='roeien'?'<span class="badge badge-row">roeien</span>':''}
+          ${s.pr?'<span class="badge badge-pr">🏆 PR</span>':''}
+        </div>
+      </div>
+      <button onclick="verwijderSessie(${s.id})" class="btn btn-g btn-sm" style="padding:4px 8px;font-size:11px;flex-shrink:0">✕</button>
+    </div>`).join('');
+}
+
+function verwijderSessie(id){
+  D.sessies = D.sessies.filter(s=>s.id!==id);
+  slaOp(D);
+  bouwHistorie();
+  toast('Sessie verwijderd','neu');
+}
+
+/* ══ TABS ══ */
+function wissel(tab){
+  D.actieve_tab = tab; slaOp(D);
+  ['registreer','historie','groei','roeien'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('on',['registreer','historie','groei','roeien'][i]===tab);
+  });
+  if(tab==='historie') bouwHistorie();
+  if(tab==='groei') bouwGroei();
+  if(tab==='roeien') bouwRoeiProgramma(huidigNiveau);
+}
+
+/* ══ TOAST ══ */
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-c');
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML=`<span>${type==='ok'?'✓':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true});},3400);
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // Zet datum op vandaag
+  document.getElementById('inp-datum').value = D.form_datum || new Date().toISOString().slice(0,10);
+  if(D.form_type)     { const et=document.getElementById('inp-type');     if(et) et.value=D.form_type; }
+  if(D.form_duur)     { const et=document.getElementById('inp-duur');     if(et) et.value=D.form_duur; }
+  if(D.form_afstand)  { const et=document.getElementById('inp-afstand');  if(et) et.value=D.form_afstand; }
+  if(D.form_tempo)    { const et=document.getElementById('inp-tempo');    if(et) et.value=D.form_tempo; }
+  if(D.form_notities) { const et=document.getElementById('inp-notities'); if(et) et.value=D.form_notities; }
+  // Regen-check vanuit schema
+  const schemaRaw = localStorage.getItem(SCHEMA_KEY);
+  const regen = schemaRaw ? JSON.parse(schemaRaw)?.regen : false;
+  if(regen){
+    wissel('roeien');
+    toast('🌧 Regen vandaag — roeiprogramma geladen','neu');
+  } else {
+    wissel(D.actieve_tab || 'registreer');
+  }
+  // Auto-save formulier
+  ['inp-type','inp-datum','inp-duur','inp-afstand','inp-tempo','inp-notities'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('input',function(){ D['form_'+id.replace('inp-','')]=el.value; slaOp(D); });
+  });
+  // Liftcore hersteladvies tonen
+  const liftAdvies = liftcoreHerstelAdvies();
+  const adviesEl = document.getElementById('advies-blok');
+  if(liftAdvies && adviesEl){
+    adviesEl.style.display = 'block';
+    const kleur = liftAdvies.niveau==='zwaar' ? 'var(--red)' : liftAdvies.niveau==='matig' ? 'var(--amber)' : 'var(--green)';
+    adviesEl.innerHTML = '<span style="color:'+kleur+';font-weight:500">🏋 LiftCore herstel: </span>' + liftAdvies.tekst;
+  }
+  // Toon advies als er sessies zijn
+  toonAdvies();
+});
+
+function exporteerData(){
+  try{
+    const data = localStorage.getItem('cardiocore_v1');
+    if(!data){ if(typeof toast==='function') toast('Geen data om te exporteren','wn'); return; }
+    const blob = new Blob([JSON.stringify(JSON.parse(data), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CardioCore_export_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof toast==='function') toast('CardioCore data geëxporteerd ✓','ok');
+  }catch(e){
+    if(typeof toast==='function') toast('Export mislukt','wn');
+  }
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

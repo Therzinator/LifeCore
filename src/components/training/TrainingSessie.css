@@ -1,0 +1,89 @@
+.ts-oefening {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+}
+.ts-oefening:last-of-type { border-bottom: none; }
+
+.ts-oefening-kop {
+  margin-bottom: var(--space-sm);
+}
+
+.ts-oefening-naam {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.ts-pr {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background: var(--accent);
+  color: var(--accent-txt);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.ts-oefening-spier {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}
+
+.ts-gewicht-kies {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-sm) 0;
+}
+
+.ts-gewicht-waarde {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  min-width: 90px;
+  text-align: center;
+}
+
+.ts-opbouw {
+  margin-bottom: var(--space-sm);
+}
+
+.ts-opbouw-lbl {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-faint);
+  margin-bottom: 4px;
+}
+
+.ts-opbouw-set {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}
+
+.ts-sets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.ts-set-check {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.ts-set-check:hover { background: var(--bg-3); }
+.ts-set-check.gedaan {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}

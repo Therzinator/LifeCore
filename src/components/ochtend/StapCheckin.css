@@ -1,0 +1,35 @@
+.ci-groep {
+  margin-bottom: var(--space-lg);
+}
+
+.ci-vraag {
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  margin-bottom: var(--space-sm);
+}
+
+.ci-opties {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.ci-optie {
+  flex: 1;
+  padding: var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--tx);
+  text-align: center;
+}
+
+.ci-optie:hover { background: var(--bg-3); }
+.ci-optie.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}

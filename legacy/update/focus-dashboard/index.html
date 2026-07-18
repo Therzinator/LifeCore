@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Focus Dashboard</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0A0A0B; --bg-2:#111113; --bg-3:#18181C; --bg-4:#1E1E24; --bg-5:#25252D;
+  --border:rgba(255,255,255,.07); --border-2:rgba(255,255,255,.12); --border-3:rgba(255,255,255,.2);
+  --acc:#7b6ef6; --acc-dim:#3d3680; --acc-glow:rgba(123,110,246,.15);
+  --lift:#C8FF47; --lift-dim:rgba(200,255,71,.1); --lift-mid:rgba(200,255,71,.25);
+  --run:#47E8FF; --run-dim:rgba(71,232,255,.1);
+  --green:#3ecf8e; --green-dim:rgba(62,207,142,.12); --green-b:rgba(62,207,142,.25);
+  --amber:#f0a347; --amber-dim:rgba(240,163,71,.12); --amber-b:rgba(240,163,71,.25);
+  --red:#f04747; --red-dim:rgba(240,71,71,.12);
+  --txt:#F0F0F4; --muted:rgba(255,255,255,.38); --faint:rgba(255,255,255,.14);
+  --mono:'DM Mono',monospace; --head:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+  --r:10px; --rl:16px; --rx:22px; --tx:all .18s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ── Auth overlay ─────────────────────────────────── */
+.auth-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;transition:opacity .3s ease}
+.auth-overlay.hide{opacity:0;pointer-events:none}
+.auth-card{width:100%;max-width:380px;padding:36px;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rx);margin:20px}
+.auth-titel{font-family:var(--head);font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;padding-top:.15em;overflow:visible}
+.auth-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.auth-tabs{display:flex;margin-bottom:20px;background:var(--bg-3);border-radius:var(--r);padding:3px}
+.auth-tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-radius:8px;transition:var(--tx);user-select:none}
+.auth-tab.on{background:var(--bg-2);color:var(--txt)}
+.auth-scheiding{display:flex;align-items:center;gap:10px;margin:16px 0}
+.auth-scheiding span{font-size:11px;color:var(--faint)}
+.auth-scheiding::before,.auth-scheiding::after{content:'';flex:1;height:1px;background:var(--border)}
+.gast-hint{font-size:11px;color:var(--faint);text-align:center;margin-top:8px}
+
+/* ── Main layout ──────────────────────────────────── */
+#app{visibility:hidden;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Topbar ───────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,11,.92);backdrop-filter:blur(16px);z-index:50;gap:12px}
+.brand{font-family:var(--head);font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;padding-top:.12em;overflow:visible;flex-shrink:0}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.topbar-center{flex:1;display:flex;justify-content:center}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em}
+.nav-chip:hover{border-color:var(--border-2);color:var(--txt)}
+.nav-chip.cur{border-color:rgba(123,110,246,.35);color:var(--acc);background:var(--acc-glow)}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+/* ── Hamburger ────────────────────────────────────── */
+.menu-btn{display:none;width:36px;height:36px;border-radius:var(--r);border:1px solid var(--border-2);background:var(--bg-3);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0;transition:var(--tx)}
+.menu-btn:hover{background:var(--bg-4)}
+.menu-btn span{display:block;width:16px;height:1.5px;background:var(--txt);border-radius:2px;transition:var(--tx)}
+.menu-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.menu-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.menu-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.nav-dropdown{position:fixed;top:0;left:0;right:0;bottom:0;z-index:49;display:none}
+.nav-dropdown.open{display:block}
+.nav-dropdown-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px)}
+.nav-dropdown-menu{position:absolute;top:58px;right:16px;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);padding:6px;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:dropIn .18s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.nav-dropdown-menu a{display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em}
+.nav-dropdown-menu a:hover{background:var(--bg-3);color:var(--txt)}
+.nav-dropdown-menu a.cur{color:var(--acc);background:var(--acc-glow)}
+.nav-dropdown-menu .nav-sep{height:1px;background:var(--border);margin:4px 0}
+
+/* ── Dashboard inhoud ─────────────────────────────── */
+.dashboard{flex:1;max-width:680px;margin:0 auto;padding:28px 24px 80px;width:100%}
+
+/* ── Hero: datum en tijd ──────────────────────────── */
+.hero{margin-bottom:28px}
+.hero-tijd{font-family:var(--mono);font-size:52px;font-weight:500;letter-spacing:-.04em;line-height:1;color:var(--txt);margin-bottom:4px}
+.hero-datum{font-family:var(--body);font-size:14px;color:var(--muted);font-weight:300;margin-bottom:10px}
+.hero-groet{font-family:var(--head);font-size:28px;font-weight:700;letter-spacing:-.02em;padding-top:.12em;overflow:visible;line-height:1.25}
+.hero-sub{font-size:13px;color:var(--muted);font-weight:300;margin-top:4px}
+
+/* ── Suggestie banner ─────────────────────────────── */
+.suggestie{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);margin-bottom:24px;border-left:3px solid var(--acc)}
+.sug-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.sug-tekst{font-size:13px;color:var(--muted);line-height:1.55}
+.sug-tekst strong{color:var(--txt);font-weight:500}
+
+/* ── Module knoppen grid ──────────────────────────── */
+.modules-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.modules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+
+/* Elke moduleknop */
+.mod-btn{position:relative;display:flex;flex-direction:column;gap:10px;padding:18px 18px 16px;border-radius:var(--rl);border:1px solid var(--border);background:var(--bg-2);cursor:pointer;text-decoration:none;color:var(--txt);transition:var(--tx);overflow:hidden;min-height:120px}
+.mod-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s ease}
+.mod-btn:hover{border-color:var(--border-2);transform:translateY(-2px)}
+.mod-btn:hover::before{opacity:1}
+.mod-btn:active{transform:translateY(0)}
+
+/* Kleur per module */
+.mod-liftcore{--mc:var(--lift);--mc-dim:var(--lift-dim)}
+.mod-cardiocore{--mc:var(--run);--mc-dim:var(--run-dim)}
+.mod-resetcore{--mc:var(--green);--mc-dim:var(--green-dim)}
+.mod-workcore{--mc:var(--acc);--mc-dim:var(--acc-glow)}
+.mod-lifecore{--mc:var(--amber);--mc-dim:var(--amber-dim)}
+.mod-relaxcore{--mc:#2dd4bf;--mc-dim:rgba(45,212,191,.1)}
+.mod-profiel{--mc:var(--muted);--mc-dim:rgba(255,255,255,.04)}
+
+.mod-btn::before{background:var(--mc-dim)}
+.mod-btn:hover{border-color:var(--mc)}
+
+.mod-icon-wrap{width:38px;height:38px;border-radius:10px;background:var(--mc-dim);border:1px solid color-mix(in srgb, var(--mc) 30%, transparent);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mod-naam{font-family:var(--head);font-size:16px;font-weight:700;padding-top:.1em;overflow:visible;letter-spacing:-.01em}
+.mod-omschr{font-size:11px;color:var(--muted);font-weight:300;line-height:1.45;flex:1}
+.mod-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+.mod-tag{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:4px;background:color-mix(in srgb, var(--mc) 12%, transparent);border:1px solid color-mix(in srgb, var(--mc) 25%, transparent);color:var(--mc);letter-spacing:.04em}
+.mod-pijl{font-size:14px;color:var(--muted);transition:var(--tx)}
+.mod-btn:hover .mod-pijl{color:var(--mc);transform:translateX(3px)}
+
+/* Suggestie-badge op moduleknop */
+.mod-badge{position:absolute;top:12px;right:12px;font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:4px;background:var(--acc-glow);border:1px solid rgba(123,110,246,.3);color:var(--acc);letter-spacing:.04em;animation:badge-pulse 2.5s ease-in-out infinite}
+@keyframes badge-pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ── Profiel balk ─────────────────────────────────── */
+.profiel-balk{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:24px;cursor:pointer;transition:var(--tx);text-decoration:none;color:var(--txt)}
+.profiel-balk:hover{border-color:var(--border-2);background:var(--bg-3)}
+.pb-avatar{width:40px;height:40px;border-radius:50%;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:16px;font-weight:700;color:var(--acc);flex-shrink:0;overflow:hidden}
+.pb-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.pb-info{flex:1;min-width:0}
+.pb-naam{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-sub{font-size:11px;color:var(--muted)}
+.pb-sync{display:flex;align-items:center;gap:5px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.sync-dot.synced{background:var(--green)}
+.sync-dot.lokaal{background:var(--amber)}
+.sync-dot.mislukt{background:var(--red)}
+.sync-dot.bezig{background:var(--acc);animation:puls 1s ease infinite}
+@keyframes puls{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* Schema widgets */
+.schema-widget{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);cursor:pointer;transition:var(--tx)}
+.schema-widget:hover{border-color:var(--border-2);background:var(--bg-3)}
+.sw-icon{font-size:20px;flex-shrink:0}
+.sw-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.sw-val{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--txt)}
+.dag-knop{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;cursor:pointer;transition:var(--tx);border:1px solid var(--border);background:var(--bg-3);color:var(--muted);flex-shrink:0}
+.dag-knop.werk{background:var(--acc-glow);border-color:rgba(123,110,246,.35);color:var(--acc)}
+.dag-knop.vrij{background:var(--bg-3);border-color:var(--border);color:var(--muted)}
+.dag-knop.lift{background:var(--lift-dim);border-color:rgba(200,255,71,.35);color:var(--lift)}
+.dag-knop.run{background:var(--run-dim);border-color:rgba(71,232,255,.3);color:var(--run)}
+.dag-knop.beide{background:linear-gradient(135deg,var(--lift-dim),var(--run-dim));border-color:rgba(200,255,71,.25);color:var(--lift)}
+.gast-banner{display:none;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;background:var(--acc-glow);border:1px solid rgba(123,110,246,.2);border-radius:var(--r);margin-bottom:16px;font-size:12px;color:var(--acc);flex-wrap:wrap}
+.gast-banner.zichtbaar{display:flex}
+
+/* ── Knoppen ──────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--body);font-size:13px;font-weight:500;padding:9px 16px;transition:var(--tx);white-space:nowrap;text-decoration:none}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn-p{background:var(--acc);color:#fff;width:100%;padding:11px}.btn-p:hover:not(:disabled){background:#8f84f8;transform:translateY(-1px)}
+.btn-g{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}.btn-g:hover:not(:disabled){background:var(--bg-4)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%}
+
+/* ── Form ─────────────────────────────────────────── */
+.f-grp{margin-bottom:12px}
+.f-lbl{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+.f-input{background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.5;padding:10px 13px;outline:none;transition:var(--tx);width:100%;overflow:visible}
+.f-input:focus{border-color:rgba(123,110,246,.45);box-shadow:0 0 0 3px var(--acc-glow)}
+.f-input::placeholder{color:var(--faint)}
+
+/* ── Spinner ──────────────────────────────────────── */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:draaien .7s linear infinite}
+@keyframes draaien{to{transform:rotate(360deg)}}
+
+/* ── Toast ────────────────────────────────────────── */
+.toast-c{position:fixed;top:68px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;pointer-events:auto;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}
+.toast.wn{background:var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+@media(max-width:540px){
+  .topbar-nav{display:none}
+  .menu-btn{display:flex}
+  .hero-tijd{font-size:40px}
+  .hero-groet{font-size:22px}
+  .modules-grid{grid-template-columns:1fr 1fr}
+  .dashboard{padding:20px 16px 80px}
+}
+@media(max-width:360px){
+  .modules-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<h1 class="sr-only">Focus Dashboard</h1>
+
+<!-- Auth overlay -->
+<div class="auth-overlay" id="auth-overlay" role="dialog" aria-modal="true" aria-label="Inloggen">
+  <div class="auth-card">
+    <div class="auth-titel">Focus Dashboard</div>
+    <div class="auth-sub">Log in of ga door als gast</div>
+    <div class="auth-tabs">
+      <div class="auth-tab on" id="tab-in" onclick="wisselTab('in')">Inloggen</div>
+      <div class="auth-tab" id="tab-reg" onclick="wisselTab('reg')">Registreren</div>
+    </div>
+    <div id="form-in">
+      <div class="f-grp"><label class="f-lbl" for="in-email">E-mailadres</label>
+        <input id="in-email" type="email" class="f-input" placeholder="naam@voorbeeld.nl" autocomplete="email"></div>
+      <div class="f-grp" style="margin-bottom:16px"><label class="f-lbl" for="in-ww">Wachtwoord</label>
+        <input id="in-ww" type="password" class="f-input" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-p" id="btn-in" onclick="handelInloggen()">Inloggen</button>
+      <div class="auth-scheiding"><span>of</span></div>
+      <button class="btn btn-g btn-full" onclick="handelGast()">Doorgaan zonder account</button>
+      <div class="gast-hint">Alles wordt lokaal opgeslagen. Later inloggen om te synchroniseren.</div>
+    </div>
+    <div id="form-reg" style="display:none">
+      <div class="f-grp"><label class="f-lbl" for="reg-naam">Naam</label>
+        <input id="reg-naam" type="text" class="f-input" placeholder="Jouw naam" autocomplete="name"></div>
+      <div class="f-grp"><label class="f-lbl" for="reg-email">E-mailadres</label>
+        <input id="reg-email" type="email" class="f-input" placeholder="naam@voorbeeld.nl" autocomplete="email"></div>
+      <div class="f-grp" style="margin-bottom:16px"><label class="f-lbl" for="reg-ww">Wachtwoord</label>
+        <input id="reg-ww" type="password" class="f-input" placeholder="Min. 8 tekens" autocomplete="new-password"></div>
+      <button class="btn btn-p" id="btn-reg" onclick="handelRegistreren()">Account aanmaken</button>
+    </div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand"><div class="brand-dot"></div>Focus</div>
+    <div class="topbar-center">
+      <nav class="topbar-nav" aria-label="Modules">
+        <a href="index.html"    class="nav-chip cur">Dashboard</a>
+        <a href="liftcore.html" class="nav-chip">LiftCore</a>
+        <a href="cardiocore.html"  class="nav-chip">CardioCore</a>
+        <a href="resetcore.html" class="nav-chip">ResetCore</a>
+        <a href="workcore.html" class="nav-chip">WorkCore</a>
+        <a href="lifecore.html"  class="nav-chip">LifeCore</a>
+        <a href="relaxcore.html" class="nav-chip">RelaxCore</a>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <button class="menu-btn" id="menu-btn" onclick="toggleNav()" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="sync-dot" id="sync-dot"></div>
+    </div>
+  </header>
+
+  <!-- Mobiel dropdown -->
+  <div class="nav-dropdown" id="nav-dropdown">
+    <div class="nav-dropdown-backdrop" onclick="sluitNav()"></div>
+    <div class="nav-dropdown-menu">
+      <a href="index.html"    class="cur" onclick="sluitNav()">⚡ Dashboard</a>
+      <div class="nav-sep"></div>
+      <a href="liftcore.html"  onclick="sluitNav()">🏋 LiftCore</a>
+      <a href="cardiocore.html"   onclick="sluitNav()">🏃 CardioCore</a>
+      <a href="resetcore.html" onclick="sluitNav()">🌅 ResetCore</a>
+      <a href="workcore.html"  onclick="sluitNav()">💼 WorkCore</a>
+      <a href="lifecore.html"  onclick="sluitNav()">🌱 LifeCore</a>
+      <a href="relaxcore.html" onclick="sluitNav()">🧘 RelaxCore</a>
+    </div>
+  </div>
+
+  <!-- Dashboard inhoud -->
+  <main class="dashboard">
+
+    <!-- Gast banner -->
+    <div class="gast-banner" id="gast-banner">
+      <span>Gast modus — data wordt lokaal opgeslagen.</span>
+      <button class="btn btn-p btn-sm" onclick="toonAuthOverlay()">Inloggen</button>
+    </div>
+
+    <!-- Hero: klok + begroeting -->
+    <div class="hero">
+      <div class="hero-tijd" id="klok">00:00</div>
+      <div class="hero-datum" id="datum-lbl">—</div>
+      <div class="hero-groet" id="groet-lbl">Welkom</div>
+      <div class="hero-sub" id="sub-lbl"></div>
+    </div>
+
+    <!-- Energie budget widget -->
+    <div id="energie-budget-widget" style="display:none;align-items:center;gap:12px;padding:11px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:12px">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Energiebudget vandaag</div>
+          <div style="font-family:var(--mono);font-size:11px" id="energie-budget-lbl">—</div>
+        </div>
+        <div style="background:var(--bg-3);border-radius:3px;height:5px;overflow:hidden">
+          <div id="energie-budget-bar" style="height:5px;border-radius:3px;background:var(--green);transition:width .4s ease;width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestie van de dag -->
+    <div class="suggestie" id="suggestie-blok">
+      <div class="sug-icon" id="sug-icon">💡</div>
+      <div class="sug-tekst" id="sug-tekst">Laden...</div>
+    </div>
+
+    <!-- Weerstatus widget -->
+    <div id="weer-widget" style="display:none;align-items:center;gap:12px;padding:11px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:16px;cursor:pointer" onclick="verversWeer(true)" title="Tik voor actueel weer">
+      <div style="font-size:22px" id="weer-icon">☁</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500" id="weer-omschr">Laden...</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="weer-detail">—</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="weer-tijd">—</div>
+    </div>
+
+    <!-- Schema widgets — direct bewerkbaar -->
+    <div style="margin-bottom:20px">
+      <div class="modules-label" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span>Schema</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="sync-dot" id="schema-sync-dot" style="opacity:0;transition:opacity .3s"></div>
+          <span id="schema-sync-lbl" style="font-family:var(--mono);font-size:9px;color:var(--muted);transition:opacity .3s;opacity:0"></span>
+          <button id="schema-opslaan-btn" onclick="slaSchemaHandmatigOp()"
+                  style="display:none;font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:5px;background:var(--acc-glow);border:1px solid rgba(123,110,246,.35);color:var(--acc);cursor:pointer;transition:var(--tx)"
+                  onmouseover="this.style.background='rgba(123,110,246,.25)'" onmouseout="this.style.background='var(--acc-glow)'">
+            Opslaan ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- Tijden row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="schema-widget" onclick="bewerkTijd('wekker')" title="Wekker aanpassen">
+          <div class="sw-icon">⏰</div>
+          <div>
+            <div class="sw-lbl">Wekker</div>
+            <div class="sw-val" id="sw-wekker">07:00</div>
+          </div>
+        </div>
+        <div class="schema-widget" onclick="bewerkTijd('slaap')" title="Slaap herinnering aanpassen">
+          <div class="sw-icon">🌙</div>
+          <div>
+            <div class="sw-lbl">Slaap herinnering</div>
+            <div class="sw-val" id="sw-slaap">22:30</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekrooster -->
+      <div class="schema-widget" style="flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="sw-lbl">Weekrooster</div>
+        </div>
+        <div style="display:flex;gap:3px" id="rooster-balk"></div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center">
+          <div style="font-size:11px;color:var(--lift)">🏋 Kracht</div>
+          <div style="display:flex;gap:3px" id="lift-balk"></div>
+          <div style="font-size:11px;color:var(--run)">🏃 Lopen</div>
+          <div style="display:flex;gap:3px" id="cardio-balk"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adaptieve dagplanning knop -->
+    <div id="dag-plan-wrap" style="margin-bottom:16px">
+      <button onclick="toonAdaptievePlan()" style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--acc-glow);border:1px solid rgba(123,110,246,.3);border-radius:var(--rl);cursor:pointer;transition:var(--tx);font-family:var(--body);color:var(--txt)" onmouseover="this.style.background='rgba(123,110,246,.2)'" onmouseout="this.style.background='var(--acc-glow)'">
+        <span style="font-size:18px">🗓</span>
+        <div style="text-align:left">
+          <div style="font-size:13px;font-weight:500;color:var(--acc)">Plan mijn dag</div>
+          <div style="font-size:11px;color:var(--muted)" id="dag-plan-sub">Gebaseerd op energie en schema</div>
+        </div>
+        <span style="margin-left:auto;color:var(--muted)">→</span>
+      </button>
+      <div id="dag-plan-resultaat" style="display:none;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);margin-top:8px;overflow:hidden"></div>
+    </div>
+
+    <!-- Profiel balk -->
+    <a href="#profiel" class="profiel-balk" id="profiel-balk" onclick="toonProfiel(event)">
+      <div class="pb-avatar" id="pb-avatar">?</div>
+      <div class="pb-info">
+        <div class="pb-naam" id="pb-naam">—</div>
+        <div class="pb-sub">Naam &amp; instellingen</div>
+      </div>
+      <div class="pb-sync">
+        <div class="sync-dot" id="pb-sync-dot"></div>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="pb-sync-lbl">—</span>
+        <span style="color:var(--muted);margin-left:4px">›</span>
+      </div>
+    </a>
+
+    <!-- Module knoppen -->
+    <div class="modules-label">Modules</div>
+    <div class="modules-grid" id="modules-grid"></div>
+
+  </main>
+
+  <!-- Profiel overlay (slide-up) -->
+  <div id="profiel-overlay" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);backdrop-filter:blur(6px)" onclick="sluitProfiel(event)">
+    <div id="profiel-panel" style="position:absolute;bottom:0;left:0;right:0;max-height:90vh;overflow-y:auto;background:var(--bg-2);border-radius:var(--rx) var(--rx) 0 0;border-top:1px solid var(--border-2);padding:24px 24px 40px;animation:slideUp .25s ease">
+      <div style="width:36px;height:4px;border-radius:2px;background:var(--border-3);margin:0 auto 20px"></div>
+      <div style="font-family:var(--head);font-size:18px;font-weight:700;padding-top:.1em;overflow:visible;margin-bottom:16px">Profiel</div>
+      <div id="profiel-inhoud"></div>
+
+      <!-- Sync sectie -->
+      <div style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--r);padding:14px 16px;margin-top:16px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <span>Cloud synchronisatie</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="sync-dot" id="panel-sync-dot"></div>
+            <span style="font-size:10px;color:var(--muted)" id="panel-sync-lbl">—</span>
+          </div>
+        </div>
+
+        <!-- Module status grid -->
+        <div id="sync-module-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px">
+          <!-- gevuld door bouwSyncGrid() -->
+        </div>
+
+        <!-- Voortgangsbalk -->
+        <div id="sync-voortgang-wrap" style="display:none;margin-bottom:10px">
+          <div style="background:var(--bg-4);border-radius:3px;height:4px;overflow:hidden;margin-bottom:5px">
+            <div id="sync-voortgang-bar" style="height:4px;background:var(--acc);border-radius:3px;transition:width .3s ease;width:0%"></div>
+          </div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="sync-voortgang-lbl">—</div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" id="btn-sync-upload" onclick="handelSyncUpload()" style="flex:1">
+            ↑ Alles uploaden
+          </button>
+          <button class="btn btn-g btn-sm" id="btn-sync-download" onclick="handelSyncDownload()" style="flex:1">
+            ↓ Alles laden
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5">
+          Upload stuurt alle module-data + schema naar de cloud.<br>
+          Laden haalt cloud-versie op en overschrijft lokale data.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-p" id="pp-opslaan" onclick="handelOpslaan()" disabled style="width:auto;padding:10px 20px">Opslaan</button>
+        <button class="btn btn-g btn-sm" onclick="sluitProfiel()">Sluiten</button>
+        <button class="btn btn-g btn-sm" onclick="handelUitloggen()" style="margin-left:auto;color:var(--red)">Uitloggen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tijd-popup voor wekker/slaap bewerken -->
+  <div id="tijd-popup" style="display:none;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center" onclick="sluitTijdPopup(event)">
+    <div style="background:var(--bg-2);border-radius:var(--rx) var(--rx) 0 0;border-top:1px solid var(--border-2);padding:24px;width:100%;max-width:400px;animation:slideUp .2s ease" onclick="event.stopPropagation()">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:12px" id="tijd-popup-lbl">Wekker</div>
+      <input type="time" id="tijd-popup-inp" class="f-input" style="font-size:22px;text-align:center;padding:14px;margin-bottom:14px">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-g btn-sm" onclick="sluitTijdPopup()">Annuleer</button>
+        <button class="btn btn-p" style="flex:1" onclick="slaaTijdOp()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<style>@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
+
+<div class="toast-c" id="toast-c" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+'use strict';
+
+/* ══ CONFIG ══ */
+const SB_URL  = 'https://edgzrpmaqpjtzeiqhisw.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ3pycG1hcXBqdHplaXFoaXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3Mjc5NjIsImV4cCI6MjA5NjMwMzk2Mn0.j3kElkxEkn3YVcfBnmj9hLz3-F4o9KrVfLOZmz5rTl0';
+const LS_KEY  = 'focus_profiel';
+const LS_MAX  = 4.5 * 1024 * 1024;
+
+/* ══ MODULE DEFINITIES ══ */
+const MODULES = [
+  { id:'liftcore',   naam:'LiftCore',   omschr:'StrongLifts 5×5 — krachtraining',  icon:'🏋', kleur:'liftcore', href:'liftcore.html',  tag:'Kracht' },
+  { id:'cardiocore',    naam:'CardioCore',    omschr:'Hardlopen, roeien & cardio',       icon:'🏃', kleur:'cardiocore',  href:'cardiocore.html',   tag:'Cardio' },
+  { id:'resetcore',  naam:'ResetCore',  omschr:'Dagelijkse check-in & routine',    icon:'🌅', kleur:'resetcore',href:'resetcore.html', tag:'Dagstart' },
+  { id:'workcore',   naam:'WorkCore',   omschr:'Focustimer & taakbeheer',          icon:'💼', kleur:'workcore', href:'workcore.html',  tag:'Focus' },
+  { id:'lifecore',   naam:'LifeCore',   omschr:'Patronen doorbreken & gewoonten',  icon:'🌱', kleur:'lifecore', href:'lifecore.html',  tag:'Gewoonten' },
+  { id:'relaxcore',  naam:'RelaxCore',  omschr:'Stres-oefeningen & tot rust komen', icon:'🧘', kleur:'relaxcore', href:'relaxcore.html', tag:'Ontspan' },
+];
+
+/* ══ SLIMME SUGGESTIE ENGINE ══ */
+const DAGDELEN = ['ma','di','wo','do','vr','za','zo'];
+
+function huidigDagKort(){
+  return DAGDELEN[new Date().getDay()===0?6:new Date().getDay()-1];
+}
+
+function berekenSuggestie(p){
+  const nu    = new Date();
+  const uur   = nu.getHours();
+  const dag   = huidigDagKort();
+  const s     = laadSchema(); // altijd actuele schema data
+  const rooster   = s.rooster;
+  const liftDagen = s.lift_dagen;
+  const runDagen  = s.cardio_dagen;
+  const wekker    = s.wekker;
+  const slaap     = s.slaap_herinnering;
+  const wekkerUur = parseInt(wekker.split(':')[0]);
+  const slaapUur  = parseInt(slaap.split(':')[0]);
+  const dagType   = rooster[dag] || 'werk';
+  const isWerkdag = dagType === 'werk';
+  const isVrij    = dagType === 'vrij';
+  const isCardiodag = liftDagen.includes(dag) ? false : runDagen.includes(dag);
+  const isLiftDag = liftDagen.includes(dag);
+  const isRunDag  = runDagen.includes(dag);
+  const moetOpschieten = isWerkdag && uur >= wekkerUur - 1 && uur < wekkerUur + 2;
+
+  // Buurt van slaaptijd
+  if(uur >= slaapUur || uur < 4){
+    return { icon:'🌙', aanbevolen:'lifecore', tekst:'<strong>Bijna bedtijd.</strong> Slaap is de belangrijkste herstelfactor — zorg voor genoeg rust.' };
+  }
+
+  // Vroeg — dagstart nog niet gedaan
+  if(uur < wekkerUur + 1){
+    return { icon:'🌅', aanbevolen:'resetcore', tekst:'<strong>Goedemorgen.</strong> Begin met je dagstart — check-in, ademhaling en mobiliteit zetten de toon.' };
+  }
+
+  // Werkdag: moet opschieten
+  if(moetOpschieten){
+    return { icon:'⏰', aanbevolen:'resetcore', tekst:`<strong>Werkdag — opschichten.</strong> Je wekker staat op ${wekker}. Neem 5 minuten voor ResetCore, geen training vandaag.` };
+  }
+
+  // Ochtend op liftdag
+  if(uur >= 7 && uur < 10 && isLiftDag){
+    return { icon:'🏋', aanbevolen:'liftcore', tekst:'<strong>LiftCore dag.</strong> Cortisol is hoog, ochtend is prime time voor kracht — ideaal moment voor je training.' };
+  }
+
+  // Ochtend op cardiodag — regen check
+  if(uur >= 7 && uur < 10 && isRunDag){
+    if(weerRegen)
+      return { icon:'🚣', aanbevolen:'cardiocore', tekst:'<strong>🌧 Regen vandaag — roeimachine.</strong> Hardloopdag maar het regent. Doe het roeiprogramma in CardioCore als alternatief.' };
+    return { icon:'🏃', aanbevolen:'cardiocore', tekst:'<strong>CardioCore dag.</strong> Ochtendlopen verbetert je hersenfunctie voor de rest van de dag.' };
+  }
+
+  // Avond cardiodag — regen check
+  if(uur >= 17 && uur < 20 && isRunDag){
+    if(weerRegen)
+      return { icon:'🚣', aanbevolen:'cardiocore', tekst:'<strong>🌧 Buiten natte boel — roeimachine.</strong> Geplande looptraining maar regen. Roeiprogramma als alternatief in CardioCore.' };
+    return { icon:'🏃', aanbevolen:'cardiocore', tekst:'<strong>Avondloop.</strong> Looptraining na het werk helpt werkstress af te bouwen.' };
+  }
+
+  // Ochtend op werkdag — focus
+  if(uur >= 8 && uur < 12 && isWerkdag){
+    return { icon:'💼', aanbevolen:'workcore', tekst:'<strong>Focustijd.</strong> De ochtend is je scherpste periode. Start een focusblok voor je belangrijkste taak.' };
+  }
+
+  // Vrije ochtend — beweeg
+  if(uur >= 8 && uur < 11 && isVrij && (isLiftDag || isRunDag)){
+    const mod = isLiftDag ? 'liftcore' : 'cardiocore';
+    return { icon:'⚡', aanbevolen:mod, tekst:`<strong>Vrije dag — beweeg.</strong> ${isLiftDag ? 'LiftCore op het programma vandaag.' : 'CardioCore dag — goed moment voor een lange duurloop.'}` };
+  }
+
+  // Middaguur werkdag — wandeling
+  if(uur >= 12 && uur < 14 && isWerkdag){
+    return { icon:'🚶', aanbevolen:'cardiocore', tekst:'<strong>Lunchpauze.</strong> 20 minuten wandelen verlaagt stresshormonen en reset je focus voor de middag.' };
+  }
+
+  // Middag liftdag — kracht training
+  if(uur >= 14 && uur < 18 && isLiftDag && isVrij){
+    return { icon:'🏋', aanbevolen:'liftcore', tekst:'<strong>Spierprestaties zijn nu optimaal.</strong> Kerntemperatuur is hoog — uitstekend moment voor zware lifts.' };
+  }
+
+  // Middag tweede focusgolf
+  if(uur >= 14 && uur < 17 && isWerkdag){
+    return { icon:'💼', aanbevolen:'workcore', tekst:'<strong>Tweede focusgolf.</strong> Na 14:00 piekt reactiesnelheid — goed voor afronding van taken.' };
+  }
+
+  // Avond reflectie
+  if(uur >= 19 && uur < slaapUur){
+    return { icon:'🌱', aanbevolen:'lifecore', tekst:'<strong>Avond.</strong> Goed moment om de dag kort te evalueren in LifeCore en morgen voor te bereiden.' };
+  }
+
+  // Fallback
+  return { icon:'⚡', aanbevolen:'resetcore', tekst:'<strong>Vandaag begint hier.</strong> Start met je dagelijkse check-in in ResetCore.' };
+}
+
+/* ══ STANDAARD PROFIEL ══ */
+const STD = {
+  id:null, display_name:'', email:'',
+  timezone:'Europe/Amsterdam', created_at:null, updated_at:null,
+  modules:['liftcore','cardiocore','resetcore','workcore','lifecore'],
+  voorkeuren:{
+    thema:'dark', taal:'nl', notificaties:true,
+    check_in_tijd:'08:00',
+    slaap_herinnering:'22:30',
+    wekker:'07:00',
+    rooster:{
+      ma:'werk', di:'werk', wo:'werk', do:'werk', vr:'werk',
+      za:'vrij', zo:'vrij',
+    },
+    lift_dagen:['ma','wo','vr'],
+    cardio_dagen:['di','do','za'],
+  },
+  sync_status:'lokaal', gast_modus:false,
+};
+
+/* ══ STATE ══ */
+let SB = null;
+let huidigProfiel = null;
+let heeftWijzigingen = false;
+
+/* ══ SUPABASE ══ */
+function initSB(){
+  try{
+    SB = window.supabase.createClient(SB_URL, SB_ANON, {auth:{persistSession:true,autoRefreshToken:true}});
+    window._supabaseClient = SB;
+  }catch(e){ console.warn('Supabase init mislukt:', e); }
+}
+
+/* ══ LOCALSTORAGE ══ */
+function safeSet(sleutel, waarde){
+  try{
+    const s = JSON.stringify(waarde);
+    if(new Blob([s]).size > LS_MAX) throw new Error('Te groot voor localStorage');
+    localStorage.setItem(sleutel, s);
+    return true;
+  }catch(e){ toast(e.message||'Opslaan mislukt','wn'); return false; }
+}
+function laadProfiel(){
+  try{ const r=localStorage.getItem(LS_KEY); return r?{...JSON.parse(JSON.stringify(STD)),...JSON.parse(r)}:null; }
+  catch{ return null; }
+}
+function slaProfielOp(p){
+  const b={...p,updated_at:new Date().toISOString(),sync_status:'lokaal'};
+  if(safeSet(LS_KEY,b)) updateSyncUI('lokaal');
+  huidigProfiel=b;
+  return b;
+}
+
+/* ══ INDEXEDDB ══ */
+let idb=null;
+function openIDB(){
+  if(idb) return Promise.resolve(idb);
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('focus_dashboard',1);
+    r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('profiel_bijlagen'))db.createObjectStore('profiel_bijlagen',{keyPath:'id'});};
+    r.onsuccess=e=>{idb=e.target.result;res(idb);}; r.onerror=e=>rej(e.target.error);
+  });
+}
+async function idbSlaAvatar(d){const db=await openIDB();return new Promise((res,rej)=>{const r=db.transaction('profiel_bijlagen','readwrite').objectStore('profiel_bijlagen').put({id:'avatar',data:d});r.onsuccess=()=>res(true);r.onerror=e=>rej(e.target.error);});}
+async function idbHaalAvatar(){try{const db=await openIDB();return new Promise((res,rej)=>{const r=db.transaction('profiel_bijlagen','readonly').objectStore('profiel_bijlagen').get('avatar');r.onsuccess=e=>res(e.target.result?.data||null);r.onerror=e=>rej(e.target.error);});}catch{return null;}}
+
+/* ══ CLOUD SYNC ══ */
+async function syncNaarCloud(p){
+  if(!SB||!navigator.onLine) return false;
+  try{
+    updateSyncUI('bezig');
+    const{data:s}=await SB.auth.getSession();
+    if(!s?.session?.user){updateSyncUI('lokaal');return false;}
+    const uid=s.session.user.id;
+    const{error}=await SB.from('profiles').upsert({id:p.id||uid,user_id:uid,display_name:p.display_name,timezone:p.timezone,modules:p.modules,voorkeuren:p.voorkeuren,updated_at:p.updated_at||new Date().toISOString()},{onConflict:'user_id'});
+    if(error) throw error;
+    const lok=laadProfiel();
+    if(lok) safeSet(LS_KEY,{...lok,sync_status:'synced'});
+    updateSyncUI('synced'); return true;
+  }catch(e){
+    const lok=laadProfiel();
+    if(lok) safeSet(LS_KEY,{...lok,sync_status:'sync_mislukt'});
+    updateSyncUI('sync_mislukt'); return false;
+  }
+}
+async function laadVanCloud(){
+  if(!SB) return null;
+  try{
+    const{data:s}=await SB.auth.getSession();
+    if(!s?.session?.user) return null;
+    const{data,error}=await SB.from('profiles').select('*').eq('user_id',s.session.user.id).single();
+    if(error){if(error.code==='PGRST116')return null;throw error;}
+    return data;
+  }catch(e){return null;}
+}
+function voegSamen(lok,cloud){
+  if(!cloud) return lok;
+  if(!lok) return{...STD,...cloud,sync_status:'synced'};
+  return new Date(lok.updated_at||0)>=new Date(cloud.updated_at||0)?lok:{...lok,...cloud,sync_status:'synced'};
+}
+
+/* ══ AUTH ══ */
+async function handelInloggen(){
+  const email=document.getElementById('in-email').value.trim();
+  const ww=document.getElementById('in-ww').value;
+  if(!email||!ww){toast('Vul e-mailadres en wachtwoord in','wn');return;}
+  const btn=document.getElementById('btn-in');
+  setKnopLaad(btn,true,'Inloggen...');
+  try{const{error}=await SB.auth.signInWithPassword({email,password:ww});if(error)throw error;}
+  catch(e){toast(e.message||'Inloggen mislukt','wn');setKnopLaad(btn,false,'Inloggen');}
+}
+async function handelRegistreren(){
+  const naam=document.getElementById('reg-naam').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const ww=document.getElementById('reg-ww').value;
+  if(!naam||!email||!ww){toast('Vul alle velden in','wn');return;}
+  if(ww.length<8){toast('Wachtwoord minimaal 8 tekens','wn');return;}
+  const btn=document.getElementById('btn-reg');
+  setKnopLaad(btn,true,'Aanmaken...');
+  try{
+    const{data,error}=await SB.auth.signUp({email,password:ww,options:{data:{display_name:naam}}});
+    if(error)throw error;
+    if(data.user&&!data.session)toast('Bevestig je e-mailadres','neu');
+    setKnopLaad(btn,false,'Account aanmaken');
+  }catch(e){toast(e.message||'Registreren mislukt','wn');setKnopLaad(btn,false,'Account aanmaken');}
+}
+function handelGast(){
+  let p=laadProfiel();
+  if(!p){p={...JSON.parse(JSON.stringify(STD)),id:crypto.randomUUID(),created_at:new Date().toISOString(),gast_modus:true};slaProfielOp(p);}
+  verbergAuth();toonApp();toonGastBanner(true);verversUI(p);toast('Welkom — je werkt lokaal','neu');
+}
+async function handelUitloggen(){
+  if(SB) await SB.auth.signOut().catch(()=>{});
+  toonGastBanner(false);verbergApp();toonAuthOverlay();sluitProfiel();toast('Uitgelogd','neu');
+}
+
+/* ══ PROFIEL OPSLAAN ══ */
+async function handelOpslaan(){
+  const btn=document.getElementById('pp-opslaan');
+  setKnopLaad(btn,true,'Opslaan...');
+  try{
+    const huidig=laadProfiel()||{...JSON.parse(JSON.stringify(STD)),id:crypto.randomUUID(),created_at:new Date().toISOString()};
+    const naam    = document.getElementById('pp-inp-naam')?.value.trim();
+    const tz      = document.getElementById('pp-inp-tz')?.value;
+    const checkin = document.getElementById('pp-inp-checkin')?.value;
+    const bijgewerkt={...huidig,
+      display_name: naam||huidig.display_name,
+      timezone:     tz||huidig.timezone,
+      voorkeuren:{  ...huidig.voorkeuren,
+        check_in_tijd: checkin||huidig.voorkeuren?.check_in_tijd,
+      }};
+    const opgeslagen=slaProfielOp(bijgewerkt);
+    heeftWijzigingen=false;
+    btn.disabled=true;
+    verversUI(opgeslagen);
+    toast('Profiel opgeslagen','ok');
+    const ok=await syncNaarCloud(opgeslagen);
+    if(ok) toast('Gesynchroniseerd ✓','ok');
+  }finally{setKnopLaad(btn,false,'Opslaan');}
+}
+
+/* ══ AVATAR ══ */
+async function handelAvatar(input){
+  if(!input.files?.length) return;
+  const bestand=input.files[0];
+  if(bestand.size>5*1024*1024){toast('Max 5MB','wn');return;}
+  try{
+    const d=await comprimeer(bestand,200,200);
+    await idbSlaAvatar(d);
+    toonPbAvatar(d);
+    toast('Foto opgeslagen','ok');
+  }catch{toast('Foto verwerken mislukt','wn');}
+  input.value='';
+}
+function comprimeer(bestand,mxB,mxH){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>{const img=new Image();img.onload=()=>{let b=img.width,h=img.height;if(b>h){if(b>mxB){h=Math.round(h*mxB/b);b=mxB;}}else{if(h>mxH){b=Math.round(b*mxH/h);h=mxH;}}const c=document.createElement('canvas');c.width=b;c.height=h;c.getContext('2d').drawImage(img,0,0,b,h);res(c.toDataURL('image/jpeg',.85));};img.onerror=()=>rej(new Error('Laden mislukt'));img.src=e.target.result;};r.onerror=()=>rej();r.readAsDataURL(bestand);
+  });
+}
+
+/* ══ SCHEMA BEHEER ══
+   Centraal opgeslagen onder 'focus_schema' — alle modules lezen hier vandaan.
+   Structuur: { wekker, slaap_herinnering, rooster:{ma..zo}, lift_dagen:[], cardio_dagen:[] }
+═══════════════════════════════════════════════════════════ */
+const SCHEMA_KEY = 'focus_schema';
+const DAGEN = ['ma','di','wo','do','vr','za','zo'];
+
+const SCHEMA_STD = {
+  wekker:             '07:00',
+  slaap_herinnering:  '22:30',
+  rooster:            {ma:'werk',di:'werk',wo:'werk',do:'werk',vr:'werk',za:'vrij',zo:'vrij'},
+  lift_dagen:         ['ma','wo','vr'],
+  cardio_dagen:          ['di','do','za'],
+};
+
+function laadSchema(){
+  try{
+    const r = localStorage.getItem(SCHEMA_KEY);
+    return r ? {...JSON.parse(JSON.stringify(SCHEMA_STD)), ...JSON.parse(r)} : JSON.parse(JSON.stringify(SCHEMA_STD));
+  }catch{ return JSON.parse(JSON.stringify(SCHEMA_STD)); }
+}
+
+function slaSchemaOp(s){
+  try{ localStorage.setItem(SCHEMA_KEY, JSON.stringify(s)); }
+  catch(e){ toast('Schema opslaan mislukt','wn'); }
+  // Auto-sync naar cloud na 5 sec
+  if(typeof Core !== 'undefined') Core.sync.planAutoSync('schema', s);
+}
+
+function markeerSchemaWijziging(){
+  const btn = document.getElementById('schema-opslaan-btn');
+  if(btn) btn.style.display = 'inline-block';
+  const dot = document.getElementById('schema-sync-dot');
+  const lbl = document.getElementById('schema-sync-lbl');
+  if(dot){ dot.className='sync-dot lokaal'; dot.style.opacity='1'; }
+  if(lbl){ lbl.textContent='niet opgeslagen'; lbl.style.opacity='1'; }
+}
+
+function slaSchemaHandmatigOp(){
+  // Forceer bevestiging + visuele feedback
+  const s = laadSchema();
+  slaSchemaOp(s);
+  const btn = document.getElementById('schema-opslaan-btn');
+  const dot = document.getElementById('schema-sync-dot');
+  const lbl = document.getElementById('schema-sync-lbl');
+  if(btn){ btn.textContent='Opgeslagen ✓'; btn.style.background='var(--green-dim)'; btn.style.borderColor='var(--green-b)'; btn.style.color='var(--green)'; }
+  if(dot){ dot.className='sync-dot synced'; }
+  if(lbl){ lbl.textContent='gesynchroniseerd'; }
+  toast('Schema opgeslagen — modules bijgewerkt ✓','ok');
+  // Reset knop na 2 sec
+  setTimeout(()=>{
+    if(btn){ btn.style.display='none'; btn.textContent='Opslaan ✓'; btn.style.background='var(--acc-glow)'; btn.style.borderColor='rgba(123,110,246,.35)'; btn.style.color='var(--acc)'; }
+    if(dot){ dot.style.opacity='0'; }
+    if(lbl){ lbl.style.opacity='0'; }
+  }, 2500);
+}
+
+function bouwSchemaWidgets(){
+  const s = laadSchema();
+
+  // Tijden
+  document.getElementById('sw-wekker').textContent = s.wekker || '07:00';
+  document.getElementById('sw-slaap').textContent  = s.slaap_herinnering || '22:30';
+
+  // Weekrooster
+  const roosterBalk = document.getElementById('rooster-balk');
+  if(roosterBalk){
+    roosterBalk.innerHTML = DAGEN.map(d => {
+      const type = s.rooster[d] || 'werk';
+      return `<div class="dag-knop ${type}" onclick="toggleRoosterDag('${d}')" title="${d} — ${type==='werk'?'werkdag':'vrije dag'}">
+        <div>
+          <div style="font-size:9px;opacity:.7">${d}</div>
+          <div style="font-size:11px">${type==='werk'?'💼':'🏖'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Trainingsdagen
+  const liftBalk = document.getElementById('lift-balk');
+  const runBalk  = document.getElementById('cardio-balk');
+  if(liftBalk){
+    liftBalk.innerHTML = DAGEN.map(d => {
+      const sel = s.lift_dagen.includes(d);
+      return `<div class="dag-knop ${sel?'lift':''}" onclick="toggleTrainingsdag('${d}','lift')" title="${d}${sel?' — krachtraining':''}" style="width:30px;height:26px;font-size:9px">${d}</div>`;
+    }).join('');
+  }
+  if(runBalk){
+    runBalk.innerHTML = DAGEN.map(d => {
+      const sel = s.cardio_dagen.includes(d);
+      return `<div class="dag-knop ${sel?'run':''}" onclick="toggleTrainingsdag('${d}','run')" title="${d}${sel?' — looptraining':''}" style="width:30px;height:26px;font-size:9px">${d}</div>`;
+    }).join('');
+  }
+}
+
+function toggleRoosterDag(dag){
+  const s = laadSchema();
+  s.rooster[dag] = s.rooster[dag] === 'werk' ? 'vrij' : 'werk';
+  slaSchemaOp(s);
+  bouwSchemaWidgets();
+  updateSuggestie();
+  markeerSchemaWijziging();
+  toast(`${dag}: ${s.rooster[dag]==='werk'?'werkdag 💼':'vrije dag 🏖'}`, 'neu');
+}
+
+function toggleTrainingsdag(dag, type){
+  const s = laadSchema();
+  const arr = type === 'lift' ? s.lift_dagen : s.cardio_dagen;
+  const idx = arr.indexOf(dag);
+  if(idx > -1) arr.splice(idx, 1);
+  else arr.push(dag);
+  slaSchemaOp(s);
+  bouwSchemaWidgets();
+  updateSuggestie();
+  markeerSchemaWijziging();
+}
+
+// Tijd-popup voor wekker en slaap herinnering
+let tijdPopupType = 'wekker';
+function bewerkTijd(type){
+  tijdPopupType = type;
+  const s = laadSchema();
+  const val = type === 'wekker' ? s.wekker : s.slaap_herinnering;
+  document.getElementById('tijd-popup-lbl').textContent = type === 'wekker' ? '⏰ Wekker' : '🌙 Slaap herinnering';
+  document.getElementById('tijd-popup-inp').value = val;
+  const popup = document.getElementById('tijd-popup');
+  popup.style.display = 'flex';
+  setTimeout(()=>document.getElementById('tijd-popup-inp').focus(), 100);
+}
+function slaaTijdOp(){
+  const val = document.getElementById('tijd-popup-inp').value;
+  if(!val) return;
+  const s = laadSchema();
+  if(tijdPopupType === 'wekker') s.wekker = val;
+  else s.slaap_herinnering = val;
+  slaSchemaOp(s);
+  bouwSchemaWidgets();
+  updateSuggestie();
+  markeerSchemaWijziging();
+  sluitTijdPopup();
+  toast(`${tijdPopupType==='wekker'?'Wekker':'Slaap herinnering'}: ${val}`, 'ok');
+  if(tijdPopupType === 'slaap') startSlaapReminder(); // herstart met nieuw tijdstip
+}
+function sluitTijdPopup(e){
+  if(e && e.target !== document.getElementById('tijd-popup')) return;
+  document.getElementById('tijd-popup').style.display = 'none';
+}
+
+
+/* ══ ADAPTIEVE DAGPLANNING ══ */
+function toonAdaptievePlan(){
+  const el = document.getElementById('dag-plan-resultaat');
+  if(!el) return;
+
+  // Toggle
+  if(el.style.display === 'block'){
+    el.style.display = 'none';
+    return;
+  }
+
+  const s      = laadSchema();
+  const dag    = huidigDagKort();
+  const uur    = new Date().getHours();
+  const energie = (typeof Core !== 'undefined') ? Core.getEnergie() : 'midden';
+  const sd     = (typeof Core !== 'undefined') ? Core.slaapDebt() : null;
+  const isWerk = (s.rooster[dag] || 'werk') === 'werk';
+  const isLift = s.lift_dagen.includes(dag);
+  const isCardio = s.cardio_dagen.includes(dag);
+
+  // Budget op basis van energie
+  const budgetten = { laag:{taken:3,focus:2,uren:4}, midden:{taken:5,focus:3,uren:6}, hoog:{taken:7,focus:4,uren:8} };
+  const budget = budgetten[energie] || budgetten.midden;
+
+  // Slaaptekort-aanpassing
+  const slaapWaarschuwing = sd && sd.kritiek;
+
+  // Bouw dag-blokken
+  const blokken = [];
+  const wekkerUur = parseInt(s.wekker.split(':')[0]);
+
+  if(uur < wekkerUur + 2){
+    blokken.push({ icon:'🌅', tijd: s.wekker, label:'ResetCore dagstart', url:'resetcore.html', kleur:'var(--green)' });
+  }
+
+  if(isLift && energie !== 'laag'){
+    blokken.push({ icon:'🏋', tijd: uur < 10 ? '08:30' : '17:30', label:'LiftCore training', url:'liftcore.html', kleur:'var(--lift)' });
+  } else if(isCardio && !weerRegen && energie !== 'laag'){
+    blokken.push({ icon:'🏃', tijd: uur < 10 ? '08:30' : '17:30', label:'CardioCore looptraining', url:'cardiocore.html', kleur:'var(--run)' });
+  } else if(isCardio && weerRegen){
+    blokken.push({ icon:'🚣', tijd: uur < 10 ? '08:30' : '17:30', label:'CardioCore roeimachine (regen)', url:'cardiocore.html', kleur:'var(--run)' });
+  }
+
+  if(isWerk){
+    for(let i=0; i<Math.min(budget.focus, 3); i++){
+      blokken.push({ icon:'⚡', tijd: `${9+i*2}:00`, label:`Focusblok ${i+1} — ${i===0?'prioriteiten':'taken'}`, url:'workcore.html', kleur:'var(--acc)' });
+    }
+  }
+
+  blokken.push({ icon:'🌱', tijd: s.slaap_herinnering.replace(':','u').slice(0,-3)+'u', label:'LifeCore avond check-in', url:'lifecore.html', kleur:'var(--amber)' });
+
+  // Waarschuwingen
+  const waarschuwingen = [];
+  if(slaapWaarschuwing) waarschuwingen.push('😴 Slaaptekort — plan maximaal '+ budget.taken +' taken vandaag');
+  if(energie === 'laag') waarschuwingen.push('😔 Lage energie — training overgeslagen, focusblokken ingekort');
+  if(weerRegen && isCardio) waarschuwingen.push('🌧 Regen — hardlopen vervangen door roeimachine');
+
+  el.innerHTML =
+    '<div style="padding:14px 16px">' +
+    '<div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Voorstel voor vandaag — '+energie+' energie</div>' +
+    (waarschuwingen.length ? '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px">' + waarschuwingen.map(w=>'<div style="font-size:11px;color:var(--muted);padding:5px 9px;background:var(--bg-3);border-radius:var(--r)">'+w+'</div>').join('') + '</div>' : '') +
+    blokken.map(b=>`<a href="${b.url}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--txt)"><span style="font-size:16px">${b.icon}</span><div style="flex:1"><div style="font-size:13px">${b.label}</div></div><div style="font-family:var(--mono);font-size:10px;color:${b.kleur}">${b.tijd}</div></a>`).join('') +
+    '<div style="padding-top:10px;font-size:11px;color:var(--faint)">Tik een blok om de module te openen.</div></div>';
+
+  el.style.display = 'block';
+}
+
+/* ══ WEER ══
+   Open-Meteo — gratis, geen API key nodig.
+   WMO weather codes: https://open-meteo.com/en/docs
+═══════════════════════════════════════════════════════ */
+const WEER_CACHE_KEY = 'dashboard_weer_cache';
+let weerRegen = false; // globale flag voor suggestie engine
+
+const WEER_CODES = {
+  0:'Helder',1:'Overwegend helder',2:'Gedeeltelijk bewolkt',3:'Bewolkt',
+  45:'Mist',48:'IJsmist',
+  51:'Lichte motregen',53:'Motregen',55:'Zware motregen',
+  61:'Lichte regen',63:'Regen',65:'Zware regen',
+  71:'Lichte sneeuw',73:'Sneeuw',75:'Zware sneeuw',
+  80:'Lichte buien',81:'Buien',82:'Zware buien',
+  95:'Onweer',96:'Onweer met hagel',99:'Zwaar onweer',
+};
+const WEER_ICONS = {
+  0:'☀️',1:'🌤',2:'⛅',3:'☁️',
+  45:'🌫',48:'🌫',
+  51:'🌦',53:'🌧',55:'🌧',
+  61:'🌧',63:'🌧',65:'🌧',
+  71:'🌨',73:'❄️',75:'❄️',
+  80:'🌦',81:'🌧',82:'⛈',
+  95:'⛈',96:'⛈',99:'⛈',
+};
+const REGEN_CODES = new Set([51,53,55,61,63,65,80,81,82,95,96,99]);
+
+async function verversWeer(forceRefresh){
+  // Controleer cache (max 30 min oud)
+  if(!forceRefresh){
+    try{
+      const cached = JSON.parse(localStorage.getItem(WEER_CACHE_KEY)||'null');
+      if(cached && Date.now()-cached.ts < 30*60*1000){
+        toonWeer(cached); return;
+      }
+    }catch{}
+  }
+
+  if(!navigator.geolocation){ toonWeerFout('Locatie niet beschikbaar'); return; }
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const {latitude:lat, longitude:lon} = pos.coords;
+    try{
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(2)}&longitude=${lon.toFixed(2)}&current=temperature_2m,weathercode,windspeed_10m,precipitation&timezone=auto`;
+      const r = await fetch(url);
+      if(!r.ok) throw new Error('API fout');
+      const data = await r.json();
+      const c = data.current;
+      const weerData = {
+        ts:        Date.now(),
+        code:      c.weathercode,
+        temp:      Math.round(c.temperature_2m),
+        wind:      Math.round(c.windspeed_10m),
+        neerslag:  c.precipitation || 0,
+        lat, lon,
+      };
+      localStorage.setItem(WEER_CACHE_KEY, JSON.stringify(weerData));
+      toonWeer(weerData);
+    }catch(e){
+      toonWeerFout('Weer niet beschikbaar');
+    }
+  }, ()=>toonWeerFout('Locatietoestemming geweigerd'));
+}
+
+function toonWeer(d){
+  const widget = document.getElementById('weer-widget');
+  widget.style.display = 'flex';
+  document.getElementById('weer-icon').textContent    = WEER_ICONS[d.code] || '🌡';
+  document.getElementById('weer-omschr').textContent  = WEER_CODES[d.code] || 'Onbekend';
+  document.getElementById('weer-detail').textContent  = `${d.temp}°C · Wind ${d.wind} km/h${d.neerslag>0?' · '+d.neerslag+' mm':''}`;
+  document.getElementById('weer-tijd').textContent    = new Date(d.ts).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+
+  // Update globale regen vlag
+  weerRegen = REGEN_CODES.has(d.code) || d.neerslag > 0.5;
+
+  // Sla regen op in schema voor CardioCore
+  try{
+    const schema = laadSchema();
+    schema.regen = weerRegen;
+    slaSchemaOp(schema);
+  }catch{}
+
+  // Update suggestie met weerinfo
+  updateSuggestie();
+}
+
+function toonWeerFout(msg){
+  const widget = document.getElementById('weer-widget');
+  widget.style.display = 'flex';
+  document.getElementById('weer-icon').textContent   = '🌡';
+  document.getElementById('weer-omschr').textContent = msg;
+  document.getElementById('weer-detail').textContent = 'Tik om opnieuw te proberen';
+}
+
+/* ══ ENERGIE BUDGET WIDGET ══ */
+function updateEnergieBudgetWidget(){
+  if(typeof Core === 'undefined') return;
+  const budget = Core.energieBudgetVandaag();
+  const widget = document.getElementById('energie-budget-widget');
+  const lbl    = document.getElementById('energie-budget-lbl');
+  const bar    = document.getElementById('energie-budget-bar');
+  if(!widget) return;
+  const pct = Math.round((budget.resterend / budget.totaal) * 100);
+  const kleur = pct > 60 ? 'var(--green)' : pct > 30 ? 'var(--amber)' : 'var(--red)';
+  if(lbl) lbl.textContent = budget.resterend.toFixed(1) + ' / ' + budget.totaal + ' resterend';
+  if(bar){ bar.style.width = pct + '%'; bar.style.background = kleur; }
+  if(widget) widget.style.display = budget.verbruikt > 0 ? 'flex' : 'none';
+}
+
+/* ══ KLOK ══ */
+function updateKlok(){
+  const nu=new Date();
+  const tijd=nu.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  const datum=nu.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('klok').textContent=tijd;
+  document.getElementById('datum-lbl').textContent=datum.charAt(0).toUpperCase()+datum.slice(1);
+}
+
+/* ══ GROET + SUGGESTIE ══ */
+function updateGroet(naam){
+  const uur=new Date().getHours();
+  const groet=uur<6?'Goedenacht':uur<12?'Goedemorgen':uur<18?'Goedemiddag':'Goedenavond';
+  const voornaam=naam?.split(' ')[0]||'';
+  document.getElementById('groet-lbl').textContent=voornaam?`${groet}, ${voornaam}`:`${groet}`;
+}
+
+function updateSuggestie(){
+  const s = berekenSuggestie(huidigProfiel);
+  document.getElementById('sug-icon').textContent = s.icon;
+  document.getElementById('sug-tekst').innerHTML  = s.tekst;
+  // Update aanbevolen badge op module-knoppen
+  document.querySelectorAll('.mod-btn').forEach(btn=>{
+    const badge = btn.querySelector('.mod-badge');
+    if(badge) badge.remove();
+    if(btn.dataset.module === s.aanbevolen){
+      const b = document.createElement('div');
+      b.className = 'mod-badge'; b.textContent = 'Nu aanbevolen';
+      btn.appendChild(b);
+    }
+  });
+}
+
+/* ══ DASHBOARD UI ══ */
+function bouwModuleGrid(actief){
+  const grid = document.getElementById('modules-grid');
+  const s    = berekenSuggestie(huidigProfiel);
+  grid.innerHTML = MODULES.map(m=>{
+    const isAanbevolen = s.aanbevolen === m.id;
+    return `<a href="${m.href}" class="mod-btn mod-${m.kleur}" data-module="${m.id}">
+      <div class="mod-icon-wrap">${m.icon}</div>
+      <div>
+        <div class="mod-naam">${m.naam}</div>
+        <div class="mod-omschr">${m.omschr}</div>
+      </div>
+      <div class="mod-footer">
+        <span class="mod-tag">${m.tag}</span>
+        <span class="mod-pijl">→</span>
+      </div>
+      ${isAanbevolen ? '<div class="mod-badge">Nu aanbevolen</div>' : ''}
+    </a>`;
+  }).join('');
+}
+
+function toonPbAvatar(dataUrl){
+  const el=document.getElementById('pb-avatar');
+  if(dataUrl){el.innerHTML=`<img src="${dataUrl}" alt="Avatar">`;return;}
+  el.innerHTML='';
+  const p=huidigProfiel;
+  el.textContent=p?.display_name?.charAt(0).toUpperCase()||'?';
+}
+
+async function verversUI(p){
+  huidigProfiel=p;
+  if(!p) return;
+  updateGroet(p.display_name);
+  document.getElementById('pb-naam').textContent=p.display_name||'Geen naam';
+  const avatar=await idbHaalAvatar();
+  toonPbAvatar(avatar);
+  updateSyncUI(p.sync_status||'lokaal');
+  bouwSchemaWidgets();
+  bouwModuleGrid(p.modules||[]);
+  updateSuggestie();
+}
+
+/* ══ PROFIEL PANEL ══ */
+function toonProfiel(e){
+  e?.preventDefault();
+  const p=huidigProfiel||laadProfiel()||{};
+  const inhoud=document.getElementById('profiel-inhoud');
+  inhoud.innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+      <div style="position:relative">
+        <div id="pp-avatar" style="width:56px;height:56px;border-radius:50%;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:22px;font-weight:700;color:var(--acc);overflow:hidden">${p.display_name?.charAt(0).toUpperCase()||'?'}</div>
+        <label style="position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--bg-2)" for="pp-avatar-input" title="Foto uploaden">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3-4 3 4M1 10h10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </label>
+        <input type="file" id="pp-avatar-input" accept="image/*" style="display:none" onchange="handelAvatar(this)">
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:500">${p.display_name||'—'}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">${p.email||'—'}</div>
+      </div>
+    </div>
+    <div class="f-grp"><label class="f-lbl" for="pp-inp-naam">Naam</label>
+      <input id="pp-inp-naam" type="text" class="f-input" value="${p.display_name||''}" placeholder="Jouw naam" oninput="markeerPP()"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="f-grp"><label class="f-lbl" for="pp-inp-tz">Tijdzone</label>
+        <select id="pp-inp-tz" class="f-input" onchange="markeerPP()" style="font-size:13px">
+          <option value="Europe/Amsterdam" ${p.timezone==='Europe/Amsterdam'?'selected':''}>Amsterdam</option>
+          <option value="Europe/London" ${p.timezone==='Europe/London'?'selected':''}>Londen</option>
+          <option value="Europe/Berlin" ${p.timezone==='Europe/Berlin'?'selected':''}>Berlijn</option>
+        </select>
+      </div>
+      <div class="f-grp"><label class="f-lbl" for="pp-inp-checkin">Check-in tijd</label>
+        <input id="pp-inp-checkin" type="time" class="f-input" value="${p.voorkeuren?.check_in_tijd||'08:00'}" oninput="markeerPP()"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;padding:10px;background:var(--bg-3);border-radius:var(--r)">
+      ⚙ Wekker, slaap, rooster en trainingsdagen stel je in via de schema-widgets op het Dashboard.
+    </div>`;
+
+  idbHaalAvatar().then(d=>{
+    if(d){const el=document.getElementById('pp-avatar');if(el)el.innerHTML=`<img src="${d}" style="width:100%;height:100%;object-fit:cover" alt="Avatar">`;}
+  });
+
+  document.getElementById('profiel-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+  actualiseerPanelSyncDot();
+  bouwSyncGrid();
+}
+
+function markeerPP(){
+  heeftWijzigingen=true;
+  const btn=document.getElementById('pp-opslaan');
+  if(btn) btn.disabled=false;
+}
+
+function sluitProfiel(e){
+  if(e&&e.target!==document.getElementById('profiel-overlay')) return;
+  document.getElementById('profiel-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+/* ══ HANDMATIGE CLOUD SYNC ══ */
+
+function bouwSyncGrid(){
+  const el = document.getElementById('sync-module-grid');
+  if(!el) return;
+  const modules = [
+    ['liftcore',  '🏋 LiftCore'],
+    ['workcore',  '💼 WorkCore'],
+    ['resetcore', '🌅 ResetCore'],
+    ['cardiocore','🏃 CardioCore'],
+    ['lifecore',  '🌱 LifeCore'],
+    ['klusboek',  '📋 Klusboek'],
+    ['schema',    '📅 Schema'],
+  ];
+  const isLoggedIn = typeof Core !== 'undefined' && Core.sync.isIngelogd();
+  el.innerHTML = modules.map(([mod, label])=>{
+    const st = typeof Core !== 'undefined' ? Core.sync.getSyncStatus(mod) : null;
+    const kleur = !isLoggedIn ? 'var(--faint)' :
+                  st?.status==='synced'  ? 'var(--green)' :
+                  st?.status==='mislukt' ? 'var(--red)'   : 'var(--muted)';
+    const icon  = !isLoggedIn ? '○' :
+                  st?.status==='synced'  ? '✓' :
+                  st?.status==='mislukt' ? '✗' : '·';
+    return `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);padding:3px 0">
+      <span style="color:${kleur};font-family:var(--mono)">${icon}</span>
+      <span>${label}</span>
+    </div>`;
+  }).join('');
+}
+
+async function handelSyncUpload(){
+  if(typeof Core === 'undefined'){ toast('Core niet geladen','wn'); return; }
+  if(!Core.sync.isIngelogd()){ toast('Log eerst in om te synchroniseren','wn'); return; }
+  const btn = document.getElementById('btn-sync-upload');
+  if(btn){ btn.disabled=true; btn.textContent='Bezig...'; }
+  const wrap = document.getElementById('sync-voortgang-wrap');
+  const bar  = document.getElementById('sync-voortgang-bar');
+  const lbl  = document.getElementById('sync-voortgang-lbl');
+  if(wrap) wrap.style.display='block';
+
+  try{
+    // Upload profiel eerst
+    const p = laadProfiel();
+    if(p) await syncNaarCloud(p);
+
+    // Upload alle module data
+    const resultaten = await Core.sync.uploadAlle(function(gedaan, totaal, module){
+      const pct = Math.round(gedaan/totaal*100);
+      if(bar) bar.style.width = pct+'%';
+      if(lbl) lbl.textContent = module + '... ' + gedaan + '/' + totaal;
+    });
+
+    const succes  = Object.values(resultaten).filter(v=>v==='ok').length;
+    const mislukt = Object.values(resultaten).filter(v=>v!=='ok'&&v!=='leeg'&&v!=='geen_data').length;
+
+    if(bar) bar.style.width='100%';
+    if(bar) bar.style.background = mislukt>0 ? 'var(--amber)' : 'var(--green)';
+    if(lbl) lbl.textContent = succes+' modules gesynchroniseerd'+(mislukt>0?' · '+mislukt+' mislukt':'');
+
+    toast(mislukt>0 ? succes+' modules geüpload, '+mislukt+' mislukt' : 'Alles gesynchroniseerd ✓', mislukt>0?'wn':'ok');
+    actualiseerPanelSyncDot();
+    bouwSyncGrid();
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='↑ Alles uploaden'; }
+    setTimeout(()=>{ if(wrap) wrap.style.display='none'; }, 3000);
+  }
+}
+
+async function handelSyncDownload(){
+  if(typeof Core === 'undefined'){ toast('Core niet geladen','wn'); return; }
+  if(!Core.sync.isIngelogd()){ toast('Log eerst in om te laden','wn'); return; }
+  const btn = document.getElementById('btn-sync-download');
+  if(btn){ btn.disabled=true; btn.textContent='Laden...'; }
+  const wrap = document.getElementById('sync-voortgang-wrap');
+  const bar  = document.getElementById('sync-voortgang-bar');
+  const lbl  = document.getElementById('sync-voortgang-lbl');
+  if(wrap) wrap.style.display='block';
+  if(bar) bar.style.background='var(--acc)';
+
+  try{
+    // Download profiel
+    const cloud = await laadVanCloud();
+    if(cloud){
+      const geladen = {...JSON.parse(JSON.stringify(STD)),...cloud,sync_status:'synced'};
+      safeSet(LS_KEY,geladen);
+      huidigProfiel=geladen;
+      await verversUI(geladen);
+    }
+
+    // Download alle module data
+    const resultaten = await Core.sync.downloadAlle(function(gedaan, totaal, module){
+      const pct = Math.round(gedaan/totaal*100);
+      if(bar) bar.style.width = pct+'%';
+      if(lbl) lbl.textContent = module + '... ' + gedaan + '/' + totaal;
+    });
+
+    const succes     = Object.values(resultaten).filter(v=>v==='ok').length;
+    const geen_data  = Object.values(resultaten).filter(v=>v==='geen_data').length;
+    const mislukt    = Object.values(resultaten).filter(v=>v!=='ok'&&v!=='geen_data').length;
+
+    if(bar) bar.style.width='100%';
+    if(bar) bar.style.background = mislukt>0 ? 'var(--amber)' : 'var(--green)';
+    if(lbl) lbl.textContent = succes+' modules geladen'+(geen_data>0?' · '+geen_data+' geen data':'')+(mislukt>0?' · '+mislukt+' mislukt':'');
+
+    updateSyncUI('synced');
+    actualiseerPanelSyncDot();
+    bouwSyncGrid();
+    toast(succes>0 ? succes+' modules geladen ✓' : 'Geen cloud-data gevonden', succes>0?'ok':'neu');
+  }catch(e){
+    toast('Laden mislukt','wn');
+    updateSyncUI('lokaal');
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='↓ Alles laden'; }
+    setTimeout(()=>{ if(wrap) wrap.style.display='none'; }, 3000);
+  }
+}
+
+function actualiseerPanelSyncDot(){
+  const p = laadProfiel();
+  const status = p?.sync_status || 'lokaal';
+  const dot = document.getElementById('panel-sync-dot');
+  const lbl = document.getElementById('panel-sync-lbl');
+  if(dot) dot.className = 'sync-dot ' + ({synced:'synced',lokaal:'lokaal',sync_mislukt:'mislukt',bezig:'bezig'}[status]||'');
+  const teksten = {synced:'Gesynchroniseerd met cloud',lokaal:'Alleen lokaal opgeslagen',sync_mislukt:'Vorige sync mislukt',bezig:'Synchroniseren...'};
+  if(lbl) lbl.textContent = teksten[status] || status;
+}
+
+/* ══ UI HELPERS ══ */
+function updateSyncUI(status){
+  [document.getElementById('sync-dot'),document.getElementById('pb-sync-dot')].forEach(d=>{
+    if(d) d.className='sync-dot '+({synced:'synced',lokaal:'lokaal',sync_mislukt:'mislukt',bezig:'bezig'}[status]||'');
+  });
+  const lbl=document.getElementById('pb-sync-lbl');
+  if(lbl) lbl.textContent={synced:'gesync',lokaal:'lokaal',sync_mislukt:'fout',bezig:'...'}[status]||status;
+}
+function toonApp(){document.getElementById('app').style.visibility='visible';}
+function verbergApp(){document.getElementById('app').style.visibility='hidden';}
+function verbergAuth(){const o=document.getElementById('auth-overlay');o.classList.add('hide');setTimeout(()=>o.style.display='none',350);}
+function toonAuthOverlay(){const o=document.getElementById('auth-overlay');o.style.display='';requestAnimationFrame(()=>o.classList.remove('hide'));}
+function toonGastBanner(z){document.getElementById('gast-banner').classList.toggle('zichtbaar',z);}
+function wisselTab(t){
+  document.getElementById('tab-in').classList.toggle('on',t==='in');
+  document.getElementById('tab-reg').classList.toggle('on',t==='reg');
+  document.getElementById('form-in').style.display=t==='in'?'block':'none';
+  document.getElementById('form-reg').style.display=t==='reg'?'block':'none';
+}
+function setKnopLaad(btn,laden,tekst){btn.disabled=laden;btn.innerHTML=laden?`<div class="spin"></div>${tekst}`:tekst;}
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-c');
+  const el=document.createElement('div');
+  el.className='toast '+type;el.setAttribute('role','status');
+  el.innerHTML=`<span>${type==='ok'?'✓':type==='wn'?'⚠':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true});},3400);
+}
+
+/* ══ MOBIEL MENU ══ */
+function toggleNav(){const o=document.getElementById('nav-dropdown').classList.contains('open');o?sluitNav():openNav();}
+function openNav(){document.getElementById('nav-dropdown').classList.add('open');document.getElementById('menu-btn').classList.add('open');document.getElementById('menu-btn').setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+function sluitNav(){document.getElementById('nav-dropdown').classList.remove('open');document.getElementById('menu-btn').classList.remove('open');document.getElementById('menu-btn').setAttribute('aria-expanded','false');document.body.style.overflow='';}
+
+/* ══ LIFECORE AVOND NOTIFICATIE ══ */
+function controleerLifeCoreNotif(){
+  const uur = new Date().getHours();
+  if(uur < 20 || uur >= 24) return;
+  // Check of check-in vandaag al gedaan is
+  try{
+    const lc = JSON.parse(localStorage.getItem('lifecore_v1')||'null');
+    if(!lc) return;
+    const vandaag = new Date().toISOString().slice(0,10);
+    const alGedaan = lc.check_ins?.some(c=>c.datum===vandaag);
+    if(alGedaan) return;
+    // Toon banner als die nog niet zichtbaar is
+    laaatLifeCoreNotif();
+  }catch{}
+}
+
+function laaatLifeCoreNotif(){
+  // Voeg een tijdelijke banner toe als die er nog niet is
+  if(document.getElementById('lc-notif-banner')) return;
+  const main = document.querySelector('.dashboard');
+  if(!main) return;
+  const banner = document.createElement('a');
+  banner.id = 'lc-notif-banner';
+  banner.href = 'lifecore.html';
+  banner.style.cssText = 'display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--amber-dim);border:1px solid var(--amber-b);border-radius:var(--rl);margin-bottom:12px;text-decoration:none;color:var(--txt);animation:tin .3s ease';
+  banner.innerHTML = `<span style="font-size:18px">🌙</span>
+    <div><div style="font-size:13px;font-weight:500;color:var(--amber)">Avond check-in</div>
+    <div style="font-size:11px;color:var(--muted)">Hoe was je dag? LifeCore wacht.</div></div>
+    <span style="margin-left:auto;color:var(--amber)">→</span>`;
+  main.prepend(banner);
+}
+
+/* ══ SLAAP HERINNERING NOTIFICATIE ══ */
+let slaapNotifInterval = null;
+
+async function vraagNotificatieToestemming(){
+  if(!('Notification' in window)) return false;
+  if(Notification.permission === 'granted') return true;
+  if(Notification.permission === 'denied') return false;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function startSlaapReminder(){
+  if(slaapNotifInterval) clearInterval(slaapNotifInterval);
+  slaapNotifInterval = setInterval(()=>{
+    const s = laadSchema();
+    const slaap = s.slaap_herinnering || '22:30';
+    const [uur, min] = slaap.split(':').map(Number);
+    const nu = new Date();
+    // Stuur notificatie als het exact het slaaptijdstip is (binnen de minuut)
+    if(nu.getHours()===uur && nu.getMinutes()===min){
+      stuurSlaapNotificatie(slaap);
+    }
+  }, 60000); // elke minuut checken
+}
+
+function stuurSlaapNotificatie(tijd){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const notif = new Notification('Slaap herinnering 🌙', {
+    body: `Het is ${tijd} — tijd om naar bed te gaan. Slaap is herstel.`,
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text y="26" font-size="26">🌙</text></svg>',
+    tag:  'slaap-herinnering', // voorkomt duplicaten
+    renotify: false,
+  });
+  notif.onclick = ()=>{ window.focus(); notif.close(); };
+}
+
+async function initialiseerSlaapReminder(){
+  const ok = await vraagNotificatieToestemming();
+  if(ok){
+    startSlaapReminder();
+  }
+}
+
+/* ══ ONLINE/OFFLINE ══ */
+window.addEventListener('online',async()=>{toast('Verbinding hersteld','neu');const p=laadProfiel();if(p&&p.sync_status!=='synced')await syncNaarCloud(p);});
+window.addEventListener('offline',()=>toast('Offline','neu'));
+
+/* ══ INIT ══ */
+async function start(){
+  initSB();
+  updateKlok();
+  setInterval(updateKlok, 10000);
+  bouwSchemaWidgets(); // laad meteen — geen login nodig
+  controleerLifeCoreNotif();
+  setInterval(controleerLifeCoreNotif, 60000);
+  initialiseerSlaapReminder(); // vraag notificatie-toestemming en start reminder
+  setTimeout(()=>verversWeer(false), 1500); // weer na startup
+  updateEnergieBudgetWidget();
+  setInterval(updateEnergieBudgetWidget, 60000);
+
+  let gebruiker=null;
+  if(SB){try{const{data}=await SB.auth.getSession();gebruiker=data?.session?.user||null;}catch{}}
+
+  const lokaalProfiel=laadProfiel();
+  if(lokaalProfiel){toonApp();verbergAuth();toonGastBanner(!!lokaalProfiel.gast_modus);await verversUI(lokaalProfiel);}
+
+  if(gebruiker&&SB){
+    const cloud=await laadVanCloud();
+    const basis=lokaalProfiel||{...JSON.parse(JSON.stringify(STD)),id:gebruiker.id,email:gebruiker.email,created_at:new Date().toISOString()};
+    const samengevoegd=voegSamen({...basis,email:gebruiker.email},cloud);
+    slaProfielOp(samengevoegd);
+    if(!lokaalProfiel){toonApp();verbergAuth();}
+    toonGastBanner(false);
+    await verversUI(samengevoegd);
+  }
+
+  if(SB){
+    SB.auth.onAuthStateChange(async(event,sessie)=>{
+      if(event==='SIGNED_IN'&&sessie?.user){
+        verbergAuth();toonApp();toonGastBanner(false);
+        const lok=laadProfiel();
+        if(lok?.gast_modus){delete lok.gast_modus;lok.email=sessie.user.email;slaProfielOp(lok);}
+        const cloud=await laadVanCloud();
+        const basis=lok||{...JSON.parse(JSON.stringify(STD)),id:sessie.user.id,email:sessie.user.email,created_at:new Date().toISOString()};
+        const samengevoegd=voegSamen({...basis,email:sessie.user.email},cloud);
+        slaProfielOp(samengevoegd);await verversUI(samengevoegd);toast('Ingelogd ✓','ok');
+      }else if(event==='SIGNED_OUT'){toonGastBanner(false);const p=laadProfiel();if(!p){verbergApp();toonAuthOverlay();}}
+    });
+  }
+
+  ['in-email','in-ww'].forEach(id=>{document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')handelInloggen();});});
+}
+
+document.addEventListener('DOMContentLoaded',start);
+</script>
+<script src="core.js"></script>
+</body>
+</html>

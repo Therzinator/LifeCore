@@ -1,0 +1,50 @@
+.vc-disclaimer {
+  font-style: italic;
+}
+
+.vc-subschaal {
+  margin-top: var(--space-lg);
+}
+
+.vc-subschaal-lbl {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.vc-vraag {
+  margin-bottom: var(--space-md);
+}
+
+.vc-vraag-tekst {
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-xs);
+}
+
+.vc-opties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.vc-optie {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--tx);
+}
+
+.vc-optie:hover { background: var(--bg-3); }
+.vc-optie.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}

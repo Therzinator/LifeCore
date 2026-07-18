@@ -1,0 +1,59 @@
+@import './styles/theme.css';
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { min-height: 100vh; }
+
+button, input, textarea { font-family: inherit; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+/* ── Gedeelde knoppen ───────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  padding: 12px 22px;
+  transition: var(--tx);
+  white-space: nowrap;
+}
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-full     { width: 100%; }
+.btn-p        { background: var(--accent); color: var(--accent-txt); }
+.btn-p:hover:not(:disabled) { filter: brightness(1.06); }
+.btn-g        { background: var(--bg-2); border: 1px solid var(--border-2); color: var(--txt); }
+.btn-g:hover:not(:disabled) { background: var(--bg-3); }
+.btn-text     { background: none; color: var(--txt-muted); padding: 8px 10px; font-size: var(--font-size-sm); }
+.btn-text:hover:not(:disabled) { color: var(--txt); }
+.btn-sm       { padding: 8px 12px; font-size: var(--font-size-sm); }
+
+/* ── Gedeelde card ──────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+}

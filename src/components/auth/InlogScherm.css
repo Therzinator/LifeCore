@@ -1,0 +1,53 @@
+.is-wrap {
+  max-width: 380px;
+  margin: var(--space-xl) auto;
+  padding: var(--space-lg) var(--space-md);
+}
+
+.is-titel {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.is-tekst {
+  font-size: var(--font-size-base);
+  color: var(--txt-muted);
+  margin-bottom: var(--space-lg);
+  line-height: 1.6;
+}
+
+.is-veld {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-size: var(--font-size-base);
+  padding: var(--space-sm);
+  outline: none;
+  margin-bottom: var(--space-sm);
+  transition: var(--tx);
+}
+.is-veld:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }
+
+.is-fout {
+  font-size: var(--font-size-sm);
+  color: var(--danger);
+  background: var(--danger-dim);
+  border-radius: var(--r-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.is-wissel {
+  background: none;
+  border: none;
+  color: var(--txt-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-md);
+  padding: 0;
+}
+.is-wissel:hover { color: var(--txt); }

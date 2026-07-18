@@ -1,0 +1,31 @@
+.am-duur-kies {
+  display: flex;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 var(--space-lg);
+}
+
+.am-duur-optie {
+  flex: 1;
+  padding: var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.am-duur-optie:hover { background: var(--bg-3); }
+.am-duur-optie.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.am-resterend {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--txt-faint);
+  margin-bottom: var(--space-md);
+}

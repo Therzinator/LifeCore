@@ -1,0 +1,51 @@
+.dw-gekozen-kaart {
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.dw-gekozen-label {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.dw-gekozen-omschrijving {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}
+
+.dw-terugblik-vraag {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.dw-terugblik {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm);
+  outline: none;
+  resize: vertical;
+  min-height: 70px;
+}
+.dw-terugblik:focus { border-color: var(--accent-mid); }
+
+.dw-opnieuw {
+  background: none;
+  border: none;
+  color: var(--txt-faint);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  margin-top: var(--space-xs);
+  padding: 0;
+}
+.dw-opnieuw:hover { color: var(--txt-muted); }

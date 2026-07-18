@@ -1,0 +1,43 @@
+.tr-buiten {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-lg);
+}
+
+.tr-cirkel {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 2px solid var(--accent-mid);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 1s ease, background .3s ease, border-color .3s ease;
+}
+.tr-cirkel.warn {
+  background: var(--warn-dim);
+  border-color: var(--warn);
+}
+
+.tr-label {
+  font-size: var(--font-size-sm);
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.tr-label.warn { color: var(--warn); }
+
+.tr-waarde {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--txt);
+}

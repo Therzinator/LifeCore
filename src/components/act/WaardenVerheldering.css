@@ -1,0 +1,38 @@
+.wv-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.wv-chip {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 999px;
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--tx);
+}
+
+.wv-chip:hover { background: var(--bg-3); }
+.wv-chip.on {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.wv-omschrijvingen {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.wv-omschrijving-item {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}
+.wv-omschrijving-item strong { color: var(--txt); }

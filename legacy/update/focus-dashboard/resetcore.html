@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResetCore — Focus Dashboard</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0e;--bg-card:#131316;--bg-el:#1a1a1f;--bg-hov:#1f1f26;
+  --acc:#7b6ef6;--acc-dim:#3d3680;--acc-glow:rgba(123,110,246,.15);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,.12);--green-b:rgba(62,207,142,.25);
+  --amber:#f0a347;--amber-dim:rgba(240,163,71,.12);--amber-b:rgba(240,163,71,.25);
+  --red:#f04747;--red-dim:rgba(240,71,71,.12);--red-b:rgba(240,71,71,.25);
+  --blue:#47a8f0;--blue-dim:rgba(71,168,240,.12);--blue-b:rgba(71,168,240,.25);
+  --txt:#e8e8f0;--muted:#6b6b80;--faint:#3a3a4a;
+  --bdr:rgba(255,255,255,.07);--bdr-md:rgba(255,255,255,.11);
+  --mono:'Geist Mono',monospace;--sans:'Instrument Sans',sans-serif;
+  --r:10px;--rl:16px;--rx:22px;--tx:all .16s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:rgba(12,12,14,.94);backdrop-filter:blur(14px);z-index:50}
+.brand{font-family:var(--mono);font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.brand em{color:var(--muted);font-style:normal;font-weight:400}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--bdr);color:var(--muted);text-decoration:none;transition:var(--tx)}
+.nav-chip:hover{border-color:var(--bdr-md);color:var(--txt)}
+.nav-chip.cur{border-color:rgba(62,207,142,.3);color:var(--green);background:var(--green-dim)}
+
+/* Stap layout */
+.stap-wrap{max-width:560px;margin:0 auto;padding:28px 20px 80px}
+
+/* Voortgangsbalk */
+.prog-stappen{display:flex;gap:5px;margin-bottom:28px}
+.prog-stap{flex:1;height:3px;border-radius:2px;background:var(--bg-el);transition:var(--tx)}
+.prog-stap.done{background:var(--green)}
+.prog-stap.actief{background:var(--acc)}
+
+/* Stap header */
+.stap-nr{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stap-titel{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px}
+.stap-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+
+/* Schermen */
+.schr{display:none}.schr.on{display:block;animation:fade-up .25s ease}
+@keyframes fade-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Kaarten */
+.card{background:var(--bg-card);border:1px solid var(--bdr);border-radius:var(--rl);padding:18px 20px;margin-bottom:12px}
+.card-green{border-left:3px solid var(--green)}
+.card-acc{border-left:3px solid var(--acc)}
+.card-amber{border-left:3px solid var(--amber)}
+.sec-lbl{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;transition:var(--tx);white-space:nowrap}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn-p{background:var(--acc);color:#fff;width:100%;padding:12px;font-size:14px}.btn-p:hover:not(:disabled){background:#8f84f8}
+.btn-g{background:var(--bg-el);border:1px solid var(--bdr);color:var(--txt)}.btn-g:hover:not(:disabled){background:var(--bg-hov)}
+.btn-ok{background:var(--green);color:#fff;width:100%;padding:12px;font-size:14px}.btn-ok:hover:not(:disabled){background:#52d89a}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto}
+
+/* Slider knoppen */
+.slider-btns{display:flex;gap:8px;margin-bottom:12px}
+.slider-btn{flex:1;padding:11px 6px;border:1px solid var(--bdr);border-radius:var(--r);background:transparent;color:var(--muted);font-family:var(--sans);font-size:13px;cursor:pointer;transition:var(--tx);text-align:center}
+.slider-btn:hover{background:var(--bg-el);color:var(--txt)}
+.slider-btn.sel-laag{border-color:var(--red-b);background:var(--red-dim);color:var(--red)}
+.slider-btn.sel-midden{border-color:var(--amber-b);background:var(--amber-dim);color:var(--amber)}
+.slider-btn.sel-hoog{border-color:var(--green-b);background:var(--green-dim);color:var(--green)}
+
+/* Slaapuren invoer */
+.slaap-ctrl{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.slaap-btn{width:40px;height:40px;border-radius:var(--r);border:1px solid var(--bdr-md);background:var(--bg-el);color:var(--txt);font-size:20px;cursor:pointer;transition:var(--tx)}
+.slaap-btn:hover{background:var(--bg-hov)}
+.slaap-val{font-family:var(--mono);font-size:28px;font-weight:600;min-width:80px;text-align:center}
+
+/* Stress slider */
+.stress-track{position:relative;height:6px;background:var(--bg-el);border-radius:3px;margin-bottom:6px}
+.stress-fill{height:100%;border-radius:3px;background:var(--green);transition:var(--tx)}
+input[type=range]{width:100%;margin-bottom:8px;accent-color:var(--acc)}
+
+/* Ademhaling */
+.mob-tel-btn{width:36px;height:36px;border-radius:var(--r);border:1px solid var(--bdr-md);background:var(--bg-el);color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;transition:var(--tx);display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.mob-tel-btn:hover{background:var(--bg-2)}
+.mob-timer-btn{padding:8px 14px;border-radius:var(--r);border:1px solid var(--green-b);background:var(--green-dim);color:var(--green);font-size:12px;font-weight:500;cursor:pointer;transition:var(--tx)}
+.mob-timer-btn:hover{background:rgba(62,207,142,.2)}
+.mob-timer-btn.actief{background:rgba(62,207,142,.25);border-color:var(--green)}
+.mob-gedaan-btn{padding:8px 18px;border-radius:var(--r);border:1px solid var(--bdr-md);background:var(--bg-el);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:var(--tx);width:100%}
+.mob-gedaan-btn.gedaan{background:var(--green-dim);border-color:var(--green-b);color:var(--green)}
+.mob-item{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid var(--bdr-sm);cursor:pointer;transition:var(--tx)}
+.mob-item:last-child{border:none}
+.mob-item:hover{opacity:.8}
+.mob-check{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--bdr-md);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:var(--tx);margin-top:1px}
+.mob-check.done{background:var(--green);border-color:var(--green);color:#000;font-size:12px;font-weight:700}
+.mob-item.done .mob-naam{text-decoration:line-through;opacity:.5}
+.mob-info{flex:1}
+.mob-naam{font-size:13px;font-weight:500;margin-bottom:2px}
+.mob-uitleg{font-size:11px;color:var(--muted);line-height:1.5}
+.mob-duur{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:3px}
+.adem-ring{width:130px;height:130px;border-radius:50%;border:3px solid var(--bdr-md);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);transition:all 1.2s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer}
+.adem-ring.adem{border-color:var(--green);box-shadow:0 0 40px rgba(62,207,142,.3);transform:scale(1.15);color:var(--green)}
+.adem-ring.uit{border-color:var(--acc);box-shadow:0 0 24px var(--acc-glow);transform:scale(0.88);color:var(--acc)}
+.adem-ring.hold{border-color:var(--amber);box-shadow:0 0 18px rgba(240,163,71,.2);transform:scale(1.0);color:var(--amber)}
+.adem-ring.klaar{border-color:var(--green);box-shadow:0 0 28px rgba(62,207,142,.25);transform:scale(1.0);color:var(--green)}
+.adem-fase{font-size:14px;font-weight:500}
+.adem-teller{font-family:var(--mono);font-size:22px;font-weight:600;margin-top:2px}
+.adem-instructie{font-size:11px;color:var(--muted);margin-top:3px;text-align:center;font-style:italic}
+
+/* Brain dump */
+.brain-textarea{width:100%;background:var(--bg-el);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:var(--sans);font-size:14px;padding:12px;outline:none;resize:vertical;min-height:100px;transition:var(--tx);line-height:1.6}
+.brain-textarea:focus{border-color:rgba(123,110,246,.45);box-shadow:0 0 0 3px var(--acc-glow)}
+.brain-cluster{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.cluster-item{background:var(--bg-el);border-radius:var(--r);padding:10px 13px;font-size:13px;border-left:3px solid var(--bdr)}
+.cluster-zorgen{border-left-color:var(--amber)}
+.cluster-taken{border-left-color:var(--acc)}
+.cluster-idee{border-left-color:var(--green)}
+.cluster-lbl{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;color:var(--muted)}
+
+/* Taken prioriteit */
+.taak-zone{margin-bottom:14px}
+.taak-zone-lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.taak-zone-lbl::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.taak-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr)}
+.taak-item:last-child{border:none}
+.taak-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bdr-md);background:transparent;cursor:pointer;transition:var(--tx);flex-shrink:0}
+.taak-check.done{background:var(--green);border-color:var(--green)}
+.taak-tekst{flex:1;font-size:13px}
+.taak-tekst.done-tekst{text-decoration:line-through;opacity:.45}
+.taak-add{display:flex;gap:8px;margin-top:8px}
+.taak-input{flex:1;background:var(--bg-el);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:var(--sans);font-size:13px;padding:8px 11px;outline:none;transition:var(--tx)}
+.taak-input:focus{border-color:rgba(123,110,246,.45)}
+
+/* Check-in rij */
+.check-rij{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:13px}
+.check-rij:last-child{border:none}
+.check-lbl{color:var(--muted)}
+.check-waarde{font-family:var(--mono);font-size:13px;font-weight:500}
+
+/* Handoff banner */
+.handoff{background:var(--green-dim);border:1px solid var(--green-b);border-radius:var(--rl);padding:18px 20px;text-align:center;margin-bottom:12px}
+.handoff-titel{font-size:16px;font-weight:600;color:var(--green);margin-bottom:6px}
+.handoff-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.handoff-stats{display:flex;justify-content:center;gap:20px;margin-bottom:14px;flex-wrap:wrap}
+.hs-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.hs-val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--txt)}
+.hs-lbl{font-size:10px;color:var(--muted)}
+
+/* Alert */
+.alert{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:var(--r);font-size:12px;margin-bottom:11px;line-height:1.5}
+.alert-info{background:var(--blue-dim);border:1px solid var(--blue-b);color:var(--blue)}
+.alert-ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.alert-warn{background:var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)}
+
+/* Gym check */
+.gym-keuze{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.gym-opt{padding:12px;border:1px solid var(--bdr);border-radius:var(--r);cursor:pointer;transition:var(--tx);text-align:center;font-size:13px}
+.gym-opt:hover{background:var(--bg-el)}
+.gym-opt.sel{border-color:var(--acc-dim);background:var(--acc-glow);color:var(--acc)}
+.gym-opt .go-icon{font-size:20px;margin-bottom:5px}
+
+/* Schakelaar */
+.sw{position:relative;width:30px;height:17px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-track{position:absolute;inset:0;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;transition:var(--tx);cursor:pointer}
+.sw input:checked+.sw-track{background:var(--acc);border-color:var(--acc)}
+.sw-knop{position:absolute;top:2px;left:2px;width:11px;height:11px;background:var(--faint);border-radius:50%;transition:var(--tx);pointer-events:none}
+.sw input:checked~.sw-knop{transform:translateX(13px);background:#fff}
+
+/* Toast */
+.toast-c{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;pointer-events:auto;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-el);border:1px solid var(--bdr);color:var(--txt)}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media(max-width:480px){.stap-wrap{padding:16px 14px 80px}.topbar-nav{display:none}}
+</style>
+</head>
+<body>
+<h1 class="sr-only">ResetCore — Dagstart module</h1>
+
+<header class="topbar">
+  <div class="brand"><div class="brand-dot"></div>Reset<em>Core</em></div>
+  <nav class="topbar-nav" aria-label="Modules">
+    <a href="index.html" class="nav-chip">Dashboard</a>
+    <a href="liftcore.html" class="nav-chip">LiftCore</a>
+    <a href="cardiocore.html" class="nav-chip">CardioCore</a>
+    <a href="resetcore.html" class="nav-chip cur">ResetCore</a>
+    <a href="workcore.html" class="nav-chip">WorkCore</a>
+  
+    <button onclick="exporteerData()" style="font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer" title="Exporteer data">↓ export</button></nav>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--muted)" id="rc-tijd"></div>
+</header>
+
+<div class="stap-wrap">
+
+  <!-- Voortgangsbalk -->
+  <div class="prog-stappen" id="prog-stappen" aria-label="Voortgang dagstart" role="progressbar"></div>
+
+  <!-- ══ STAP 0: WELKOM ══ -->
+  <div class="schr on" id="schr-0">
+    <div class="stap-nr">Dagstart</div>
+    <div class="stap-titel" id="welkom-groet">Goedemorgen</div>
+    <div class="stap-sub" id="welkom-datum">Laad datum...</div>
+
+    <div class="card card-green" style="text-align:center;padding:28px 20px">
+      <div style="font-size:32px;margin-bottom:10px">🌅</div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:6px">Vandaag begint hier</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Neem 5–8 minuten voor jezelf.<br>Geen telefoon, geen nieuws, geen mail — nog niet.</div>
+      <button class="btn btn-ok" onclick="naarStap(1)">Dagstart beginnen ↗</button>
+    </div>
+
+    <div id="al-gedaan" style="display:none" class="card">
+      <div style="font-size:13px;color:var(--green);font-weight:500;margin-bottom:4px">✓ Dagstart vandaag al voltooid</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px" id="al-tijdstip">—</div>
+      <button class="btn btn-g btn-sm" onclick="naarStap(1)">Opnieuw bekijken</button>
+      <a href="workcore.html" style="margin-left:8px" class="btn btn-ok btn-sm">Naar WorkCore ↗</a>
+    </div>
+  </div>
+
+  <!-- ══ STAP 1: ADEMHALING ══ -->
+  <div class="schr" id="schr-1">
+    <div class="stap-nr">Stap 1 van 8</div>
+    <div class="stap-titel">Mentale landing</div>
+    <div class="stap-sub">Box breathing (4-4-4-4) — 4 seconden per fase. Doe 4 cycli voor optimale rust.</div>
+
+    <div class="card">
+      <div class="adem-ring-wrap">
+        <div class="adem-ring" id="adem-ring" onclick="startAdem()" aria-label="Start ademhaling">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div class="adem-fase" id="adem-fase">Tik om te starten</div>
+            <div class="adem-teller" id="adem-teller"></div>
+          </div>
+        </div>
+      </div>
+      <div class="adem-instructie" id="adem-instructie">Box breathing 4-4-4-4 — tik op de ring</div>
+
+      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:14px">
+        <div style="text-align:center">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:600" id="adem-cycli">0</div>
+          <div style="font-size:11px;color:var(--muted)">cycli</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:var(--mono);font-size:18px;font-weight:600" id="adem-doel">4</div>
+          <div style="font-size:11px;color:var(--muted)">doel</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--faint);text-align:center;margin-bottom:14px">In — vasthouden — uit — vasthouden · 4 sec per fase</div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g btn-sm" onclick="naarStap(2)">Overslaan</button>
+      <button class="btn btn-ok" style="flex:1" id="adem-klaar" onclick="naarStap(2)" disabled>Volgende stap ↗</button>
+    </div>
+  </div>
+
+  <!-- ══ STAP 2: SLAAP & ENERGIE ══ -->
+  <div class="schr" id="schr-2">
+    <div class="stap-nr">Stap 2 van 8</div>
+    <div class="stap-titel">Slaap & energie</div>
+    <div class="stap-sub">Hoe was je nacht? Hoe voel je je nu? Dit stelt het programma van vandaag in.</div>
+
+    <div class="card">
+      <div class="sec-lbl">Slaapuren</div>
+      <div class="slaap-ctrl">
+        <button class="slaap-btn" onclick="aanpSlaap(-.5)">−</button>
+        <div class="slaap-val" id="slaap-val">7.0<span style="font-size:14px;font-weight:400;color:var(--muted)"> u</span></div>
+        <button class="slaap-btn" onclick="aanpSlaap(.5)">+</button>
+      </div>
+      <div style="font-size:12px;padding:8px 11px;border-radius:var(--r);margin-bottom:4px" id="slaap-feedback" class="alert alert-ok">
+        7 uur of meer — prima fundament voor de dag.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl">Energieniveau</div>
+      <div class="slider-btns">
+        <button class="slider-btn" id="en-laag" onclick="kiesEnergie('laag')">😔 Laag</button>
+        <button class="slider-btn" id="en-midden" onclick="kiesEnergie('midden')">😐 Midden</button>
+        <button class="slider-btn" id="en-hoog" onclick="kiesEnergie('hoog')">⚡ Hoog</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted)" id="energie-hint">Kies je energieniveau — dit past de mobiliteit en training aan.</div>
+    </div>
+
+    <div class="card">
+      <div class="sec-lbl">Stressniveau (0–10)</div>
+      <input type="range" min="0" max="10" value="3" id="stress-slider" oninput="updateStress(this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint)"><span>Rustig</span><span id="stress-val" style="color:var(--txt);font-family:var(--mono);font-weight:600">3</span><span>Gespannen</span></div>
+    </div>
+
+    <button class="btn btn-ok" onclick="naarStap(3)">Volgende ↗</button>
+  </div>
+
+  <!-- ══ STAP 3: MOBILITEIT & ACTIVERING ══ -->
+  <div class="schr" id="schr-3">
+    <div class="stap-nr">Stap 3 van 8</div>
+    <div class="stap-titel">Ochtend activering</div>
+    <div class="stap-sub">Rek en strek, dan plank & push-ups. Sla over wat niet past.</div>
+
+    <div id="mob-energie-hint" style="display:none;font-size:12px;padding:8px 11px;border-radius:var(--r);margin-bottom:12px" class="alert a-amber"></div>
+
+    <!-- Rek & strek -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="sec-lbl" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Rek & strek</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">vink af wat je doet</span>
+      </div>
+      <div id="rek-lijst"></div>
+    </div>
+
+    <!-- Plank met timer -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="sec-lbl">🧱 Plank</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        Onderarmen op de grond, lichaam in één rechte lijn.
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="mob-tel-btn" onclick="plankTel(-5)">−5s</button>
+          <div style="text-align:center;min-width:64px">
+            <div style="font-family:var(--mono);font-size:26px;font-weight:500" id="plank-sec-lbl">30</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">sec doel</div>
+          </div>
+          <button class="mob-tel-btn" onclick="plankTel(+5)">+5s</button>
+        </div>
+        <button class="mob-timer-btn" id="plank-start-btn" onclick="startPlankTimer()">▶ Start timer</button>
+      </div>
+      <!-- Timer ring -->
+      <div style="display:none;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px" id="plank-timer-wrap">
+        <div style="position:relative;width:100px;height:100px">
+          <svg viewBox="0 0 100 100" width="100" height="100" style="transform:rotate(-90deg)">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="var(--bg-3)" stroke-width="5"/>
+            <circle cx="50" cy="50" r="44" fill="none" stroke="var(--green)" stroke-width="5"
+              stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"
+              id="plank-ring-circle" style="transition:stroke-dashoffset .9s linear"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-family:var(--mono);font-size:24px;font-weight:500" id="plank-timer-getal">30</div>
+          </div>
+        </div>
+        <button class="mob-tel-btn" onclick="stopPlankTimer()" style="font-size:11px;width:auto;padding:4px 12px">Stop</button>
+      </div>
+      <button class="mob-gedaan-btn" id="plank-btn" onclick="toggleMobGedaan('plank')">
+        <span id="plank-lbl">Markeer als gedaan</span>
+      </button>
+    </div>
+
+    <!-- Push-ups -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="sec-lbl">💪 Push-ups</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+        Handen schouderbreedte, lichaam recht. Op knieën is prima.
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="mob-tel-btn" onclick="pushTel(-1)">−</button>
+          <div style="text-align:center;min-width:64px">
+            <div style="font-family:var(--mono);font-size:26px;font-weight:500" id="push-aantal">10</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted)">reps</div>
+          </div>
+          <button class="mob-tel-btn" onclick="pushTel(+1)">+</button>
+        </div>
+        <button class="mob-gedaan-btn" id="push-btn" onclick="toggleMobGedaan('push')">
+          <span id="push-lbl">Markeer als gedaan</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-g btn-sm" onclick="naarStap(4)">Overslaan</button>
+      <button class="btn btn-ok" style="flex:1" onclick="naarStap(4)">Volgende stap ↗</button>
+    </div>
+  </div>
+
+  <!-- ══ STAP 3: AGENDA CHECK ══ -->
+  <div class="schr" id="schr-4">
+    <div class="stap-nr">Stap 4 van 8</div>
+    <div class="stap-titel">Agenda check</div>
+    <div class="stap-sub">Wat staat er vandaag in je agenda?</div>
+
+    <div class="card">
+      <div class="sec-lbl">Dagtype</div>
+      <div class="gym-keuze">
+        <div class="gym-opt" id="dag-werk-kantoor" onclick="kiesDagType('werk-kantoor')">
+          <div class="go-icon">🏢</div>
+          <div>Werk<br><span style="font-size:11px;color:var(--muted)">Kantoor</span></div>
+        </div>
+        <div class="gym-opt" id="dag-werk-thuis" onclick="kiesDagType('werk-thuis')">
+          <div class="go-icon">🏠</div>
+          <div>Werk<br><span style="font-size:11px;color:var(--muted)">Thuis</span></div>
+        </div>
+        <div class="gym-opt" id="dag-vrij" onclick="kiesDagType('vrij')">
+          <div class="go-icon">🌿</div>
+          <div>Vrije dag<br><span style="font-size:11px;color:var(--muted)">Geen werk</span></div>
+        </div>
+        <div class="gym-opt" id="dag-ziek" onclick="kiesDagType('ziek')">
+          <div class="go-icon">🤒</div>
+          <div>Ziek/rust<br><span style="font-size:11px;color:var(--muted)">Volledig rust</span></div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">Vroegste afspraak</div>
+      <input type="time" id="vroegste-afspraak" value="09:00" class="taak-input" style="width:140px;margin-bottom:12px">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+        <div>
+          <div style="font-size:13px">Drukke dag (veel vergaderingen)</div>
+          <div style="font-size:11px;color:var(--muted)">Beïnvloedt daglimiet in WorkCore</div>
+        </div>
+        <label class="sw" aria-label="Drukke dag"><input type="checkbox" id="drukke-dag" onchange="updateDagInfo()"><div class="sw-track"></div><div class="sw-knop"></div></label>
+      </div>
+    </div>
+
+    <div id="dag-advies" class="alert alert-info" style="display:none"></div>
+
+    <button class="btn btn-ok" onclick="naarStap(5)">Volgende ↗</button>
+  </div>
+
+  <!-- ══ STAP 4: GYM / TRAINING ══ -->
+  <div class="schr" id="schr-5">
+    <div class="stap-nr">Stap 5 van 8</div>
+    <div class="stap-titel">Training vandaag</div>
+    <div class="stap-sub" id="gym-sub">Wat staat er gepland?</div>
+
+    <div id="training-tijd-hint" style="display:none;font-size:12px;padding:8px 11px;border-radius:var(--r);margin-bottom:10px" class="alert a-amber">
+      ⏰ Weinig tijd voor werk — keep it short of sla training over voor vandaag.
+    </div>
+
+    <div id="gym-advies-banner" class="alert alert-warn" style="display:none"></div>
+
+    <div class="card">
+      <div class="gym-keuze" style="grid-template-columns:repeat(3,1fr)">
+        <div class="gym-opt" id="gym-liftcore" onclick="kiesTraining('liftcore')">
+          <div class="go-icon">🏋</div>
+          <div style="font-size:12px">LiftCore</div>
+        </div>
+        <div class="gym-opt" id="gym-cardiocore" onclick="kiesTraining('cardiocore')">
+          <div class="go-icon">🏃</div>
+          <div style="font-size:12px">CardioCore</div>
+        </div>
+        <div class="gym-opt" id="gym-wandelen" onclick="kiesTraining('wandelen')">
+          <div class="go-icon">🚶</div>
+          <div style="font-size:12px">Wandelen</div>
+        </div>
+        <div class="gym-opt" id="gym-herstel" onclick="kiesTraining('herstel')">
+          <div class="go-icon">🧘</div>
+          <div style="font-size:12px">Herstel</div>
+        </div>
+        <div class="gym-opt" id="gym-rust" onclick="kiesTraining('rust')">
+          <div class="go-icon">😴</div>
+          <div style="font-size:12px">Rust</div>
+        </div>
+        <div class="gym-opt" id="gym-geen" onclick="kiesTraining('geen')">
+          <div class="go-icon">—</div>
+          <div style="font-size:12px">Geen</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="training-link" style="display:none;margin-bottom:12px">
+      <a id="training-link-href" href="#" class="btn btn-g" style="display:block;text-align:center">Open module ↗</a>
+    </div>
+
+    <button class="btn btn-ok" onclick="naarStap(6)">Volgende ↗</button>
+  </div>
+
+  <!-- ══ STAP 5: BRAIN DUMP ══ -->
+  <div class="schr" id="schr-6">
+    <div class="stap-nr">Stap 6 van 8</div>
+    <div class="stap-titel">Brain dump</div>
+    <div class="stap-sub">Gooi alles wat in je hoofd zit eruit. Alles. Ongeordend.</div>
+
+    <div class="card">
+      <textarea class="brain-textarea" id="brain-input" placeholder="Zorgen, ideeën, taken, losse gedachten — schrijf alles op..." rows="5" oninput="verwerkyBrain()"></textarea>
+
+      <div id="brain-clusters" style="display:none" class="brain-cluster">
+        <div id="cluster-zorgen" class="cluster-item cluster-zorgen" style="display:none">
+          <div class="cluster-lbl">Zorgen / onrust</div>
+          <div id="zorgen-inhoud" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div id="cluster-taken" class="cluster-item cluster-taken" style="display:none">
+          <div class="cluster-lbl">Mogelijke taken</div>
+          <div id="taken-inhoud" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+        <div id="cluster-idee" class="cluster-item cluster-idee" style="display:none">
+          <div class="cluster-lbl">Ideeën</div>
+          <div id="idee-inhoud" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <div id="brain-hint" style="font-size:12px;color:var(--faint);margin-top:10px;display:none">
+        Dit is geparkeerd — het hoeft nu niet opgelost te worden.
+      </div>
+    </div>
+
+    <button class="btn btn-ok" onclick="naarStap(7)">Volgende ↗</button>
+  </div>
+
+  <!-- ══ STAP 6: DAGFOCUS ══ -->
+  <div class="schr" id="schr-7">
+    <div class="stap-nr">Stap 7 van 8</div>
+    <div class="stap-titel">Dagfocus</div>
+    <div class="stap-sub" id="focus-sub">Wat zijn je 3 prioriteiten voor vandaag?</div>
+
+    <div id="energie-banner" class="alert" style="display:none"></div>
+
+    <div class="card">
+      <!-- Prioriteit zone -->
+      <div class="taak-zone">
+        <div class="taak-zone-lbl">🎯 Prioriteit — de ene must</div>
+        <div id="prio-lijst"></div>
+        <div class="taak-add" id="prio-add">
+          <input class="taak-input" id="prio-input" placeholder="Meest belangrijke taak..." onkeydown="if(event.key==='Enter')voegTaakToe('prio')">
+          <button class="btn btn-g btn-sm" onclick="voegTaakToe('prio')">+</button>
+        </div>
+      </div>
+
+      <!-- Moet zone -->
+      <div class="taak-zone">
+        <div class="taak-zone-lbl">📌 Moet vandaag</div>
+        <div id="moet-lijst"></div>
+        <div class="taak-add">
+          <input class="taak-input" id="moet-input" placeholder="Moet af vandaag..." onkeydown="if(event.key==='Enter')voegTaakToe('moet')">
+          <button class="btn btn-g btn-sm" onclick="voegTaakToe('moet')">+</button>
+        </div>
+      </div>
+
+      <!-- Later zone -->
+      <div class="taak-zone">
+        <div class="taak-zone-lbl" style="color:var(--faint)">🕐 Later / parkeren</div>
+        <div id="later-lijst"></div>
+        <div class="taak-add">
+          <input class="taak-input" id="later-input" placeholder="Kan wachten..." onkeydown="if(event.key==='Enter')voegTaakToe('later')">
+          <button class="btn btn-g btn-sm" onclick="voegTaakToe('later')">+</button>
+        </div>
+      </div>
+
+      <div id="focus-limit-warn" style="display:none" class="alert alert-warn" style="margin-top:10px">
+        Je hebt je daglimiet bereikt. Verplaats taken naar "Later" of naar morgen.
+      </div>
+    </div>
+
+    <button class="btn btn-ok" onclick="naarStap(8)">Dagstart afronden ↗</button>
+  </div>
+
+  <!-- ══ STAP 7: AFRONDEN + HANDOFF ══ -->
+  <div class="schr" id="schr-8">
+    <div class="stap-nr">Dagstart voltooid</div>
+    <div class="stap-titel">Klaar voor de dag</div>
+    <div class="stap-sub" id="afr-tijd">Afgerond om —</div>
+
+    <div class="handoff">
+      <div class="handoff-titel">✓ Dagstart voltooid</div>
+      <div class="handoff-sub">Jouw instellingen zijn doorgegeven aan WorkCore</div>
+      <div class="handoff-stats">
+        <div class="hs-item"><div class="hs-val" id="hoff-energie">—</div><div class="hs-lbl">Energie</div></div>
+        <div class="hs-item"><div class="hs-val" id="hoff-slaap">—</div><div class="hs-lbl">Slaap</div></div>
+        <div class="hs-item"><div class="hs-val" id="hoff-stress">—</div><div class="hs-lbl">Stress</div></div>
+        <div class="hs-item"><div class="hs-val" id="hoff-taken">—</div><div class="hs-lbl">Taken</div></div>
+        <div class="hs-item"><div class="hs-val" id="hoff-dag">—</div><div class="hs-lbl">Dagtype</div></div>
+      </div>
+      <a href="workcore.html" class="btn btn-ok" style="display:inline-flex;text-decoration:none;justify-content:center;width:100%">
+        Open WorkCore ↗
+      </a>
+    </div>
+
+    <div class="card" id="check-samenvatting">
+      <div class="sec-lbl">Jouw dagstart samenvatting</div>
+      <div class="check-rij"><span class="check-lbl">Slaap</span><span class="check-waarde" id="sum-slaap">—</span></div>
+      <div class="check-rij"><span class="check-lbl">Energie</span><span class="check-waarde" id="sum-energie">—</span></div>
+      <div class="check-rij"><span class="check-lbl">Stress</span><span class="check-waarde" id="sum-stress">—</span></div>
+      <div class="check-rij"><span class="check-lbl">Training vandaag</span><span class="check-waarde" id="sum-training">—</span></div>
+      <div class="check-rij"><span class="check-lbl">Dagtype</span><span class="check-waarde" id="sum-dag">—</span></div>
+      <div class="check-rij"><span class="check-lbl">Prioriteit</span><span class="check-waarde" id="sum-prio">—</span></div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="liftcore.html" class="btn btn-g btn-sm" id="link-liftcore" style="display:none;text-decoration:none">Naar LiftCore ↗</a>
+      <a href="cardiocore.html"  class="btn btn-g btn-sm" id="link-cardiocore"  style="display:none;text-decoration:none">Naar CardioCore ↗</a>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast-c" id="toast-c" aria-live="polite"></div>
+
+<script>
+'use strict';
+const LS_KEY = 'resetcore_dag';
+
+/* ══ STATE ══ */
+let D = {
+  stap: 0,
+  voltooid: false,
+  voltooid_om: null,
+  slaap: 7.0,
+  energie: null,       // laag | midden | hoog
+  stress: 3,
+  dag_type: null,      // werk-kantoor | werk-thuis | vrij | ziek
+  druk: false,
+  vroegste: '09:00',
+  training: null,
+  brain_dump: '',
+  dagfocus: '',
+  rek_gedaan: {},
+  plank_gedaan: false,
+  plank_sec: 30,
+  push_gedaan: false,
+  push_aantal: 10,
+  taken: { prio:[], moet:[], later:[] },
+};
+
+const TOTAL_STAPPEN = 8;
+
+/* ══ OPSLAG ══ */
+function laadDag(){
+  try{
+    const r = localStorage.getItem(LS_KEY);
+    if(!r) return;
+    const opg = JSON.parse(r);
+    // Alleen vandaag laden
+    const vandaag = new Date().toDateString();
+    if(opg.datum !== vandaag) return;
+    D = {...D, ...opg};
+    // ── UI herstellen na laden ──────────────────────
+    herstelUI();
+  }catch(e){}
+}
+
+function herstelUI(){
+  // Energie knoppen
+  if(D.energie){
+    ['laag','midden','hoog'].forEach(e=>{
+      const btn = document.getElementById('en-'+e);
+      if(btn) btn.classList.toggle('sel', e===D.energie);
+    });
+    const hint = document.getElementById('energie-hint');
+    if(hint){
+      const teksten = {
+        laag:   '😔 Laag — rustige dag, training aanpassen.',
+        midden: '😐 Midden — normale dag.',
+        hoog:   '⚡ Hoog — volledige routine mogelijk.',
+      };
+      hint.textContent = teksten[D.energie]||'';
+    }
+  }
+
+  // Slaap waarde
+  const slaapEl = document.getElementById('slaap-val');
+  if(slaapEl){ slaapEl.textContent = D.slaap; }
+
+  // Stress slider
+  const stressEl = document.getElementById('stress-slider');
+  const stressVal = document.getElementById('stress-val');
+  if(stressEl){ stressEl.value = D.stress||3; }
+  if(stressVal){ stressVal.textContent = D.stress||3; }
+
+  // Plank gedaan
+  if(D.plank_gedaan){
+    plankGedaan = true;
+    const btn = document.getElementById('plank-btn');
+    const lbl = document.getElementById('plank-lbl');
+    if(btn) btn.classList.add('gedaan');
+    if(lbl) lbl.textContent = '✓ Gedaan';
+  }
+  if(D.plank_sec){ plankSec = D.plank_sec; const el=document.getElementById('plank-sec-lbl'); if(el) el.textContent=plankSec; }
+
+  // Push-ups gedaan
+  if(D.push_gedaan){
+    pushGedaan = true;
+    const btn = document.getElementById('push-btn');
+    const lbl = document.getElementById('push-lbl');
+    if(btn) btn.classList.add('gedaan');
+    if(lbl) lbl.textContent = '✓ Gedaan';
+  }
+  if(D.push_aantal){ pushAantal = D.push_aantal; const el=document.getElementById('push-aantal'); if(el) el.textContent=pushAantal; }
+
+  // Rek oefeningen - herstel vinkjes
+  if(D.rek_gedaan){
+    rekGedaan = {...D.rek_gedaan};
+    // bouwRekLijst wordt al aangeroepen in bouwMobLijst, dat herstelt de vinkjes via rekGedaan
+  }
+
+  // Dag type (agenda)
+  if(D.dag_type){
+    document.querySelectorAll('.dag-keuze-btn').forEach(b=>{
+      b.classList.toggle('sel', b.dataset.type===D.dag_type);
+    });
+  }
+
+  // Training keuze
+  if(D.training){
+    document.querySelectorAll('.gym-opt').forEach(b=>{
+      b.classList.toggle('sel', b.id==='gym-'+D.training);
+    });
+  }
+
+  // Brain dump
+  const brainEl = document.getElementById('brain-dump');
+  if(brainEl && D.brain_dump) brainEl.value = D.brain_dump;
+
+  // Dagfocus
+  const focusEl = document.getElementById('dag-focus');
+  if(focusEl && D.dagfocus) focusEl.value = D.dagfocus;
+
+  // Taken
+  if(D.taken){
+    ['prio','moet','later'].forEach(zone=>{
+      const el = document.getElementById('taken-'+zone);
+      if(el && D.taken[zone]) el.value = D.taken[zone].join('\n');
+    });
+  }
+
+  // Stap tonen
+  if(D.stap > 0){
+    document.querySelectorAll('.schr').forEach(s=>s.classList.remove('on'));
+    const stapEl = document.getElementById('schr-'+D.stap);
+    if(stapEl) stapEl.classList.add('on');
+    if(D.stap === 2 || D.stap === 3) bouwMobLijst();
+  }
+}
+
+function slaOp(){
+  D.datum = new Date().toDateString();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(D)); }catch(e){}
+  if(typeof Core!=='undefined') Core.sync.planAutoSync('resetcore', D);
+  // Log slaap naar Core voor slaap-prestatie correlatie
+  if(typeof Core !== 'undefined' && D.slaap) Core.logSlaap(D.slaap);
+  // Schrijf handoff voor WorkCore — altijd vandaag's datum zodat validatie klopt
+  localStorage.setItem('wc_handoff', JSON.stringify({
+    energie:  D.energie,
+    stress:   D.stress,
+    slaap:    D.slaap,
+    dag_type: D.dag_type,
+    druk:     D.druk,
+    vroegste: D.vroegste,
+    training: D.training,
+    taken:    D.taken,
+    reset_om: new Date().toISOString(), // altijd vandaag — niet afhankelijk van afronden
+  }));
+}
+
+/* ══ NAVIGATIE ══ */
+function naarStap(n){
+  // Stop ademhaling audio als we van stap 1 weggaan
+  if(D.stap === 1){
+    clearInterval(ademInterval);
+    ademLoopt = false;
+    stopAdemAudio();
+  }
+  document.getElementById('schr-'+(D.stap)).classList.remove('on');
+  D.stap = n;
+  document.getElementById('schr-'+n).classList.add('on');
+  bouwProgBar();
+  slaOp();
+  if(n === 2) bouwMobLijst();    // energie komt nu op schr-3, mobiliteit op schr-2
+  if(n === 8) ronAf();
+  // Tijdsbewuste skip: als het te laat is sla training-stap over
+  if(n === 5) controleerTrainingSkip();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function controleerTrainingSkip(){
+  const uur = new Date().getHours();
+  const schema = laadDagSchema();
+  const wekker = schema?.wekker || '07:00';
+  const wekkerUur = parseInt(wekker.split(':')[0]);
+  const hint = document.getElementById('training-tijd-hint');
+  const overslaan_btn = document.getElementById('training-overslaan-btn');
+  if(!hint) return;
+
+  // Weinig tijd: meer dan 1.5u na wekker op werkdag
+  const weinigTijd = uur >= wekkerUur + 1 && schema?.rooster;
+  const dag = ['zo','ma','di','wo','do','vr','za'][new Date().getDay()];
+  const isWerkdag = schema?.rooster?.[dag] === 'werk';
+  const laagEnergie = D.energie === 'laag';
+
+  if(weinigTijd && isWerkdag && uur < wekkerUur + 3){
+    hint.textContent = '⏰ Weinig tijd voor werk — keep it short of sla training over.';
+    hint.style.display = 'block';
+  } else if(laagEnergie){
+    hint.textContent = '😔 Energie laag — training is optioneel. Luister naar je lichaam.';
+    hint.style.display = 'block';
+  } else if(uur >= wekkerUur + 3 && isWerkdag){
+    hint.textContent = '🕐 Het is al laat — overweeg de training te verschuiven naar de avond.';
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function laadDagSchema(){
+  try{
+    const r = localStorage.getItem('focus_schema');
+    return r ? JSON.parse(r) : null;
+  }catch{ return null; }
+}
+
+function bouwProgBar(){
+  const c = document.getElementById('prog-stappen');
+  c.innerHTML = '';
+  for(let i=1;i<=TOTAL_STAPPEN;i++){
+    const d = document.createElement('div');
+    d.className = 'prog-stap' + (i < D.stap ? ' done' : i === D.stap ? ' actief' : '');
+    c.appendChild(d);
+  }
+}
+
+/* ══ STAP 1: ADEMHALING ══ */
+/* Box breathing 4-4-4-4, verbeterd:
+   - WAV bestanden voor in/uit
+   - Visuele ring groeit bij inademen, krimpt bij uitademen
+   - Holdcyclus krijgt neutrale staat
+   - Zachte instructie per fase
+*/
+const ADEM_FASEN = [
+  { naam: 'Adem in',     duur: 4, klasse: 'adem',    audio: 'sounds/breathing_in.wav',  instructie: 'Vul je longen langzaam' },
+  { naam: 'Vasthouden',  duur: 4, klasse: 'hold',    audio: null,                       instructie: 'Houd vast, ontspan je schouders' },
+  { naam: 'Adem uit',    duur: 4, klasse: 'uit',     audio: 'sounds/breathing_out.wav', instructie: 'Laat volledig los' },
+  { naam: 'Vasthouden',  duur: 4, klasse: 'hold',    audio: null,                       instructie: 'Rust, voel de stilte' },
+];
+
+let ademInterval = null;
+let ademFaseIdx  = 0;
+let ademSec      = 4;
+let ademCycli    = 0;
+let ademLoopt    = false;
+let huidigAudio  = null;
+
+function startAdem(){
+  if(ademLoopt) return;
+  ademLoopt = true;
+  ademFaseIdx = 0;
+  ademSec     = ADEM_FASEN[0].duur;
+  updateAdemUI();
+  speelAdemAudio(ADEM_FASEN[0].audio);
+  ademInterval = setInterval(()=>{
+    ademSec--;
+    document.getElementById('adem-teller').textContent = ademSec > 0 ? ademSec : '';
+    if(ademSec <= 0){
+      ademFaseIdx = (ademFaseIdx + 1) % ADEM_FASEN.length;
+      if(ademFaseIdx === 0){
+        ademCycli++;
+        document.getElementById('adem-cycli').textContent = ademCycli;
+        if(ademCycli >= parseInt(document.getElementById('adem-doel').textContent)){
+          clearInterval(ademInterval);
+          ademLoopt = false;
+          stopAdemAudio();
+          const ring = document.getElementById('adem-ring');
+          ring.className = 'adem-ring klaar';
+          document.getElementById('adem-fase').textContent = '✓ Voltooid';
+          document.getElementById('adem-teller').textContent = '';
+          document.getElementById('adem-instructie').textContent = 'Goed gedaan — voel de rust';
+          document.getElementById('adem-klaar').disabled = false;
+          toast('Ademhaling voltooid — goed gedaan 🌿', 'ok');
+          return;
+        }
+      }
+      const fase = ADEM_FASEN[ademFaseIdx];
+      ademSec = fase.duur;
+      updateAdemUI();
+      speelAdemAudio(fase.audio);
+    }
+  }, 1000);
+}
+
+function updateAdemUI(){
+  const fase = ADEM_FASEN[ademFaseIdx];
+  const ring = document.getElementById('adem-ring');
+  ring.className = 'adem-ring ' + fase.klasse;
+  document.getElementById('adem-fase').textContent = fase.naam;
+  document.getElementById('adem-teller').textContent = ademSec;
+  document.getElementById('adem-instructie').textContent = fase.instructie;
+}
+
+function speelAdemAudio(src){
+  stopAdemAudio();
+  if(!src) return;
+  try{
+    huidigAudio = new Audio(src);
+    huidigAudio.volume = 0.7;
+    huidigAudio.play().catch(()=>{}); // stil falen als browser blokkeert
+  }catch(e){}
+}
+
+function stopAdemAudio(){
+  if(huidigAudio){
+    huidigAudio.pause();
+    huidigAudio.currentTime = 0;
+    huidigAudio = null;
+  }
+}
+
+/* ══ STAP 2: MOBILITEIT ══ */
+/*
+   Oefeningen geselecteerd op basis van:
+   - Evidence: synoviaal vocht stimuleren (gewrichtsrotaties)
+   - Fascia losmaking na liggen (thoracale rotatie, cat-cow)
+   - Heup/hamstring stijfheid (wereldwijd grootste klacht 's ochtends)
+   - Schouder & nek mobiliteit (zit/slaaphouding gerelateerd)
+   Elk < 30 sec, geen materiaal nodig, bed/vloer of staand
+*/
+/* ══ STAP 3: REK/STREK + PLANK & PUSH-UPS ══ */
+const REK_OEFENINGEN = [
+  { id:'r1', naam:'Enkels ronddraaien',      uitleg:'10× mee + 10× tegendraads, beide enkels. Losmaken na liggen.',      duur:'30s' },
+  { id:'r2', naam:'Schouders oprollen',       uitleg:'10× naar voren, 10× naar achteren. Verlicht slaap-spanning.',        duur:'20s' },
+  { id:'r3', naam:'Nek langzaam draaien',     uitleg:'Links houd 3s, midden, rechts houd 3s — 5× per kant. Niet forceren.',duur:'30s' },
+  { id:'r4', naam:'Cat-Cow',                  uitleg:'Op handen/knieën: rug hol (in) → rug bol (uit). 8 cycli.',           duur:'45s' },
+  { id:'r5', naam:'Thoracale rotatie (zij)',  uitleg:'Lig op zij, knieën 90°. Bovense arm naar achter, borst openen. 8× p/k.', duur:'45s' },
+  { id:'r6', naam:'Kindhouding',              uitleg:'Knieën, handen naar voren. 30s rustig ademhalen. Rekt lumbale fascia.',duur:'30s' },
+  { id:'r7', naam:'Knie naar borst',          uitleg:'Lig op rug. Trek één knie naar borst 20s, wissel. Rekt heupbuiger.',  duur:'40s' },
+  { id:'r8', naam:'Heupscharnieren',          uitleg:'Staand, voeten schouderbreedte. Buig voorover 10× langzaam. Posterior chain.',duur:'30s' },
+];
+
+let rekGedaan = {};
+
+function bouwRekLijst(){
+  const el = document.getElementById('rek-lijst');
+  if(!el) return;
+  el.innerHTML = REK_OEFENINGEN.map(o => `
+    <div class="mob-item ${rekGedaan[o.id]?'done':''}" id="rek-${o.id}" onclick="vinkRek('${o.id}')" style="border-bottom:1px solid var(--bdr-sm);padding:9px 0;display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+      <div style="width:22px;height:22px;border-radius:5px;border:1.5px solid ${rekGedaan[o.id]?'var(--green)':'var(--bdr-md)'};background:${rekGedaan[o.id]?'var(--green-dim)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:11px;color:var(--green);transition:var(--tx)">
+        ${rekGedaan[o.id]?'✓':''}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;${rekGedaan[o.id]?'opacity:.45;text-decoration:line-through':''}">${o.naam}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:2px">${o.uitleg}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:3px">${o.duur}</div>
+      </div>
+    </div>`).join('');
+}
+
+function vinkRek(id){
+  rekGedaan[id] = !rekGedaan[id];
+  D.rek_gedaan = {...rekGedaan}; slaOp();
+  bouwRekLijst();
+}
+
+/* Plank timer */
+let plankSec    = 30;
+let plankRest   = 0;
+let plankTimer  = null;
+let plankGedaan = false;
+
+function plankTel(delta){
+  plankSec = Math.max(5, Math.min(300, plankSec + delta));
+  document.getElementById('plank-sec-lbl').textContent = plankSec;
+  D.plank_sec = plankSec; slaOp();
+}
+
+function startPlankTimer(){
+  if(plankTimer) return;
+  plankRest = plankSec;
+  const wrap  = document.getElementById('plank-timer-wrap');
+  const btn   = document.getElementById('plank-start-btn');
+  wrap.style.display = 'flex';
+  btn.style.display  = 'none';
+  updatePlankRing();
+  plankTimer = setInterval(()=>{
+    plankRest--;
+    document.getElementById('plank-timer-getal').textContent = plankRest;
+    updatePlankRing();
+    if(plankRest <= 0){
+      clearInterval(plankTimer); plankTimer = null;
+      speelKlaar();
+      document.getElementById('plank-timer-getal').textContent = '✓';
+      document.getElementById('plank-ring-circle').style.stroke = 'var(--green)';
+      toggleMobGedaan('plank');
+    }
+  }, 1000);
+}
+
+function stopPlankTimer(){
+  if(plankTimer){ clearInterval(plankTimer); plankTimer = null; }
+  document.getElementById('plank-timer-wrap').style.display = 'none';
+  document.getElementById('plank-start-btn').style.display  = '';
+}
+
+function updatePlankRing(){
+  const pct    = plankRest / plankSec;
+  const omtrek = 276.5;
+  document.getElementById('plank-ring-circle').style.strokeDashoffset = omtrek * (1 - pct);
+  document.getElementById('plank-timer-getal').textContent = plankRest;
+}
+
+/* Push-up teller */
+let pushAantal  = 10;
+let pushGedaan  = false;
+
+function pushTel(delta){
+  pushAantal = Math.max(1, Math.min(100, pushAantal + delta));
+  document.getElementById('push-aantal').textContent = pushAantal;
+  D.push_aantal = pushAantal; slaOp();
+}
+
+/* Geluidssignaal bij klaar */
+function speelKlaar(){
+  try{
+    const audio = new Audio('sounds/ReadyCheck.wav');
+    audio.volume = 0.7;
+    audio.play().catch(()=>{
+      // Fallback: korte toon via Web Audio
+      const ctx = new(window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.setValueAtTime(.4,ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.6);
+      o.start(); o.stop(ctx.currentTime+.6);
+    });
+  }catch(e){}
+}
+
+function toggleMobGedaan(type){
+  if(type === 'plank'){
+    plankGedaan = !plankGedaan;
+    const btn = document.getElementById('plank-btn');
+    btn.classList.toggle('gedaan', plankGedaan);
+    document.getElementById('plank-lbl').textContent = plankGedaan ? '✓ Gedaan' : 'Markeer als gedaan';
+    D.plank_gedaan = plankGedaan; slaOp();
+  } else {
+    pushGedaan = !pushGedaan;
+    const btn = document.getElementById('push-btn');
+    btn.classList.toggle('gedaan', pushGedaan);
+    document.getElementById('push-lbl').textContent = pushGedaan ? '✓ Gedaan' : 'Markeer als gedaan';
+    D.push_gedaan = pushGedaan; slaOp();
+  }
+}
+
+function bouwMobLijst(){
+  bouwRekLijst();
+  // Energie-hint
+  const hint = document.getElementById('mob-energie-hint');
+  if(hint && D.energie){
+    const berichten = {
+      laag:   '😔 Energie laag — doe alleen rek/strek, sla plank en push-ups over.',
+      midden: '😐 Midden energie — doe wat comfortabel voelt.',
+      hoog:   '⚡ Energie hoog — volledige routine: rek/strek + plank + push-ups.',
+    };
+    hint.textContent = berichten[D.energie] || '';
+    hint.style.display = 'block';
+  }
+}
+
+function aanpSlaap(delta){
+  D.slaap = Math.max(1, Math.min(12, Math.round((D.slaap+delta)*2)/2));
+  document.getElementById('slaap-val').innerHTML = D.slaap+'<span style="font-size:14px;font-weight:400;color:var(--muted)"> u</span>';
+  const fb = document.getElementById('slaap-feedback');
+  if(D.slaap < 5){
+    fb.className='alert alert-warn'; fb.textContent='Onder 5 uur — training vandaag aanpassen naar herstel.';
+  } else if(D.slaap < 6.5){
+    fb.className='alert alert-warn'; fb.textContent='Minder dan 6,5 uur — plan lichte dag. WorkCore past daglimiet aan.';
+  } else if(D.slaap < 7.5){
+    fb.className='alert alert-ok'; fb.textContent='Prima slaap — goede basis voor de dag.';
+  } else {
+    fb.className='alert alert-ok'; fb.textContent='Uitstekend geslapen — optimaal herstel bereikt.';
+  }
+  slaOp();
+}
+
+function kiesEnergie(niveau){
+  D.energie = niveau;
+  ['laag','midden','hoog'].forEach(n=>{
+    const b = document.getElementById('en-'+n);
+    b.className = 'slider-btn' + (n===niveau ? ' sel-'+n : '');
+  });
+  const hints = {
+    laag:   'Lage energie — WorkCore stelt max. 3 taken voor, focusblokken van 25 min.',
+    midden: 'Gemiddelde energie — WorkCore stelt max. 5 taken voor, 45-minuten blokken.',
+    hoog:   'Hoge energie — WorkCore stelt max. 7 taken voor, zware taken naar voren.',
+  };
+  document.getElementById('energie-hint').textContent = hints[niveau];
+  slaOp();
+}
+
+function updateStress(v){
+  D.stress = parseInt(v);
+  document.getElementById('stress-val').textContent = v;
+  slaOp();
+}
+
+/* ══ STAP 3: AGENDA ══ */
+function kiesDagType(type){
+  D.dag_type = type;
+  ['werk-kantoor','werk-thuis','vrij','ziek'].forEach(t=>{
+    document.getElementById('dag-'+t).classList.toggle('sel', t===type);
+  });
+  updateDagInfo();
+  slaOp();
+}
+
+function updateDagInfo(){
+  D.druk = document.getElementById('drukke-dag').checked;
+  const banner = document.getElementById('dag-advies');
+  const adviezen = {
+    'werk-kantoor': D.druk ? 'Drukke kantoordag — WorkCore beschermt je focustijd en beperkt extra taken.' : 'Kantoordag — werkuren worden meegerekend in je daglimiet.',
+    'werk-thuis':   'Thuiswerkdag — let op: extra verleidingen. WorkCore helpt structuur houden.',
+    'vrij':         'Vrije dag — ontspan. WorkCore switcht naar klussenmodus met lager takentempo.',
+    'ziek':         'Rustdag — geen taken, geen druk. Herstel staat centraal.',
+  };
+  if(D.dag_type){
+    banner.style.display = 'flex';
+    banner.className = 'alert ' + (D.dag_type==='ziek'?'alert-warn':'alert-info');
+    banner.textContent = adviezen[D.dag_type] || '';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+/* ══ STAP 4: TRAINING ══ */
+function kiesTraining(type){
+  D.training = type;
+  ['liftcore','cardiocore','wandelen','herstel','rust','geen'].forEach(t=>{
+    document.getElementById('gym-'+t).classList.toggle('sel', t===type);
+  });
+  const linkBanner = document.getElementById('training-link');
+  const linkHref = document.getElementById('training-link-href');
+  if(type === 'liftcore'){ linkBanner.style.display='block'; linkHref.href='liftcore.html'; linkHref.textContent='Open LiftCore ↗'; }
+  else if(type === 'cardiocore'){ linkBanner.style.display='block'; linkHref.href='cardiocore.html'; linkHref.textContent='Open CardioCore ↗'; }
+  else { linkBanner.style.display='none'; }
+
+  // Check slaapadvies
+  const warn = document.getElementById('gym-advies-banner');
+  if(D.slaap < 6 && (type==='liftcore'||type==='cardiocore')){
+    warn.style.display='flex';
+    warn.className='alert alert-warn';
+    warn.textContent='⚠ Je slaap was kort. Overweeg vandaag herstel of wandelen in plaats van een zware training.';
+  } else { warn.style.display='none'; }
+  slaOp();
+}
+
+/* ══ STAP 5: BRAIN DUMP ══ */
+let brainTimer = null;
+function verwerkyBrain(){
+  D.brain_dump = document.getElementById('brain-input').value;
+  clearTimeout(brainTimer);
+  brainTimer = setTimeout(clusterBrain, 800);
+}
+
+function clusterBrain(){
+  const tekst = D.brain_dump.trim();
+  if(tekst.length < 10){
+    document.getElementById('brain-clusters').style.display='none';
+    return;
+  }
+  // Simpele keyword-clustering
+  const zinnen = tekst.split(/[.!?\n]+/).filter(z=>z.trim().length>3);
+  const zorgen=[], taken=[], idee=[];
+  zinnen.forEach(z=>{
+    const l = z.toLowerCase();
+    if(/bang|stress|zorgen|vergeet|vergeten|niet zeker|nerveus|angst/.test(l)) zorgen.push(z.trim());
+    else if(/moet|kan|bellen|mailen|kopen|sturen|regelen|afmaken|doen/.test(l)) taken.push(z.trim());
+    else idee.push(z.trim());
+  });
+
+  const c = document.getElementById('brain-clusters');
+  c.style.display='flex';
+
+  const toon = (id,arr)=>{
+    const el = document.getElementById(id);
+    const cont = document.getElementById(id.replace('cluster-','')+ '-inhoud');
+    if(arr.length){ el.style.display='block'; cont.textContent=arr.slice(0,3).join(' · '); }
+    else el.style.display='none';
+  };
+  toon('cluster-zorgen', zorgen);
+  toon('cluster-taken',  taken);
+  toon('cluster-idee',   idee);
+  document.getElementById('brain-hint').style.display = tekst.length>20 ? 'block':'none';
+}
+
+/* ══ STAP 6: DAGFOCUS ══ */
+function voegTaakToe(zone){
+  const input = document.getElementById(zone+'-input');
+  const tekst = input.value.trim();
+  if(!tekst) return;
+
+  const limiet = { laag:3, midden:5, hoog:7 }[D.energie||'midden'];
+  const totaal = D.taken.prio.length + D.taken.moet.length;
+
+  if(zone !== 'later' && totaal >= limiet){
+    document.getElementById('focus-limit-warn').style.display='flex';
+    toast(`Daglimiet (${limiet} taken) bereikt — voeg toe aan Later`,'neu');
+    return;
+  }
+  document.getElementById('focus-limit-warn').style.display='none';
+
+  if(zone==='prio' && D.taken.prio.length >= 1){
+    toast('Er is al een prioriteit. Voeg de rest toe aan "Moet vandaag"','neu');
+    return;
+  }
+
+  D.taken[zone].push({id:Date.now(), tekst, klaar:false});
+  renderTaken(zone);
+  input.value='';
+  slaOp();
+}
+
+function renderTaken(zone){
+  const c = document.getElementById(zone+'-lijst');
+  c.innerHTML = D.taken[zone].map((t,i)=>`
+    <div class="taak-item">
+      <div class="taak-check ${t.klaar?'done':''}" onclick="toggleTaak('${zone}',${i})" role="checkbox" aria-checked="${t.klaar}"></div>
+      <span class="taak-tekst ${t.klaar?'done-tekst':''}">${t.tekst}</span>
+      <button onclick="verwijderTaak('${zone}',${i})" style="background:none;border:none;color:var(--faint);cursor:pointer;font-size:13px;padding:0 4px" aria-label="Verwijder taak">×</button>
+    </div>`).join('');
+}
+
+function toggleTaak(zone, idx){
+  D.taken[zone][idx].klaar = !D.taken[zone][idx].klaar;
+  renderTaken(zone);
+  slaOp();
+}
+
+function verwijderTaak(zone, idx){
+  D.taken[zone].splice(idx,1);
+  renderTaken(zone);
+  slaOp();
+}
+
+function toonEnergieBanner(){
+  const banner = document.getElementById('energie-banner');
+  const msgs = {
+    laag:   { cls:'alert-warn', txt:'Lage energie — max. 3 taken. Lichte taken naar voren. Zware taken naar Later.' },
+    midden: { cls:'alert-info', txt:'Gemiddelde energie — max. 5 taken. Balanceer zwaar en licht.' },
+    hoog:   { cls:'alert-ok',  txt:'Hoge energie — max. 7 taken. Zet je zwaarste werk als prioriteit.' },
+  };
+  if(D.energie && msgs[D.energie]){
+    const m = msgs[D.energie];
+    banner.className = 'alert '+m.cls;
+    banner.textContent = m.txt;
+    banner.style.display='flex';
+  }
+  document.getElementById('focus-sub').textContent =
+    D.energie==='laag' ? 'Lage energie — kies max. 3 taken' :
+    D.energie==='hoog' ? 'Hoge energie — je kunt vandaag meer aan' :
+    'Wat zijn je prioriteiten voor vandaag?';
+}
+
+/* ══ AFRONDEN ══ */
+function ronAf(){
+  D.voltooid = true;
+  D.voltooid_om = new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  slaOp();
+
+  document.getElementById('afr-tijd').textContent = 'Afgerond om '+D.voltooid_om;
+
+  // Handoff stats
+  document.getElementById('hoff-energie').textContent = {laag:'Laag',midden:'Midden',hoog:'Hoog'}[D.energie]||'—';
+  document.getElementById('hoff-slaap').textContent   = D.slaap+'u';
+  document.getElementById('hoff-stress').textContent  = D.stress+'/10';
+  const totTaken = D.taken.prio.length+D.taken.moet.length;
+  document.getElementById('hoff-taken').textContent   = totTaken;
+  document.getElementById('hoff-dag').textContent     = {
+    'werk-kantoor':'Kantoor','werk-thuis':'Thuis','vrij':'Vrij','ziek':'Ziek'
+  }[D.dag_type]||'—';
+
+  // Samenvatting
+  document.getElementById('sum-slaap').textContent    = D.slaap+'u';
+  document.getElementById('sum-energie').textContent  = {laag:'Laag',midden:'Midden',hoog:'Hoog'}[D.energie]||'—';
+  document.getElementById('sum-stress').textContent   = D.stress+'/10';
+  document.getElementById('sum-training').textContent = D.training||'Geen';
+  document.getElementById('sum-dag').textContent      = {
+    'werk-kantoor':'Kantoor','werk-thuis':'Thuis','vrij':'Vrij','ziek':'Ziek'
+  }[D.dag_type]||'—';
+  const prio = D.taken.prio[0];
+  document.getElementById('sum-prio').textContent     = prio ? prio.tekst.slice(0,30)+(prio.tekst.length>30?'…':'') : 'Geen';
+
+  // Trainingslinks
+  document.getElementById('link-liftcore').style.display = D.training==='liftcore' ? 'inline-flex':'none';
+  document.getElementById('link-cardiocore').style.display  = D.training==='cardiocore'  ? 'inline-flex':'none';
+}
+
+/* ══ TOAST ══ */
+function toast(msg,type='neu'){
+  const c = document.getElementById('toast-c');
+  const el = document.createElement('div');
+  el.className='toast '+type; el.setAttribute('role','status');
+  el.innerHTML=`<span style="flex-shrink:0">${type==='ok'?'✓':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); el.addEventListener('animationend',()=>el.remove(),{once:true}); },3300);
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  laadDag();
+
+  // Klok
+  const updateTijd = ()=>{
+    const nu = new Date();
+    document.getElementById('rc-tijd').textContent =
+      nu.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  };
+  updateTijd(); setInterval(updateTijd,60000);
+
+  // Datum
+  const nu = new Date();
+  const groet = nu.getHours()<12?'Goedemorgen':nu.getHours()<18?'Goedemiddag':'Goedenavond';
+  document.getElementById('welkom-groet').textContent = groet;
+  document.getElementById('welkom-datum').textContent = nu.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Al gedaan vandaag?
+  if(D.voltooid){
+    document.getElementById('al-gedaan').style.display='block';
+    document.getElementById('al-tijdstip').textContent='Voltooid om '+D.voltooid_om;
+  }
+
+  // Herstel taken rendering
+  ['prio','moet','later'].forEach(renderTaken);
+
+  // Herstel slaap UI
+  aanpSlaap(0);
+
+  // Herstel energie
+  if(D.energie) kiesEnergie(D.energie);
+
+  // Herstel dag type
+  if(D.dag_type) kiesDagType(D.dag_type);
+
+  // Energie banner bij dagfocus
+  toonEnergieBanner();
+
+  bouwProgBar();
+
+  // Begin altijd op stap 0 (welkomscherm) — naarStap verbergt het zodra je verder gaat
+  // Als al bezig: herstel op bewaarde stap maar toon welkomscherm wel eerst
+  D.stap = 0;
+
+  // Tijdshint op welkomscherm
+  const schema = laadDagSchema();
+  if(schema){
+    const uur = new Date().getHours();
+    const wekkerUur = parseInt((schema.wekker||'07:00').split(':')[0]);
+    const hintEl = document.getElementById('stap0-tijd-hint');
+    if(hintEl){
+      if(uur < wekkerUur + 1){
+        hintEl.textContent = '☀️ Vroeg begin — volledig programma beschikbaar.';
+        hintEl.style.display = 'block';
+      } else if(uur >= wekkerUur + 3){
+        const over = uur - wekkerUur;
+        hintEl.textContent = `⏰ Je begint ${over} uur na je wekker — snelle versie aanbevolen (stappen 1-2 overslaan).`;
+        hintEl.style.display = 'block';
+        hintEl.style.background = 'rgba(240,163,71,.12)';
+      }
+    }
+  }
+});
+
+function exporteerData(){
+  try{
+    const data = localStorage.getItem('resetcore_dag');
+    if(!data){ if(typeof toast==='function') toast('Geen data om te exporteren','wn'); return; }
+    const blob = new Blob([JSON.stringify(JSON.parse(data), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ResetCore_export_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof toast==='function') toast('ResetCore data geëxporteerd ✓','ok');
+  }catch(e){
+    if(typeof toast==='function') toast('Export mislukt','wn');
+  }
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

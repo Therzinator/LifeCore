@@ -1,0 +1,36 @@
+.sw-leeg {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+  margin: var(--space-sm) 0;
+}
+
+.sw-waarschuwing {
+  font-size: var(--font-size-sm);
+  color: var(--danger);
+  background: var(--danger-dim);
+  border-radius: var(--r-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin: var(--space-sm) 0;
+}
+
+.sw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+
+.sw-chip {
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  color: var(--txt);
+}
+
+.sw-per-kant {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+}

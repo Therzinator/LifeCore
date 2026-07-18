@@ -1,0 +1,11 @@
+.wp-titel {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.wp-laatst {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+  margin-bottom: var(--space-md);
+}

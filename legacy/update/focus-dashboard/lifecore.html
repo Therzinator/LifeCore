@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LifeCore</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0B;--bg-2:#111113;--bg-3:#18181C;--bg-4:#1E1E24;
+  --border:rgba(255,255,255,.07);--border-2:rgba(255,255,255,.12);--border-3:rgba(255,255,255,.2);
+  --acc:#7b6ef6;--acc-glow:rgba(123,110,246,.15);
+  --amber:#f0a347;--amber-dim:rgba(240,163,71,.1);--amber-b:rgba(240,163,71,.25);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,.1);--green-b:rgba(62,207,142,.25);
+  --red:#f04747;--red-dim:rgba(240,71,71,.08);--red-b:rgba(240,71,71,.2);
+  --run:#47E8FF;--run-dim:rgba(71,232,255,.1);
+  --txt:#F0F0F4;--muted:rgba(255,255,255,.38);--faint:rgba(255,255,255,.13);
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+  --r:8px;--rl:14px;--rx:22px;--tx:all .18s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,11,.92);backdrop-filter:blur(16px);z-index:50;gap:10px}
+.brand{font-family:var(--head);font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;padding-top:.1em;overflow:visible;color:var(--amber)}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em}
+.nav-chip:hover{border-color:var(--border-2);color:var(--txt)}
+.nav-chip.cur{border-color:rgba(240,163,71,.4);color:var(--amber);background:var(--amber-dim)}
+
+/* Layout */
+.wrap{max-width:640px;margin:0 auto;padding:24px 20px 100px}
+.ph-over{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.ph-titel{font-family:var(--head);font-size:26px;font-weight:800;color:var(--amber);padding-top:.1em;overflow:visible;letter-spacing:-.02em;line-height:1.2}
+.ph-sub{font-size:13px;color:var(--muted);margin-top:4px;margin-bottom:20px}
+
+/* Tabs */
+.tabs{display:flex;gap:0;background:var(--bg-3);border-radius:var(--r);padding:3px;margin-bottom:20px}
+.tab-btn{flex:1;padding:8px 6px;text-align:center;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-radius:6px;border:none;background:none;transition:var(--tx)}
+.tab-btn.on{background:var(--bg-2);color:var(--txt)}
+
+/* Cards */
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
+.card-amber{border-left:3px solid var(--amber)}
+.clabel{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.clabel::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Patroon kaart */
+.patroon-kaart{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:10px;transition:var(--tx)}
+.patroon-kaart.actief{border-color:rgba(240,163,71,.3);background:linear-gradient(135deg,rgba(240,163,71,.04),var(--bg-2))}
+.pk-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pk-icon{width:40px;height:40px;border-radius:10px;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.pk-naam{font-size:14px;font-weight:500;margin-bottom:2px}
+.pk-sub{font-size:11px;color:var(--muted)}
+.pk-body{display:none}
+.patroon-kaart.open .pk-body{display:block}
+.pk-sectie{margin-bottom:12px}
+.pk-sectie-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+
+/* Trigger chips */
+.trigger-grid{display:flex;flex-wrap:wrap;gap:6px}
+.trigger-chip{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border-2);color:var(--muted);cursor:pointer;transition:var(--tx);user-select:none}
+.trigger-chip.on{border-color:rgba(240,163,71,.4);background:var(--amber-dim);color:var(--amber)}
+
+/* Drang log knop */
+.drang-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border-radius:var(--r);border:1px solid var(--border-2);background:var(--bg-3);color:var(--txt);cursor:pointer;font-family:var(--body);font-size:13px;transition:var(--tx);text-align:left}
+.drang-btn:hover{border-color:var(--amber-b);background:var(--amber-dim)}
+
+/* Kalender */
+.kalender{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.kal-dag{aspect-ratio:1;border-radius:4px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--faint);flex-direction:column;gap:2px}
+.kal-dag.gedaan{background:rgba(240,163,71,.2);border:1px solid var(--amber-b)}
+.kal-dag.mini{background:rgba(240,163,71,.08);border:1px solid rgba(240,163,71,.15)}
+.kal-dag.vandaag{border:1px solid var(--amber)!important}
+
+/* Energie slider */
+.energie-btns{display:flex;gap:6px}
+.e-btn{flex:1;padding:10px 6px;border-radius:var(--r);border:1px solid var(--border-2);background:var(--bg-3);color:var(--muted);cursor:pointer;font-size:13px;transition:var(--tx);text-align:center}
+.e-btn.on{border-color:rgba(240,163,71,.4);background:var(--amber-dim);color:var(--amber)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--body);font-size:13px;font-weight:500;padding:10px 18px;transition:var(--tx);white-space:nowrap}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-amber{background:var(--amber);color:#000;width:100%}.btn-amber:hover:not(:disabled){background:#f5b567;transform:translateY(-1px)}
+.btn-g{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}.btn-g:hover{background:var(--bg-4)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%}
+
+/* Form */
+.f-grp{margin-bottom:12px}
+.f-lbl{display:block;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+.f-input{background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--r);color:var(--txt);font-family:var(--body);font-size:13px;padding:9px 12px;outline:none;transition:var(--tx);width:100%}
+.f-input:focus{border-color:rgba(240,163,71,.4);box-shadow:0 0 0 3px var(--amber-dim)}
+.f-input::placeholder{color:var(--faint)}
+textarea.f-input{resize:vertical;min-height:70px}
+
+/* Reflectie */
+.week-blok{background:var(--bg-3);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.week-vraag{font-size:13px;font-weight:500;margin-bottom:8px}
+.week-antw{font-size:12px;color:var(--muted);font-style:italic}
+
+/* Inzichten */
+.inzicht-rij{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.inzicht-rij:last-child{border:none}
+.inzicht-getal{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--amber);min-width:40px}
+.inzicht-lbl{font-size:12px;color:var(--muted)}
+
+/* Drang popup */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:80;display:none;align-items:flex-end;justify-content:center}
+.popup-overlay.open{display:flex}
+.popup-panel{background:var(--bg-2);border-radius:var(--rx) var(--rx) 0 0;border-top:1px solid var(--border-2);padding:24px 20px 36px;width:100%;max-width:480px;animation:slideUp .22s ease;max-height:85vh;overflow-y:auto}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.popup-greep{width:36px;height:4px;border-radius:2px;background:var(--border-3);margin:0 auto 18px}
+.popup-titel{font-family:var(--head);font-size:18px;font-weight:700;padding-top:.1em;overflow:visible;margin-bottom:4px}
+.popup-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+
+/* Notificatie banner (in-app) */
+.notif-banner{display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--amber-dim);border:1px solid var(--amber-b);border-radius:var(--rl);margin-bottom:16px;cursor:pointer;transition:var(--tx)}
+.notif-banner.zichtbaar{display:flex}
+.notif-banner:hover{background:rgba(240,163,71,.15)}
+
+/* Geen data */
+.leeg{color:var(--muted);font-size:13px;text-align:center;padding:24px 0}
+
+/* Toast */
+.toast-c{position:fixed;top:68px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}
+.toast.wn{background:rgba(240,163,71,.12);border:1px solid var(--amber-b);color:var(--amber)}
+
+@media(max-width:480px){.topbar-nav{display:none}.wrap{padding:16px 14px 100px}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">🌱 LifeCore</div>
+  <nav class="topbar-nav">
+    <a href="index.html"      class="nav-chip">Dashboard</a>
+    <a href="liftcore.html"   class="nav-chip">LiftCore</a>
+    <a href="workcore.html"   class="nav-chip">WorkCore</a>
+    <a href="relaxcore.html"  class="nav-chip">RelaxCore</a>
+    <a href="lifecore.html"   class="nav-chip cur">LifeCore</a>
+  <button onclick="exporteerData()" style="font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:var(--tx);margin-left:4px" title="Exporteer data als JSON" onmouseover="this.style.borderColor='var(--border-2)';this.style.color='var(--txt)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↓ export</button>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <!-- In-app notificatie banner (avond) -->
+  <div class="notif-banner" id="avond-banner" onclick="wissel('checkin')">
+    <span style="font-size:18px">🌙</span>
+    <div>
+      <div style="font-size:13px;font-weight:500;color:var(--amber)">Avond check-in</div>
+      <div style="font-size:11px;color:var(--muted)">Hoe was je dag? 30 seconden.</div>
+    </div>
+    <span style="margin-left:auto;color:var(--muted)">→</span>
+  </div>
+
+  <div class="ph-over">Patronen & gewoonten</div>
+  <div class="ph-titel">LifeCore</div>
+  <div class="ph-sub">Doorbreek wat je tegenhoudt. Geen oordeel, geen streaks.</div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn on"  onclick="wissel('patronen')">Patronen</button>
+    <button class="tab-btn"     onclick="wissel('checkin')">Avond</button>
+    <button class="tab-btn"     onclick="wissel('reflectie')">Week</button>
+    <button class="tab-btn"     onclick="wissel('inzichten')">Inzichten</button>
+  </div>
+
+  <!-- ══ TAB: PATRONEN ══ -->
+  <div id="tab-patronen">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;padding:12px 14px;background:var(--bg-2);border-radius:var(--r);border:1px solid var(--border)">
+      Tik op een patroon om te registreren wanneer de drang opkomt. Je hoeft niets te presteren — alleen observeren helpt al.
+    </div>
+    <div id="patronen-lijst"></div>
+    <button class="btn btn-g btn-full" id="add-patroon-btn" onclick="toonAddPatroon()" style="margin-top:4px">+ Eigen patroon toevoegen</button>
+  </div>
+
+  <!-- ══ TAB: AVOND CHECK-IN ══ -->
+  <div id="tab-checkin" style="display:none">
+    <div class="card card-amber">
+      <div class="clabel">Avond check-in</div>
+
+      <!-- Pre-fill hint van ResetCore -->
+      <div id="prefill-hint" style="display:none;font-size:11px;color:var(--muted);margin-bottom:12px;padding:8px 10px;background:var(--bg-3);border-radius:var(--r)">
+        ↑ Overgenomen van je dagstart — pas aan als dat klopt.
+      </div>
+
+      <div class="f-grp">
+        <div class="f-lbl">Energie vandaag</div>
+        <div class="energie-btns" id="ci-energie-btns">
+          <div class="e-btn" onclick="kiesCI('energie',1)" data-v="1">😞 1</div>
+          <div class="e-btn" onclick="kiesCI('energie',2)" data-v="2">😔 2</div>
+          <div class="e-btn" onclick="kiesCI('energie',3)" data-v="3">😐 3</div>
+          <div class="e-btn" onclick="kiesCI('energie',4)" data-v="4">🙂 4</div>
+          <div class="e-btn" onclick="kiesCI('energie',5)" data-v="5">⚡ 5</div>
+        </div>
+      </div>
+
+      <div class="f-grp">
+        <div class="f-lbl">Stemming vandaag</div>
+        <div class="energie-btns" id="ci-stemming-btns">
+          <div class="e-btn" onclick="kiesCI('stemming',1)" data-v="1">😤 1</div>
+          <div class="e-btn" onclick="kiesCI('stemming',2)" data-v="2">😟 2</div>
+          <div class="e-btn" onclick="kiesCI('stemming',3)" data-v="3">😐 3</div>
+          <div class="e-btn" onclick="kiesCI('stemming',4)" data-v="4">😊 4</div>
+          <div class="e-btn" onclick="kiesCI('stemming',5)" data-v="5">😄 5</div>
+        </div>
+      </div>
+
+      <div class="f-grp">
+        <label class="f-lbl" for="ci-notitie">Notitie (optioneel)</label>
+        <textarea id="ci-notitie" class="f-input" placeholder="Hoe voelde het? Wat ging er goed?" rows="2"></textarea>
+      </div>
+
+      <button class="btn btn-amber" onclick="slaCheckInOp()">Check-in opslaan ✓</button>
+    </div>
+
+    <!-- Vorige check-ins -->
+    <div id="ci-historie"></div>
+  </div>
+
+  <!-- ══ TAB: WEEK REFLECTIE ══ -->
+  <div id="tab-reflectie" style="display:none">
+    <div id="vorige-reflectie" style="display:none" class="card">
+      <div class="clabel">Vorige week</div>
+      <div id="vorige-reflectie-inhoud"></div>
+    </div>
+
+    <div class="card card-amber">
+      <div class="clabel">Deze week</div>
+
+      <div class="f-grp">
+        <label class="f-lbl" for="ref-beste">Welk patroon ging het beste?</label>
+        <input id="ref-beste" type="text" class="f-input" placeholder="bijv. uitstellen — 3x geweerd">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="ref-zwaar">Wat was het zwaarst?</label>
+        <input id="ref-zwaar" type="text" class="f-input" placeholder="bijv. gamen op vrijdagavond">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="ref-anders">Wat wil je volgende week anders?</label>
+        <textarea id="ref-anders" class="f-input" placeholder="één concrete verandering" rows="2"></textarea>
+      </div>
+      <div class="f-grp">
+        <div class="f-lbl">Energie deze week gemiddeld</div>
+        <div class="energie-btns" id="ref-energie-btns">
+          <div class="e-btn" onclick="kiesRef('energie',1)" data-v="1">1</div>
+          <div class="e-btn" onclick="kiesRef('energie',2)" data-v="2">2</div>
+          <div class="e-btn" onclick="kiesRef('energie',3)" data-v="3">3</div>
+          <div class="e-btn" onclick="kiesRef('energie',4)" data-v="4">4</div>
+          <div class="e-btn" onclick="kiesRef('energie',5)" data-v="5">5</div>
+        </div>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="ref-bonus">Eén ding dat goed ging (buiten patronen)</label>
+        <input id="ref-bonus" type="text" class="f-input" placeholder="bijv. op tijd naar bed, sporten, rustig gesprek">
+      </div>
+
+      <button class="btn btn-amber" onclick="slaReflectieOp()">Reflectie opslaan ✓</button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: INZICHTEN ══ -->
+  <div id="tab-inzichten" style="display:none">
+    <div id="inzichten-inhoud">
+      <div class="leeg">Vul 5+ dagen check-ins in voor inzichten.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ DRANG LOG POPUP ══ -->
+<div class="popup-overlay" id="drang-popup">
+  <div class="popup-panel">
+    <div class="popup-greep"></div>
+    <div class="popup-titel" id="dp-titel">Drang observeren</div>
+    <div class="popup-sub">Registreer de drang — je hoeft er niets mee te doen. Observeren is al het halve werk.</div>
+
+    <div class="f-grp">
+      <div class="f-lbl">Wat veroorzaakte het?</div>
+      <div class="trigger-grid" id="dp-triggers"></div>
+    </div>
+
+    <div class="f-grp" style="margin-top:12px">
+      <label class="f-lbl" for="dp-notitie">Situatie (optioneel)</label>
+      <textarea id="dp-notitie" class="f-input" placeholder="wat speelde er?" rows="2"></textarea>
+    </div>
+
+    <div style="background:var(--amber-dim);border:1px solid var(--amber-b);border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:500;color:var(--amber);margin-bottom:4px">🌊 Urge surfing</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6">
+        De drang is als een golf. Hij stijgt, bereikt een piek, en zakt dan vanzelf.<br>
+        Je hoeft er alleen maar doorheen te ademen. Gemiddeld duurt een drang 5–20 minuten.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="sluitDrangPopup()">Sluiten</button>
+      <button class="btn btn-g btn-sm" onclick="window.location.href='relaxcore.html'">🧘 Naar RelaxCore</button>
+      <button class="btn btn-amber" style="flex:1" onclick="slaaDrangOp()">Drang geregistreerd ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PATROON TOEVOEGEN POPUP ══ -->
+<div class="popup-overlay" id="add-popup">
+  <div class="popup-panel">
+    <div class="popup-greep"></div>
+    <div class="popup-titel">Eigen patroon</div>
+    <div class="popup-sub">Beschrijf het gedragspatroon dat je wilt doorbreken.</div>
+    <div class="f-grp">
+      <label class="f-lbl" for="add-naam">Naam</label>
+      <input id="add-naam" type="text" class="f-input" placeholder="bijv. te lang op social media" maxlength="50">
+    </div>
+    <div class="f-grp">
+      <label class="f-lbl" for="add-omschr">Kort omschrijven</label>
+      <input id="add-omschr" type="text" class="f-input" placeholder="bijv. scrollen als ik verveel of uitwijk voor een taak" maxlength="100">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-g btn-sm" onclick="sluitAddPopup()">Annuleer</button>
+      <button class="btn btn-amber" style="flex:1" onclick="voegPatroonToe()">Toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-c" id="toast-c"></div>
+
+<script>
+'use strict';
+
+/* ══ DATA ══ */
+const LS_KEY     = 'lifecore_v1';
+const HANDOFF_KEY = 'wc_handoff';
+const MAX_EIGEN  = 1; // max 1 eigen patroon
+
+const STD_PATRONEN = [
+  {
+    id:'gamen',
+    naam:'Overmatig gamen',
+    icon:'🎮',
+    omschr:'Langer gamen dan je van plan was of als vlucht voor andere dingen.',
+    triggers:['moe','verveeld','stress','alleen','avond','vermijden','frustratie','angst'],
+    alternatieven:['5 min wandelen','water drinken','ResetCore ademhaling','een taak starten','RelaxCore oefening'],
+    actief:true,
+    eigen:false,
+  },
+  {
+    id:'pornografie',
+    naam:'Pornografie',
+    icon:'🔒',
+    omschr:'Gebruik als ontsnapping, ontspanning of gewoonte zonder bewuste keuze.',
+    triggers:['alleen','avond','verveeld','stress','moe','eenzaam','spanning'],
+    alternatieven:['5 min wandelen','cold water splash','RelaxCore oefening','muziek','uit bed gaan'],
+    actief:true,
+    eigen:false,
+  },
+  {
+    id:'hasj',
+    naam:'Hasj roken',
+    icon:'🌿',
+    omschr:'Behoefte om te roken om te ontspannen, stress te dempen of de wereld even uit te zetten.',
+    triggers:['stress','spanning','einde werkdag','sociale situatie','verveling','slaap'],
+    alternatieven:['box breathing (4 min)','wandelen','RelaxCore oefening','schrijven hoe je je voelt'],
+    actief:true,
+    eigen:false,
+  },
+  {
+    id:'uitstellen',
+    naam:'Taken laten liggen',
+    icon:'📋',
+    omschr:'Vermijden van taken die moeilijk, saai of overweldigend voelen.',
+    triggers:['overweldigd','grote taak','onduidelijkheid','moe','angst te falen','perfectionism'],
+    alternatieven:['2-minuten regel: wat is de eerste actie?','timer 10 min zetten','één ding op papier','WorkCore openen'],
+    actief:true,
+    eigen:false,
+  },
+];
+
+function laad(){
+  try{
+    const r = localStorage.getItem(LS_KEY);
+    if(!r) return { patronen:[...STD_PATRONEN.map(p=>({...p}))], drang_log:[], check_ins:[], reflecties:[] };
+    const d = JSON.parse(r);
+    // Zorg dat standaard-patronen altijd aanwezig zijn
+    STD_PATRONEN.forEach(sp=>{
+      if(!d.patronen.find(p=>p.id===sp.id)) d.patronen.unshift({...sp});
+    });
+    return d;
+  }catch{ return { patronen:[...STD_PATRONEN.map(p=>({...p}))], drang_log:[], check_ins:[], reflecties:[] }; }
+}
+function slaOp(d){
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(d)); }
+  catch(e){ toast('Opslaan mislukt','wn'); }
+  if(typeof Core!=='undefined') Core.sync.planAutoSync('lifecore',d);
+}
+
+let D = laad();
+let huidigPatroonId = null;
+let ciEnergie = 0, ciStemming = 0;
+let refEnergie = 0;
+
+/* ══ TABS ══ */
+function wissel(tab){
+  D.actieve_tab = tab; slaOp(D);
+  ['patronen','checkin','reflectie','inzichten'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('on',['patronen','checkin','reflectie','inzichten'][i]===tab);
+  });
+  if(tab==='checkin')   laadCheckIn();
+  if(tab==='reflectie') laadReflectie();
+  if(tab==='inzichten') bouwInzichten();
+}
+
+/* ══ PATRONEN ══ */
+function bouwPatronenLijst(){
+  const el = document.getElementById('patronen-lijst');
+  const aantalEigen = D.patronen.filter(p=>p.eigen).length;
+  const addBtn = document.getElementById('add-patroon-btn');
+  if(addBtn) addBtn.style.display = aantalEigen >= MAX_EIGEN ? 'none' : 'flex';
+
+  el.innerHTML = D.patronen.map(p=>{
+    const vandaag = vandaagString();
+    const vandaagLogs = D.drang_log.filter(l=>l.patroon_id===p.id && l.datum===vandaag);
+    const totaalLogs = D.drang_log.filter(l=>l.patroon_id===p.id);
+    return `
+    <div class="patroon-kaart ${p.actief?'actief':''}" id="pk-${p.id}">
+      <div class="pk-header" onclick="togglePK('${p.id}')">
+        <div class="pk-icon">${p.icon}</div>
+        <div style="flex:1">
+          <div class="pk-naam">${p.naam}</div>
+          <div class="pk-sub">${p.omschr}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          ${vandaagLogs.length?`<span style="font-family:var(--mono);font-size:9px;color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-b);padding:2px 7px;border-radius:4px">${vandaagLogs.length}× vandaag</span>`:''}
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">▾</span>
+        </div>
+      </div>
+      <div class="pk-body">
+        <button class="drang-btn" onclick="openDrangPopup('${p.id}')">
+          🌊 <span>Drang opkomt nu</span>
+        </button>
+        <div class="pk-sectie" style="margin-top:12px">
+          <div class="pk-sectie-lbl">Alternatieven</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            ${p.alternatieven.map(a=>`
+              <div style="font-size:12px;color:var(--muted);padding:6px 10px;background:var(--bg-3);border-radius:var(--r);border:1px solid var(--border)">
+                → ${a}
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="pk-sectie">
+          <div class="pk-sectie-lbl">Afgelopen 4 weken</div>
+          ${bouwKalenderHTML(p.id)}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--faint)">${totaalLogs.length} registraties totaal</span>
+          ${p.eigen?`<button class="btn btn-g btn-sm" onclick="verwijderPatroon('${p.id}')" style="color:var(--red);border-color:var(--red-b)">Verwijder</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePK(id){
+  const el = document.getElementById('pk-'+id);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.patroon-kaart').forEach(e=>e.classList.remove('open'));
+  if(!wasOpen) el.classList.add('open');
+}
+
+function bouwKalenderHTML(patroon_id){
+  const vandaag = new Date();
+  const dagen = [];
+  for(let i=27;i>=0;i--){
+    const d = new Date(vandaag);
+    d.setDate(d.getDate()-i);
+    dagen.push(d.toISOString().slice(0,10));
+  }
+  const labels = ['m','d','w','d','v','z','z'];
+  let html = '<div class="kalender">';
+  dagen.forEach(datum=>{
+    const logs = D.drang_log.filter(l=>l.patroon_id===patroon_id && l.datum===datum);
+    const isVandaag = datum===vandaagString();
+    const klasse = logs.length >= 2 ? 'gedaan' : logs.length===1 ? 'mini' : '';
+    html += `<div class="kal-dag ${klasse} ${isVandaag?'vandaag':''}" title="${datum}${logs.length?' · '+logs.length+'× drang':''}" style="position:relative">
+      ${logs.length?`<span style="font-family:var(--mono);font-size:9px;color:${logs.length>=2?'var(--amber)':'rgba(240,163,71,.6)'}">${logs.length}</span>`:''}
+    </div>`;
+  });
+  html += '</div>';
+  html += `<div style="display:flex;gap:8px;margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--faint)">
+    <span style="width:12px;height:12px;background:rgba(240,163,71,.08);border:1px solid rgba(240,163,71,.15);border-radius:2px;display:inline-block"></span> 1×
+    <span style="width:12px;height:12px;background:rgba(240,163,71,.2);border:1px solid var(--amber-b);border-radius:2px;display:inline-block"></span> 2+×
+  </div>`;
+  return html;
+}
+
+/* ══ DRANG POPUP ══ */
+function openDrangPopup(id){
+  huidigPatroonId = id;
+  const p = D.patronen.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('dp-titel').textContent = p.naam;
+  document.getElementById('dp-notitie').value = '';
+
+  const tGrid = document.getElementById('dp-triggers');
+  tGrid.innerHTML = p.triggers.map(t=>
+    `<div class="trigger-chip" onclick="this.classList.toggle('on')" data-trigger="${t}">${t}</div>`
+  ).join('');
+
+  document.getElementById('drang-popup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function sluitDrangPopup(){
+  document.getElementById('drang-popup').classList.remove('open');
+  document.body.style.overflow = '';
+  huidigPatroonId = null;
+}
+
+function slaaDrangOp(){
+  if(!huidigPatroonId) return;
+  const triggers = [...document.querySelectorAll('#dp-triggers .trigger-chip.on')].map(c=>c.dataset.trigger);
+  const notitie  = document.getElementById('dp-notitie').value.trim();
+  const nu = new Date();
+
+  D.drang_log.unshift({
+    id:       Date.now(),
+    patroon_id: huidigPatroonId,
+    datum:    nu.toISOString().slice(0,10),
+    tijd:     nu.toTimeString().slice(0,5),
+    triggers,
+    notitie,
+  });
+  slaOp(D);
+  sluitDrangPopup();
+  bouwPatronenLijst();
+  toast('Drang geregistreerd — goed observeren 🌊','ok');
+}
+
+/* ══ PATROON TOEVOEGEN ══ */
+function toonAddPatroon(){
+  const aantalEigen = D.patronen.filter(p=>p.eigen).length;
+  if(aantalEigen >= MAX_EIGEN){
+    toast('Maximum van 1 eigen patroon bereikt','wn'); return;
+  }
+  document.getElementById('add-naam').value='';
+  document.getElementById('add-omschr').value='';
+  document.getElementById('add-popup').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function sluitAddPopup(){
+  document.getElementById('add-popup').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function voegPatroonToe(){
+  const naam  = document.getElementById('add-naam').value.trim();
+  const omschr= document.getElementById('add-omschr').value.trim();
+  if(!naam){ toast('Geef het patroon een naam','wn'); return; }
+
+  const id = 'eigen_'+Date.now();
+  D.patronen.push({
+    id, naam, icon:'⚡', omschr: omschr||naam,
+    triggers:['moe','stress','verveeld','avond','alleen'],
+    alternatieven:['5 min wandelen','RelaxCore oefening','schrijven waarom'],
+    actief:true, eigen:true,
+  });
+  slaOp(D);
+  sluitAddPopup();
+  bouwPatronenLijst();
+  toast(`Patroon "${naam}" toegevoegd`,'ok');
+}
+
+function verwijderPatroon(id){
+  D.patronen = D.patronen.filter(p=>p.id!==id);
+  slaOp(D);
+  bouwPatronenLijst();
+  toast('Patroon verwijderd','neu');
+}
+
+/* ══ AVOND CHECK-IN ══ */
+function laadCheckIn(){
+  // Probeer energie/stemming pre-fill van ResetCore handoff
+  try{
+    const h = JSON.parse(localStorage.getItem(HANDOFF_KEY)||'null');
+    if(h && h.energie){
+      const energieMap = {laag:2, midden:3, hoog:4};
+      const v = energieMap[h.energie]||3;
+      kiesCI('energie', v);
+      document.getElementById('prefill-hint').style.display='block';
+    }
+  }catch{}
+
+  // Toon vorige check-ins
+  const el = document.getElementById('ci-historie');
+  const recente = D.check_ins.slice(0,5);
+  if(!recente.length){ el.innerHTML=''; return; }
+  el.innerHTML = `<div class="clabel" style="margin-top:16px">Recente check-ins</div>` +
+    recente.map(c=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--muted);width:70px">${c.datum}</span>
+      <span title="Energie">${'⚡'.repeat(c.energie||0)}${'·'.repeat(5-(c.energie||0))}</span>
+      <span title="Stemming">${'😊'.repeat(c.stemming||0)}${'·'.repeat(5-(c.stemming||0))}</span>
+      ${c.notitie?`<span style="font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.notitie}</span>`:''}
+    </div>`).join('');
+}
+
+function kiesCI(type, val){
+  if(type==='energie'){ ciEnergie=val; D.ci_energie=val; }
+  if(type==='stemming'){ ciStemming=val; D.ci_stemming=val; }
+  slaOp(D);
+  document.querySelectorAll(`#ci-${type}-btns .e-btn`).forEach(b=>{
+    b.classList.toggle('on', parseInt(b.dataset.v)===val);
+  });
+}
+
+function slaCheckInOp(){
+  const notitie = document.getElementById('ci-notitie').value.trim();
+  if(!ciEnergie||!ciStemming){ toast('Kies energie én stemming','wn'); return; }
+  // Verwijder eventuele check-in van vandaag (update in plaats van duplicate)
+  D.check_ins = D.check_ins.filter(c=>c.datum!==vandaagString());
+  D.check_ins.unshift({ datum:vandaagString(), energie:ciEnergie, stemming:ciStemming, notitie });
+  slaOp(D);
+  ciEnergie=0; ciStemming=0;
+  document.querySelectorAll('.e-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('ci-notitie').value='';
+  document.getElementById('prefill-hint').style.display='none';
+  toast('Check-in opgeslagen ✓','ok');
+  laadCheckIn();
+}
+
+/* ══ REFLECTIE ══ */
+function laadReflectie(){
+  const vorige = D.reflecties[0];
+  if(vorige){
+    document.getElementById('vorige-reflectie').style.display='block';
+    document.getElementById('vorige-reflectie-inhoud').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="week-blok"><div class="week-vraag">Beste patroon</div><div class="week-antw">${vorige.beste||'—'}</div></div>
+        <div class="week-blok"><div class="week-vraag">Zwaarste</div><div class="week-antw">${vorige.zwaarste||'—'}</div></div>
+        <div class="week-blok"><div class="week-vraag">Anders doen</div><div class="week-antw">${vorige.anders||'—'}</div></div>
+        <div class="week-blok"><div class="week-vraag">Energie gem.</div><div class="week-antw">${'⚡'.repeat(vorige.energie_gem||0)}</div></div>
+        ${vorige.bonus?`<div class="week-blok"><div class="week-vraag">Wat ging goed</div><div class="week-antw">${vorige.bonus}</div></div>`:''}
+      </div>`;
+  }
+}
+
+function kiesRef(type, val){
+  if(type==='energie'){ refEnergie=val; D.ref_energie=val; slaOp(D); }
+  document.querySelectorAll(`#ref-energie-btns .e-btn`).forEach(b=>{
+    b.classList.toggle('on', parseInt(b.dataset.v)===val);
+  });
+}
+
+function slaReflectieOp(){
+  const beste   = document.getElementById('ref-beste').value.trim();
+  const zwaar   = document.getElementById('ref-zwaar').value.trim();
+  const anders  = document.getElementById('ref-anders').value.trim();
+  const bonus   = document.getElementById('ref-bonus').value.trim();
+  if(!beste){ toast('Beantwoord minimaal de eerste vraag','wn'); return; }
+
+  const week = weekString();
+  D.reflecties = D.reflecties.filter(r=>r.week!==week);
+  D.reflecties.unshift({ week, beste, zwaarste:zwaar, anders, energie_gem:refEnergie, bonus });
+  slaOp(D);
+  toast('Reflectie opgeslagen ✓','ok');
+  laadReflectie();
+}
+
+/* ══ INZICHTEN ══ */
+function bouwInzichten(){
+  const el = document.getElementById('inzichten-inhoud');
+  if(D.check_ins.length < 5){
+    el.innerHTML='<div class="leeg">Vul 5+ avond check-ins in voor inzichten.</div>';
+    // Toon alsnog micro-reflectievraag
+    if(typeof Core !== 'undefined'){
+      const mq = Core.getMicroReflectieVraag();
+      el.innerHTML += '<div style="background:var(--amber-dim);border:1px solid var(--amber-b);border-radius:8px;padding:13px 15px;margin-top:10px"><div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px">Vraag van vandaag</div><div style="font-size:14px;line-height:1.65;">'+mq+'</div></div>';
+    }
+    return;
+  }
+
+  const recent14 = D.check_ins.slice(0,14);
+  const gemEnergie = (recent14.reduce((s,c)=>s+(c.energie||0),0)/Math.max(recent14.length,1)).toFixed(1);
+  const gemStemming= (recent14.reduce((s,c)=>s+(c.stemming||0),0)/Math.max(recent14.length,1)).toFixed(1);
+
+  // Week-over-week trend
+  const week1 = D.check_ins.slice(0,7);
+  const week2 = D.check_ins.slice(7,14);
+  const gemW1E = week1.length ? (week1.reduce((s,c)=>s+(c.energie||0),0)/week1.length).toFixed(1) : null;
+  const gemW2E = week2.length ? (week2.reduce((s,c)=>s+(c.energie||0),0)/week2.length).toFixed(1) : null;
+  const trend  = gemW1E && gemW2E ? (parseFloat(gemW1E)-parseFloat(gemW2E)).toFixed(1) : null;
+
+  // Welke dag gaat het beter
+  const dagScores = {};
+  D.check_ins.forEach(c=>{
+    const dag = new Date(c.datum).getDay();
+    if(!dagScores[dag]) dagScores[dag]={energie:0,n:0};
+    dagScores[dag].energie += c.energie||0;
+    dagScores[dag].n++;
+  });
+  const besteDag = Object.entries(dagScores).sort((a,b)=>(b[1].energie/b[1].n)-(a[1].energie/a[1].n))[0];
+  const dagNamen = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+
+  // Meest geregistreerde drang
+  const drangCount = {};
+  D.drang_log.forEach(l=>{ drangCount[l.patroon_id]=(drangCount[l.patroon_id]||0)+1; });
+  const meesteDrang = Object.entries(drangCount).sort((a,b)=>b[1]-a[1])[0];
+  const meesteDrangNaam = meesteDrang ? D.patronen.find(p=>p.id===meesteDrang[0])?.naam : null;
+
+  // Meest voorkomende trigger
+  const triggerCount = {};
+  D.drang_log.forEach(l=>l.triggers.forEach(t=>{ triggerCount[t]=(triggerCount[t]||0)+1; }));
+  const topTrigger = Object.entries(triggerCount).sort((a,b)=>b[1]-a[1])[0];
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="clabel">Laatste 2 weken</div>
+      <div class="inzicht-rij">
+        <div class="inzicht-getal">${gemEnergie}</div>
+        <div>
+          <div class="inzicht-lbl">Gemiddelde energie (1–5)</div>
+          ${trend!==null?`<div style="font-family:var(--mono);font-size:10px;color:${parseFloat(trend)>=0?'var(--green)':'var(--red)'}">
+            ${parseFloat(trend)>=0?'↑':'↓'} ${Math.abs(trend)} vs vorige week</div>`:''}
+        </div>
+      </div>
+      <div class="inzicht-rij">
+        <div class="inzicht-getal">${gemStemming}</div>
+        <div><div class="inzicht-lbl">Gemiddelde stemming (1–5)</div></div>
+      </div>
+      ${besteDag?`<div class="inzicht-rij">
+        <div class="inzicht-getal" style="font-size:14px">${dagNamen[besteDag[0]]}</div>
+        <div><div class="inzicht-lbl">Dag waarop energie doorgaans het hoogst is</div></div>
+      </div>`:''}
+    </div>
+    <div class="card">
+      <div class="clabel">Drang-patronen</div>
+      ${meesteDrangNaam?`<div class="inzicht-rij">
+        <div class="inzicht-getal">${meesteDrang[1]}</div>
+        <div><div class="inzicht-lbl">Registraties voor <strong>${meesteDrangNaam}</strong></div></div>
+      </div>`:'<div class="leeg" style="padding:8px 0">Nog te weinig drang-registraties.</div>'}
+      ${topTrigger?`<div class="inzicht-rij">
+        <div class="inzicht-getal" style="font-size:14px">${topTrigger[0]}</div>
+        <div><div class="inzicht-lbl">Meest voorkomende trigger (${topTrigger[1]}×)</div></div>
+      </div>`:''}
+    </div>
+    <div style="font-size:11px;color:var(--faint);text-align:center;margin-top:4px;line-height:1.6">
+      Inzichten worden nuttiger naarmate je meer dagen bijhoudt.<br>
+      Na 4 weken zie je echte patronen.
+    </div>`;
+
+  // Uitgebreide inzichten via Core
+  if(typeof Core !== 'undefined'){
+    const correlaties = Core.berekenPatroonCorrelaties();
+    const slaapCorr   = Core.slaapPrestatieCorrelatie();
+    const burnout     = Core.berekeningBurnoutScore();
+    const microVraag  = Core.getMicroReflectieVraag();
+    const sd          = Core.slaapDebt();
+    var extraHtml = '';
+    if(burnout.niveau !== 'geen'){
+      var bKleur = burnout.niveau==='hoog'?'var(--red)':burnout.niveau==='matig'?'var(--amber)':'var(--muted)';
+      extraHtml += '<div style="padding:10px 12px;border-radius:8px;background:'+(burnout.niveau==='hoog'?'var(--red-dim)':'var(--amber-dim)')+';border:1px solid '+(burnout.niveau==='hoog'?'var(--red-b)':'var(--amber-b)')+';margin-bottom:8px"><div style="font-size:12px;font-weight:500;color:'+bKleur+';margin-bottom:3px">Belasting-signaal: '+burnout.niveau+'</div><div style="font-size:11px;color:var(--muted)">'+burnout.signalen.map(function(s){return s.label+': '+s.waarde;}).join(' · ')+'</div></div>';
+    }
+    if(slaapCorr){
+      extraHtml += '<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-family:var(--mono);font-size:18px;color:var(--amber)">'+slaapCorr.pct_verschil+'%</div><div style="font-size:12px;color:var(--muted)">Hogere energie na 7+ uur slaap<br><span style="font-family:var(--mono);font-size:10px">'+slaapCorr.gem_7plus+' vs '+slaapCorr.gem_onder7+'</span></div></div>';
+    }
+    correlaties.slice(0,2).forEach(function(c){
+      extraHtml += '<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-family:var(--mono);font-size:16px;color:var(--amber)">-'+c.verschil+'</div><div style="font-size:12px;color:var(--muted)">Energie lager bij <b>'+c.patroon_id+'</b><br><span style="font-family:var(--mono);font-size:10px">'+c.gem_energie_bij_drang+' vs '+c.gem_energie_rustdagen+' (n='+c.n+')</span></div></div>';
+    });
+    if(extraHtml) el.innerHTML += '<div class="card" style="margin-top:12px"><div class="clabel">Verbanden</div>'+extraHtml+'</div>';
+    el.innerHTML += '<div style="background:var(--amber-dim);border:1px solid var(--amber-b);border-radius:8px;padding:13px 15px;margin-top:10px"><div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px">Vraag van vandaag</div><div style="font-size:14px;line-height:1.65;">'+microVraag+'</div></div>';
+    if(sd && sd.tekort > 0) el.innerHTML += '<div style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--bg-3);border-radius:8px;margin-top:8px;border:1px solid '+(sd.kritiek?'var(--red-b)':'var(--border)')+'"><span>😴</span><div style="font-size:12px;color:var(--muted)">Slaaptekort: <b style="color:'+(sd.kritiek?'var(--red)':'var(--amber)')+'">'+sd.tekort+'u</b>'+( sd.kritiek?' — kritiek':'')+' deze week</div></div>';
+  }
+}
+
+/* ══ AVOND NOTIFICATIE ══ */
+function checkAvondBanner(){
+  const uur = new Date().getHours();
+  const vandaag = vandaagString();
+  const alGedaan = D.check_ins.some(c=>c.datum===vandaag);
+  const banner = document.getElementById('avond-banner');
+  if(banner) banner.classList.toggle('zichtbaar', uur >= 20 && uur < 24 && !alGedaan);
+}
+
+/* ══ HELPERS ══ */
+function vandaagString(){ return new Date().toISOString().slice(0,10); }
+function weekString(){
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay()||7)-1));
+  return d.toISOString().slice(0,10);
+}
+
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-c');
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML=`<span>${type==='ok'?'✓':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true});},3400);
+}
+
+/* ══ POPUP BUITEN KLIKKEN ══ */
+document.addEventListener('click',e=>{
+  if(e.target===document.getElementById('drang-popup')) sluitDrangPopup();
+  if(e.target===document.getElementById('add-popup')) sluitAddPopup();
+});
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  bouwPatronenLijst();
+  checkAvondBanner();
+  setInterval(checkAvondBanner, 60000);
+
+  // Herstel actieve tab
+  if(D.actieve_tab && D.actieve_tab !== 'patronen'){
+    wissel(D.actieve_tab);
+  }
+
+  // Herstel check-in knoppen
+  if(D.ci_energie){ ciEnergie=D.ci_energie; kiesCI('energie',D.ci_energie); }
+  if(D.ci_stemming){ ciStemming=D.ci_stemming; kiesCI('stemming',D.ci_stemming); }
+  if(D.ref_energie){ refEnergie=D.ref_energie;
+    document.querySelectorAll('#ref-energie-btns .e-btn').forEach(b=>{
+      b.classList.toggle('on', parseInt(b.dataset.v)===D.ref_energie);
+    });
+  }
+});
+
+function exporteerData(){
+  try{
+    const data = localStorage.getItem('lifecore_v1');
+    if(!data){ if(typeof toast==='function') toast('Geen data om te exporteren','wn'); return; }
+    const blob = new Blob([JSON.stringify(JSON.parse(data), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'LifeCore_export_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof toast==='function') toast('LifeCore data geëxporteerd ✓','ok');
+  }catch(e){
+    if(typeof toast==='function') toast('Export mislukt','wn');
+  }
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

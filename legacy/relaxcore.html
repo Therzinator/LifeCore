@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RelaxCore</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0B;--bg-2:#111113;--bg-3:#18181C;--bg-4:#1E1E24;
+  --border:rgba(255,255,255,.07);--border-2:rgba(255,255,255,.12);--border-3:rgba(255,255,255,.2);
+  --acc:#7b6ef6;
+  --teal:#2dd4bf;--teal-dim:rgba(45,212,191,.1);--teal-b:rgba(45,212,191,.25);
+  --amber:#f0a347;--amber-dim:rgba(240,163,71,.1);--amber-b:rgba(240,163,71,.25);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,.1);--green-b:rgba(62,207,142,.25);
+  --lav:#a78bfa;--lav-dim:rgba(167,139,250,.1);--lav-b:rgba(167,139,250,.25);
+  --txt:#F0F0F4;--muted:rgba(255,255,255,.38);--faint:rgba(255,255,255,.13);
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;--body:'DM Sans',sans-serif;
+  --r:8px;--rl:14px;--rx:22px;--tx:all .2s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,11,.92);backdrop-filter:blur(16px);z-index:50;gap:10px}
+.brand{font-family:var(--head);font-size:16px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px;padding-top:.1em;overflow:visible;color:var(--teal)}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em}
+.nav-chip:hover{border-color:var(--border-2);color:var(--txt)}
+.nav-chip.cur{border-color:rgba(45,212,191,.4);color:var(--teal);background:var(--teal-dim)}
+
+/* Wrapper */
+.wrap{max-width:560px;margin:0 auto;padding:28px 20px 80px}
+.ph-over{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.ph-titel{font-family:var(--head);font-size:26px;font-weight:800;color:var(--teal);letter-spacing:-.02em;padding-top:.1em;overflow:visible;line-height:1.2}
+.ph-sub{font-size:13px;color:var(--muted);margin-top:4px;margin-bottom:24px;line-height:1.6}
+
+/* Oefening kaarten - selectiescherm */
+.oefen-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.oefen-kaart{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--rl);padding:18px 16px;cursor:pointer;transition:var(--tx);text-decoration:none;display:flex;flex-direction:column;gap:10px}
+.oefen-kaart:hover{transform:translateY(-2px)}
+.oefen-kaart.teal{border-color:var(--teal-b);background:linear-gradient(135deg,var(--teal-dim),var(--bg-2))}
+.oefen-kaart.amber{border-color:var(--amber-b);background:linear-gradient(135deg,var(--amber-dim),var(--bg-2))}
+.oefen-kaart.groen{border-color:var(--green-b);background:linear-gradient(135deg,var(--green-dim),var(--bg-2))}
+.oefen-kaart.lav{border-color:var(--lav-b);background:linear-gradient(135deg,var(--lav-dim),var(--bg-2))}
+.ok-icon{font-size:26px}
+.ok-naam{font-family:var(--head);font-size:14px;font-weight:700;padding-top:.1em;overflow:visible}
+.ok-duur{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em}
+.ok-omschr{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* Oefening scherm */
+.oefen-scherm{display:none}
+.oefen-scherm.actief{display:block}
+
+/* Voortgangsbalk */
+.prog-balk-wrap{background:var(--bg-3);border-radius:4px;height:4px;margin-bottom:24px;overflow:hidden}
+.prog-balk{height:4px;border-radius:4px;background:var(--teal);transition:width .5s ease}
+
+/* Stap weergave */
+.stap-fase{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.stap-instructie{font-size:17px;font-weight:400;line-height:1.65;margin-bottom:16px;color:var(--txt)}
+.stap-detail{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+
+/* Timer ring */
+.timer-wrap{display:flex;align-items:center;justify-content:center;margin:20px 0}
+.timer-ring{position:relative;width:140px;height:140px}
+.timer-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer-circle-bg{fill:none;stroke:var(--bg-3);stroke-width:6}
+.timer-circle{fill:none;stroke:var(--teal);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.timer-getal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:32px;font-weight:500;color:var(--txt)}
+
+/* 5-4-3-2-1 grounding */
+.grounding-vraag{background:var(--bg-3);border-radius:var(--rl);padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--teal);transition:var(--tx)}
+.grounding-vraag.actief{background:var(--teal-dim);border-color:var(--teal)}
+.gv-num{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--teal);margin-bottom:4px}
+.gv-tekst{font-size:14px;font-weight:500;margin-bottom:3px}
+.gv-hint{font-size:12px;color:var(--muted)}
+
+/* PMR stap */
+.pmr-spier{background:var(--bg-3);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);transition:var(--tx)}
+.pmr-spier.actief{background:var(--lav-dim);border-color:var(--lav-b)}
+.pmr-nr{font-family:var(--mono);font-size:11px;color:var(--muted);width:20px;flex-shrink:0}
+.pmr-naam{font-size:13px;font-weight:500}
+.pmr-instructie{font-size:11px;color:var(--muted)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--body);font-size:13px;font-weight:500;padding:11px 20px;transition:var(--tx);white-space:nowrap}
+.btn-teal{background:var(--teal);color:#000;width:100%}.btn-teal:hover{background:#4adece;transform:translateY(-1px)}
+.btn-g{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}.btn-g:hover{background:var(--bg-4)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-full{width:100%}
+
+/* Urge surfing golf animatie */
+.golf-wrap{position:relative;height:80px;margin:16px 0;overflow:hidden;border-radius:var(--r);background:var(--bg-3)}
+.golf-svg{position:absolute;bottom:0;left:0;width:100%;height:100%;transition:var(--tx)}
+.golf-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;pointer-events:none}
+
+/* Kleur varianten timer */
+.timer-teal .timer-circle{stroke:var(--teal)}
+.timer-amber .timer-circle{stroke:var(--amber)}
+.timer-groen .timer-circle{stroke:var(--green)}
+.timer-lav .timer-circle{stroke:var(--lav)}
+
+/* Toast */
+.toast-c{position:fixed;top:68px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-3);border:1px solid var(--border-2);color:var(--txt)}
+
+@media(max-width:480px){.topbar-nav{display:none}.oefen-grid{grid-template-columns:1fr}.wrap{padding:20px 14px 80px}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">🧘 RelaxCore</div>
+  <nav class="topbar-nav">
+    <a href="index.html"     class="nav-chip">Dashboard</a>
+    <a href="lifecore.html"  class="nav-chip">LifeCore</a>
+    <a href="workcore.html"  class="nav-chip">WorkCore</a>
+    <a href="relaxcore.html" class="nav-chip cur">RelaxCore</a>
+  </nav>
+</header>
+
+<div class="wrap">
+
+  <!-- Selectiescherm -->
+  <div id="selectie">
+    <div class="ph-over">Stress-oefeningen</div>
+    <div class="ph-titel">RelaxCore</div>
+    <div class="ph-sub">Kies een oefening voor dit moment.<br>Je hoeft niets te presteren — alleen aanwezig zijn.</div>
+
+    <div class="oefen-grid">
+      <div class="oefen-kaart teal" onclick="startOefening('urge')">
+        <div class="ok-icon">🌊</div>
+        <div>
+          <div class="ok-naam">Urge surfing</div>
+          <div class="ok-duur">3–5 min</div>
+        </div>
+        <div class="ok-omschr">Voor het moment dat een drang of impuls opkomt. Observeer, adem, laat passeren.</div>
+      </div>
+      <div class="oefen-kaart groen" onclick="startOefening('grounding')">
+        <div class="ok-icon">🌿</div>
+        <div>
+          <div class="ok-naam">5-4-3-2-1 Grounding</div>
+          <div class="ok-duur">2 min</div>
+        </div>
+        <div class="ok-omschr">Voor piekeren, overweldiging of aanval van stress. Brengt je terug in het nu.</div>
+      </div>
+      <div class="oefen-kaart amber" onclick="startOefening('box')">
+        <div class="ok-icon">📦</div>
+        <div>
+          <div class="ok-naam">Box breathing</div>
+          <div class="ok-duur">4 min</div>
+        </div>
+        <div class="ok-omschr">Activeer het parasympathische systeem. Kalmeert hartslag en cortisol snel.</div>
+      </div>
+      <div class="oefen-kaart lav" onclick="startOefening('pmr')">
+        <div class="ok-icon">💆</div>
+        <div>
+          <div class="ok-naam">Spierontspanning</div>
+          <div class="ok-duur">7 min</div>
+        </div>
+        <div class="ok-omschr">Voor fysieke spanning in het lichaam. Span aan, laat los, van voeten naar hoofd.</div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--faint);text-align:center;line-height:1.7">
+      Twijfel je welke? Bij een drang → 🌊 Urge surfing.<br>
+      Bij piekeren → 🌿 Grounding. Bij spanning in je lijf → 💆 Spierontspanning.
+    </div>
+  </div>
+
+  <!-- ══ URGE SURFING ══ -->
+  <div id="oefen-urge" class="oefen-scherm">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="btn btn-g btn-sm" onclick="terug()">← Terug</button>
+      <div style="font-family:var(--head);font-size:18px;font-weight:700;color:var(--teal);padding-top:.1em;overflow:visible">🌊 Urge surfing</div>
+    </div>
+    <div class="prog-balk-wrap"><div class="prog-balk" id="urge-prog" style="width:0%"></div></div>
+    <div id="urge-inhoud"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-g btn-sm" onclick="terug()">Stop</button>
+      <button class="btn btn-teal" id="urge-volgende" onclick="urgeVolgende()">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- ══ GROUNDING ══ -->
+  <div id="oefen-grounding" class="oefen-scherm">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="btn btn-g btn-sm" onclick="terug()">← Terug</button>
+      <div style="font-family:var(--head);font-size:18px;font-weight:700;color:var(--green);padding-top:.1em;overflow:visible">🌿 5-4-3-2-1</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Kijk om je heen en beantwoord elke vraag. Geen goede of foute antwoorden. Neem de tijd.
+    </div>
+    <div id="grounding-lijst"></div>
+    <button class="btn btn-teal" style="margin-top:8px;background:var(--green)" onclick="groundingKlaar()">Klaar — ik voel me verankerd ✓</button>
+  </div>
+
+  <!-- ══ BOX BREATHING ══ -->
+  <div id="oefen-box" class="oefen-scherm">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-g btn-sm" onclick="terug()">← Terug</button>
+      <div style="font-family:var(--head);font-size:18px;font-weight:700;color:var(--amber);padding-top:.1em;overflow:visible">📦 Box breathing</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      4 seconden per fase. Doe 4–6 cycli. Tik om te starten.
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-ring timer-amber" id="box-ring">
+        <svg viewBox="0 0 140 140" width="140" height="140">
+          <circle class="timer-circle-bg" cx="70" cy="70" r="60"/>
+          <circle class="timer-circle" id="box-circle" cx="70" cy="70" r="60"
+            stroke-dasharray="377" stroke-dashoffset="377"/>
+        </svg>
+        <div class="timer-getal" id="box-getal" style="flex-direction:column;gap:2px">
+          <div id="box-fase" style="font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em">TAP</div>
+          <div id="box-sec">4</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px" id="box-instructie">
+      Tik op de ring om te beginnen
+    </div>
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:4px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Cycli: <span id="box-cycli" style="color:var(--amber)">0</span></div>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <button class="btn btn-g btn-sm" onclick="terug()">Stoppen</button>
+    </div>
+  </div>
+
+  <!-- ══ PMR ══ -->
+  <div id="oefen-pmr" class="oefen-scherm">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-g btn-sm" onclick="terug()">← Terug</button>
+      <div style="font-family:var(--head);font-size:18px;font-weight:700;color:var(--lav);padding-top:.1em;overflow:visible">💆 Spierontspanning</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      Span elke spiergroep 5 sec aan — dan 10 sec volledig loslaten. Voel het verschil.
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-ring timer-lav" id="pmr-ring">
+        <svg viewBox="0 0 140 140" width="140" height="140">
+          <circle class="timer-circle-bg" cx="70" cy="70" r="60"/>
+          <circle class="timer-circle" id="pmr-circle" cx="70" cy="70" r="60"
+            stroke-dasharray="377" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-getal" id="pmr-getal" style="flex-direction:column;gap:2px">
+          <div id="pmr-fase" style="font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em">KLAAR</div>
+          <div id="pmr-sec">—</div>
+        </div>
+      </div>
+    </div>
+    <div id="pmr-lijst"></div>
+    <div style="text-align:center;margin-top:10px">
+      <button class="btn btn-g btn-sm" onclick="terug()">Stoppen</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast-c" id="toast-c"></div>
+
+<script>
+'use strict';
+
+/* ══ URGE SURFING DATA ══ */
+const URGE_STAPPEN = [
+  {
+    fase:'Merk op',
+    instructie:'Erken de drang. Zeg tegen jezelf: <em>"Ik merk dat er een drang opkomt."</em>',
+    detail:'Je hoeft er niets mee te doen. Alleen zien dat hij er is. De drang is een gevoel, geen opdracht.',
+  },
+  {
+    fase:'Scan je lichaam',
+    instructie:'Waar voel je de drang <em>in je lichaam</em>?',
+    detail:'Keel, borst, buik, handen? Spanning of leegte? Warmte of onrust? Beschrijf het voor jezelf zonder het te beoordelen.',
+  },
+  {
+    fase:'Visualiseer de golf',
+    instructie:'De drang is een golf. Jij staat op het strand en <em>kijkt ernaar</em>.',
+    detail:'Hij groeit. Hij bereikt een piek. En dan zakt hij. Gemiddeld duurt een drang 5 tot 20 minuten. Hij gaat altijd weg — met of zonder eraan toegeven.',
+  },
+  {
+    fase:'Adem',
+    instructie:'Adem langzaam in — <em>4 tellen</em>. Uit — <em>6 tellen</em>. Drie keer.',
+    detail:'Langzamer uitademen dan inademen activeert het parasympathische zenuwstelsel. Je lichaam kalmeert vanzelf.',
+  },
+  {
+    fase:'Kies bewust',
+    instructie:'De golf is gepasseerd. <em>Wat wil je nu bewust doen?</em>',
+    detail:'Niet wat de drang wil — wat jij wilt. Een activiteit, een beweging, iets kleins. Je hebt de golf doorstaan.',
+  },
+];
+
+let urgeStap = 0;
+
+function startUrge(){
+  urgeStap = 0;
+  toonUrgeStap();
+}
+
+function toonUrgeStap(){
+  const s = URGE_STAPPEN[urgeStap];
+  const pct = Math.round((urgeStap/URGE_STAPPEN.length)*100);
+  document.getElementById('urge-prog').style.width = pct+'%';
+
+  document.getElementById('urge-inhoud').innerHTML = `
+    <div style="font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">
+      Stap ${urgeStap+1} van ${URGE_STAPPEN.length} — ${s.fase}
+    </div>
+    <div style="font-size:18px;line-height:1.65;margin-bottom:14px;font-weight:400">${s.instructie}</div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.7;background:var(--bg-3);padding:12px 14px;border-radius:var(--r);border:1px solid var(--border)">${s.detail}</div>`;
+
+  const btn = document.getElementById('urge-volgende');
+  btn.textContent = urgeStap < URGE_STAPPEN.length-1 ? 'Volgende →' : 'Afronden ✓';
+}
+
+function urgeVolgende(){
+  if(urgeStap < URGE_STAPPEN.length-1){
+    urgeStap++;
+    toonUrgeStap();
+  } else {
+    document.getElementById('urge-prog').style.width='100%';
+    document.getElementById('urge-inhoud').innerHTML = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:36px;margin-bottom:12px">🌊</div>
+        <div style="font-family:var(--head);font-size:20px;font-weight:700;color:var(--teal);margin-bottom:8px;padding-top:.1em;overflow:visible">Klaar</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.7">Je hebt de golf doorstaan. Elke keer dat je dit doet wordt het makkelijker.</div>
+      </div>`;
+    document.getElementById('urge-volgende').style.display='none';
+    toast('Urge surfing voltooid 🌊','ok');
+  }
+}
+
+/* ══ GROUNDING DATA ══ */
+const GROUNDING_VRAGEN = [
+  { num:5, kleur:'var(--teal)',  vraag:'Noem 5 dingen die je <strong>ziet</strong>',     hint:'Kijk om je heen. Kleuren, vormen, objecten — groot of klein.' },
+  { num:4, kleur:'var(--green)', vraag:'Noem 4 dingen die je <strong>voelt/aanraakt</strong>', hint:'Kleding op je huid, stoel onder je, lucht, vloer.' },
+  { num:3, kleur:'var(--amber)', vraag:'Noem 3 dingen die je <strong>hoort</strong>',    hint:'Dicht bij, ver weg — verkeer, lucht, je eigen ademhaling.' },
+  { num:2, kleur:'var(--lav)',   vraag:'Noem 2 dingen die je <strong>ruikt</strong>',    hint:'Of wat je zou ruiken als je bewust snuift.' },
+  { num:1, kleur:'#f87171',      vraag:'Noem 1 ding dat je <strong>proeft</strong>',     hint:'Koffie, lucht, niets — alles is goed.' },
+];
+
+function bouwGrounding(){
+  const el = document.getElementById('grounding-lijst');
+  el.innerHTML = GROUNDING_VRAGEN.map((v,i)=>`
+    <div class="grounding-vraag" id="gv-${i}" onclick="activeerGrounding(${i})">
+      <div class="gv-num" style="color:${v.kleur}">${v.num}</div>
+      <div class="gv-tekst">${v.vraag}</div>
+      <div class="gv-hint">${v.hint}</div>
+    </div>`).join('');
+}
+
+function activeerGrounding(idx){
+  document.querySelectorAll('.grounding-vraag').forEach((e,i)=>e.classList.toggle('actief',i===idx));
+}
+
+function groundingKlaar(){
+  toast('Grounding afgerond — je bent hier 🌿','ok');
+  setTimeout(()=>terug(), 1000);
+}
+
+/* ══ BOX BREATHING ══ */
+const BOX_FASEN = [
+  {naam:'ADEM IN', sec:4, kleur:'var(--teal)',  instructie:'Vul je longen langzaam'},
+  {naam:'HOUD',    sec:4, kleur:'var(--amber)', instructie:'Houd vast, ontspan schouders'},
+  {naam:'ADEM UIT',sec:4, kleur:'var(--lav)',   instructie:'Laat volledig los'},
+  {naam:'HOUD',    sec:4, kleur:'var(--muted)', instructie:'Rust — stilte'},
+];
+
+let boxInterval=null, boxFaseIdx=0, boxSec=4, boxCycli=0, boxLoopt=false;
+const OMTREK=377;
+
+function startBox(){
+  const ring = document.getElementById('box-ring');
+  ring.onclick = ()=>{ if(!boxLoopt) startBoxLus(); };
+}
+
+function startBoxLus(){
+  if(boxLoopt) return;
+  boxLoopt=true; boxFaseIdx=0; boxSec=BOX_FASEN[0].sec;
+  updateBoxUI();
+  boxInterval = setInterval(()=>{
+    boxSec--;
+    updateBoxTeller();
+    if(boxSec<=0){
+      boxFaseIdx=(boxFaseIdx+1)%4;
+      if(boxFaseIdx===0) boxCycli++;
+      boxSec=BOX_FASEN[boxFaseIdx].sec;
+      updateBoxUI();
+    }
+  },1000);
+}
+
+function updateBoxUI(){
+  const f=BOX_FASEN[boxFaseIdx];
+  document.getElementById('box-fase').textContent=f.naam;
+  document.getElementById('box-instructie').textContent=f.instructie;
+  document.getElementById('box-cycli').textContent=boxCycli;
+  document.getElementById('box-ring').querySelector('.timer-circle').style.stroke=f.kleur;
+  updateBoxTeller();
+}
+
+function updateBoxTeller(){
+  const f=BOX_FASEN[boxFaseIdx];
+  document.getElementById('box-sec').textContent=boxSec;
+  const pct = boxSec/f.sec;
+  document.getElementById('box-circle').style.strokeDashoffset = OMTREK*(1-pct);
+}
+
+/* ══ PMR DATA ══ */
+const PMR_SPIEREN = [
+  {naam:'Voeten',    instructie:'Krulsel je tenen zo hard mogelijk — 5 sec', span:5, los:10},
+  {naam:'Kuiten',    instructie:'Wijs tenen naar je toe, strek kuitspier — 5 sec', span:5, los:10},
+  {naam:'Dijen',     instructie:'Span dij- en bilspieren aan — 5 sec', span:5, los:10},
+  {naam:'Buik',      instructie:'Trek buik strak naar binnen — 5 sec', span:5, los:10},
+  {naam:'Handen',    instructie:'Maak vuisten, zo strak als mogelijk — 5 sec', span:5, los:10},
+  {naam:'Armen',     instructie:'Span biceps én onderarmen aan — 5 sec', span:5, los:10},
+  {naam:'Schouders', instructie:'Trek schouders naar oren — 5 sec', span:5, los:10},
+  {naam:'Gezicht',   instructie:'Knijp ogen dicht, frons alles samen — 5 sec', span:5, los:10},
+];
+
+let pmrIdx=-1, pmrFase='wacht', pmrSec=0, pmrInterval=null;
+
+function startPMR(){
+  document.getElementById('pmr-lijst').innerHTML = PMR_SPIEREN.map((s,i)=>`
+    <div class="pmr-spier" id="pmr-${i}">
+      <div class="pmr-nr">${i+1}</div>
+      <div>
+        <div class="pmr-naam">${s.naam}</div>
+        <div class="pmr-instructie">${s.instructie}</div>
+      </div>
+    </div>`).join('');
+
+  // Start na 2 sec
+  document.getElementById('pmr-fase').textContent='BEGIN';
+  document.getElementById('pmr-sec').textContent='2';
+  setTimeout(()=>pmrVolgende(), 2000);
+}
+
+function pmrVolgende(){
+  pmrIdx++;
+  if(pmrIdx>=PMR_SPIEREN.length){
+    document.getElementById('pmr-fase').textContent='KLAAR';
+    document.getElementById('pmr-sec').textContent='✓';
+    document.getElementById('pmr-circle').style.strokeDashoffset='0';
+    toast('Spierontspanning voltooid 💆','ok');
+    return;
+  }
+  const s = PMR_SPIEREN[pmrIdx];
+  document.querySelectorAll('.pmr-spier').forEach((e,i)=>e.classList.toggle('actief',i===pmrIdx));
+  pmrFase='span'; pmrSec=s.span;
+  document.getElementById('pmr-fase').textContent='SPAN AAN';
+  document.getElementById('pmr-sec').textContent=pmrSec;
+  document.getElementById('pmr-circle').style.stroke='var(--lav)';
+  updatePMRRing(pmrSec,s.span);
+
+  if(pmrInterval) clearInterval(pmrInterval);
+  pmrInterval = setInterval(()=>{
+    pmrSec--;
+    document.getElementById('pmr-sec').textContent=pmrSec;
+    updatePMRRing(pmrSec, pmrFase==='span'?s.span:s.los);
+    if(pmrSec<=0){
+      if(pmrFase==='span'){
+        pmrFase='los'; pmrSec=s.los;
+        document.getElementById('pmr-fase').textContent='LAAT LOS';
+        document.getElementById('pmr-circle').style.stroke='var(--green)';
+      } else {
+        clearInterval(pmrInterval);
+        setTimeout(pmrVolgende, 300);
+      }
+    }
+  },1000);
+}
+
+function updatePMRRing(sec, totaal){
+  const pct = sec/totaal;
+  document.getElementById('pmr-circle').style.strokeDashoffset = OMTREK*(1-pct);
+}
+
+/* ══ NAVIGATIE ══ */
+function startOefening(type){
+  document.getElementById('selectie').style.display='none';
+  document.querySelectorAll('.oefen-scherm').forEach(e=>e.classList.remove('actief'));
+  document.getElementById('oefen-'+type).classList.add('actief');
+
+  if(type==='urge')      startUrge();
+  if(type==='grounding') bouwGrounding();
+  if(type==='box')       startBox();
+  if(type==='pmr')       startPMR();
+}
+
+function terug(){
+  // Stop timers
+  if(boxInterval){ clearInterval(boxInterval); boxInterval=null; boxLoopt=false; boxCycli=0; boxFaseIdx=0; }
+  if(pmrInterval){ clearInterval(pmrInterval); pmrInterval=null; pmrIdx=-1; }
+  urgeStap=0;
+  document.getElementById('urge-volgende').style.display='';
+
+  document.querySelectorAll('.oefen-scherm').forEach(e=>e.classList.remove('actief'));
+  document.getElementById('selectie').style.display='block';
+}
+
+/* ══ TOAST ══ */
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-c');
+  const el=document.createElement('div');
+  el.className='toast '+type;
+  el.innerHTML=`<span>${type==='ok'?'✓':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');el.addEventListener('animationend',()=>el.remove(),{once:true});},3400);
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

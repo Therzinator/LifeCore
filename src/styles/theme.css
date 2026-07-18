@@ -1,0 +1,116 @@
+/* ══════════════════════════════════════════════════════════════
+   theme.css — LifeCore designsysteem
+   Eén centrale plek voor kleuren, typografie en ruimte-tokens.
+   Licht is de standaard; :root[data-theme] wint altijd van de
+   prefers-color-scheme-media-query (theme-toggle in de UI).
+══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Achtergronden — warm, zacht, geen kille grijstinten */
+  --bg:      #FAF7F2;
+  --bg-2:    #F2EDE4;
+  --bg-3:    #EAE3D6;
+  --surface: #FFFFFF;
+
+  /* Randen */
+  --border:    rgba(43,38,32,.10);
+  --border-2:  rgba(43,38,32,.18);
+
+  /* Eén accentkleur — kalm mosgroen, geen alarmerende felle tinten */
+  --accent:      #5B7A66;
+  --accent-dim:  rgba(91,122,102,.12);
+  --accent-mid:  rgba(91,122,102,.28);
+  --accent-txt:  #FFFFFF;
+
+  /* Semantische statuskleuren — zacht, niet fel */
+  --warn:      #B5794A;
+  --warn-dim:  rgba(181,121,74,.12);
+  --danger:    #B3564A;
+  --danger-dim:rgba(179,86,74,.12);
+
+  /* Tekst */
+  --txt:       #2B2620;
+  --txt-muted: rgba(43,38,32,.62);
+  --txt-faint: rgba(43,38,32,.38);
+
+  /* Glas/overlay-tokens (modal-achtergrond e.d.) */
+  --glass-bg:     rgba(250,247,242,.88);
+  --glass-border: rgba(43,38,32,.12);
+  --scrim:        rgba(30,26,20,.35);
+
+  /* Typografie — systeemfonts, geen netwerkafhankelijkheid */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  /* Font-size-tokensysteem — leestekst nooit onder --font-size-sm */
+  --font-size-xs:  12px; /* alleen metadata/tijdstempels, nooit leestekst */
+  --font-size-sm:  15px; /* kleinste toegestane maat voor leestekst */
+  --font-size-base:17px;
+  --font-size-lg:  20px;
+  --font-size-xl:  26px;
+  --font-size-2xl: 34px;
+
+  /* Ruimte — ruim, lage dichtheid */
+  --space-xs: 6px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+
+  /* Radius & transitie */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --tx:   all .2s cubic-bezier(.4,0,.2,1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:      #1A1815;
+    --bg-2:    #211E19;
+    --bg-3:    #2A261F;
+    --surface: #232019;
+
+    --border:   rgba(240,235,226,.08);
+    --border-2: rgba(240,235,226,.16);
+
+    --accent:      #8FB39C;
+    --accent-dim:  rgba(143,179,156,.14);
+    --accent-mid:  rgba(143,179,156,.30);
+    --accent-txt:  #14201A;
+
+    --warn:       #D7A06B;
+    --warn-dim:   rgba(215,160,107,.14);
+    --danger:     #D08276;
+    --danger-dim: rgba(208,130,118,.14);
+
+    --txt:       #F0EBE2;
+    --txt-muted: rgba(240,235,226,.62);
+    --txt-faint: rgba(240,235,226,.38);
+
+    --glass-bg:     rgba(26,24,21,.88);
+    --glass-border: rgba(240,235,226,.12);
+    --scrim:        rgba(0,0,0,.5);
+  }
+}
+
+/* Expliciete theme-toggle wint altijd van de media-query */
+:root[data-theme='light'] {
+  --bg: #FAF7F2; --bg-2: #F2EDE4; --bg-3: #EAE3D6; --surface: #FFFFFF;
+  --border: rgba(43,38,32,.10); --border-2: rgba(43,38,32,.18);
+  --accent: #5B7A66; --accent-dim: rgba(91,122,102,.12); --accent-mid: rgba(91,122,102,.28); --accent-txt: #FFFFFF;
+  --warn: #B5794A; --warn-dim: rgba(181,121,74,.12);
+  --danger: #B3564A; --danger-dim: rgba(179,86,74,.12);
+  --txt: #2B2620; --txt-muted: rgba(43,38,32,.62); --txt-faint: rgba(43,38,32,.38);
+  --glass-bg: rgba(250,247,242,.88); --glass-border: rgba(43,38,32,.12); --scrim: rgba(30,26,20,.35);
+}
+
+:root[data-theme='dark'] {
+  --bg: #1A1815; --bg-2: #211E19; --bg-3: #2A261F; --surface: #232019;
+  --border: rgba(240,235,226,.08); --border-2: rgba(240,235,226,.16);
+  --accent: #8FB39C; --accent-dim: rgba(143,179,156,.14); --accent-mid: rgba(143,179,156,.30); --accent-txt: #14201A;
+  --warn: #D7A06B; --warn-dim: rgba(215,160,107,.14);
+  --danger: #D08276; --danger-dim: rgba(208,130,118,.14);
+  --txt: #F0EBE2; --txt-muted: rgba(240,235,226,.62); --txt-faint: rgba(240,235,226,.38);
+  --glass-bg: rgba(26,24,21,.88); --glass-border: rgba(240,235,226,.12); --scrim: rgba(0,0,0,.5);
+}

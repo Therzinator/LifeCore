@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkCore — Focus Dashboard</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0e;--bg-card:#131316;--bg-el:#1a1a1f;--bg-hov:#1f1f26;
+  --acc:#7b6ef6;--acc-dim:#3d3680;--acc-glow:rgba(123,110,246,.15);
+  --green:#3ecf8e;--green-dim:rgba(62,207,142,.12);--green-b:rgba(62,207,142,.25);
+  --amber:#f0a347;--amber-dim:rgba(240,163,71,.12);--amber-b:rgba(240,163,71,.25);
+  --red:#f04747;--red-dim:rgba(240,71,71,.12);--red-b:rgba(240,71,71,.25);
+  --blue:#47a8f0;--blue-dim:rgba(71,168,240,.12);--blue-b:rgba(71,168,240,.25);
+  --teal:#3ecfcf;--teal-dim:rgba(62,207,207,.12);--teal-b:rgba(62,207,207,.25);
+  --txt:#e8e8f0;--muted:#6b6b80;--faint:#3a3a4a;
+  --bdr:rgba(255,255,255,.07);--bdr-md:rgba(255,255,255,.11);
+  --mono:'Geist Mono',monospace;--sans:'Instrument Sans',sans-serif;
+  --r:10px;--rl:16px;--rx:22px;--tx:all .16s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:rgba(12,12,14,.94);backdrop-filter:blur(14px);z-index:50}
+.brand{font-family:var(--mono);font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.brand em{color:var(--muted);font-style:normal;font-weight:400}
+.topbar-nav{display:flex;gap:4px}
+.nav-chip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--bdr);color:var(--muted);text-decoration:none;transition:var(--tx)}
+.nav-chip:hover{border-color:var(--bdr-md);color:var(--txt)}
+.nav-chip.cur{border-color:var(--blue-b);color:var(--blue);background:var(--blue-dim)}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:196px 1fr;min-height:calc(100vh - 57px)}
+.sidebar{border-right:1px solid var(--bdr);padding:14px 10px;display:flex;flex-direction:column;gap:2px;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:var(--tx);font-size:13px;color:var(--muted);border:none;background:none;width:100%;text-align:left}
+.sb-item:hover{background:var(--bg-el);color:var(--txt)}
+.sb-item.on{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-b)}
+.sb-sep{height:1px;background:var(--bdr);margin:6px 4px}
+.sb-lbl{font-size:10px;color:var(--faint);padding:3px 10px;letter-spacing:.06em;text-transform:uppercase}
+.main{padding:22px 26px;max-width:860px}
+
+/* Screens */
+.schr{display:none}.schr.on{display:block;animation:fade-up .2s ease}
+@keyframes fade-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cards */
+.card{background:var(--bg-card);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px 18px;margin-bottom:11px}
+.card-acc{border-left:3px solid var(--acc)}
+.card-green{border-left:3px solid var(--green)}
+.card-amber{border-left:3px solid var(--amber)}
+.card-blue{border-left:3px solid var(--blue)}
+.card-red{border-left:3px solid var(--red)}
+.sec-lbl{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* Grid */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+
+/* Metric */
+.metric{background:var(--bg-el);border-radius:var(--r);padding:12px 13px}
+.m-lbl{font-size:11px;color:var(--muted);margin-bottom:3px}
+.m-val{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1}
+.m-unit{font-size:12px;font-weight:400;color:var(--muted)}
+.m-sub{font-size:11px;color:var(--faint);margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;transition:var(--tx);white-space:nowrap}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn-p{background:var(--acc);color:#fff}.btn-p:hover:not(:disabled){background:#8f84f8;transform:translateY(-1px)}
+.btn-g{background:var(--bg-el);border:1px solid var(--bdr);color:var(--txt)}.btn-g:hover:not(:disabled){background:var(--bg-hov)}
+.btn-ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}.btn-ok:hover:not(:disabled){background:rgba(62,207,142,.2)}
+.btn-blue{background:var(--blue-dim);border:1px solid var(--blue-b);color:var(--blue)}
+.btn-stop{background:var(--red-dim);border:1px solid var(--red-b);color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-lg{padding:12px 22px;font-size:15px;border-radius:var(--rl)}
+.btn-full{width:100%}
+
+/* Focus timer */
+.timer-ring-wrap{display:flex;justify-content:center;margin:18px 0}
+.timer-ring{position:relative;width:180px;height:180px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring-lbl{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.timer-min{font-family:var(--mono);font-size:38px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.timer-fase{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Taken lijst */
+.taak-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.taak-item:last-child{border:none}
+.taak-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bdr-md);background:transparent;cursor:pointer;transition:var(--tx);flex-shrink:0;margin-top:2px}
+.taak-check.done{background:var(--green);border-color:var(--green)}
+.taak-info{flex:1}
+.taak-naam{font-size:13px;font-weight:500}
+.taak-naam.done-tekst{text-decoration:line-through;opacity:.4}
+.taak-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.taak-badge{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:500}
+.badge-prio{background:var(--acc-glow);color:var(--acc);border:1px solid var(--acc-dim)}
+.badge-moet{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-b)}
+.badge-later{background:var(--bg-el);color:var(--faint);border:1px solid var(--bdr)}
+.taak-acties{display:flex;gap:6px;flex-shrink:0}
+
+/* Tijdlijn */
+.tijdlijn{position:relative;margin-bottom:16px}
+.tl-uur{display:flex;align-items:flex-start;gap:10px;min-height:44px;position:relative}
+.tl-tijd{font-family:var(--mono);font-size:10px;color:var(--faint);width:36px;flex-shrink:0;padding-top:4px;text-align:right}
+.tl-lijn{width:1px;background:var(--bdr);flex-shrink:0;position:relative}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr-md);position:absolute;left:50%;top:4px;transform:translateX(-50%)}
+.tl-dot.actief{background:var(--acc);box-shadow:0 0 8px var(--acc-glow)}
+.tl-blok{flex:1;padding:0 0 12px}
+.blok-item{border-radius:var(--r);padding:8px 10px;margin-bottom:6px;font-size:12px;cursor:pointer;transition:var(--tx)}
+.blok-focus{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.blok-taak{background:var(--blue-dim);border:1px solid var(--blue-b);color:var(--blue)}
+.blok-pauze{background:var(--teal-dim);border:1px solid var(--teal-b);color:var(--teal)}
+.blok-afspraak{background:var(--bg-el);border:1px solid var(--bdr);color:var(--muted)}
+.blok-item:hover{opacity:.85}
+.blok-naam{font-weight:500;margin-bottom:1px}
+.blok-duur{font-size:10px;opacity:.7}
+.nu-lijn{display:flex;align-items:center;gap:8px;margin:8px 0}
+.nu-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0}
+.nu-streep{flex:1;height:1px;background:var(--red);opacity:.5}
+.nu-tijd{font-family:var(--mono);font-size:10px;color:var(--red);flex-shrink:0}
+
+/* Grens bewaking */
+.grens-balk{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+.grens-track{flex:1;height:8px;background:var(--bg-el);border-radius:4px;overflow:hidden}
+.grens-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.grens-ok{background:var(--green)}
+.grens-warn{background:var(--amber)}
+.grens-max{background:var(--red)}
+.grens-lbl{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0;width:40px;text-align:right}
+
+/* Klusjes */
+.klus-filter{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--bdr);color:var(--muted);background:transparent;cursor:pointer;transition:var(--tx)}
+.klus-filter.on{border-color:rgba(123,110,246,.4);background:var(--acc-glow);color:var(--acc)}
+.klus-cat-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+.klus-cat-lbl::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.klus-rij{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);background:var(--bg-el);margin-bottom:6px;border:1px solid transparent;transition:var(--tx)}
+.klus-rij:hover{border-color:var(--bdr-md)}
+.klus-rij.toegevoegd{opacity:.45;border-color:var(--green-b)!important;background:var(--green-dim)}
+.klus-naam{flex:1;font-size:13px;line-height:1.4}
+.klus-duur{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.klus-laag-badge{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:3px;background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-b);flex-shrink:0}
+.klus-add-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr-md);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);transition:var(--tx);flex-shrink:0}
+.klus-add-btn:hover{background:var(--acc-glow);border-color:rgba(123,110,246,.4);color:var(--acc)}
+.klus-add-btn.done{background:var(--green-dim);border-color:var(--green-b);color:var(--green);cursor:default}
+
+/* Pauze overlay */
+.pauze-overlay{position:fixed;inset:0;background:rgba(12,12,14,.92);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.pauze-overlay.on{display:flex;animation:fade-up .25s ease}
+.pauze-card{background:var(--bg-card);border:1px solid var(--bdr-md);border-radius:var(--rx);padding:32px 28px;max-width:360px;width:100%;margin:20px;text-align:center}
+.pauze-icon{font-size:40px;margin-bottom:12px}
+.pauze-titel{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.pauze-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.pauze-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* Middagcheck overlay */
+.middag-overlay{position:fixed;inset:0;background:rgba(12,12,14,.88);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.middag-overlay.on{display:flex}
+.middag-card{background:var(--bg-card);border:1px solid var(--bdr-md);border-radius:var(--rx);padding:28px;max-width:400px;width:100%;margin:20px}
+
+/* Shutdown checklist */
+.shtd-item{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--bdr);cursor:pointer}
+.shtd-item:last-child{border:none}
+.shtd-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--bdr-md);background:transparent;transition:var(--tx);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px}
+.shtd-box.done{background:var(--green);border-color:var(--green);color:#fff}
+.shtd-lbl{font-size:13px}
+
+/* Alert */
+.alert{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:var(--r);font-size:12px;margin-bottom:11px;line-height:1.5}
+.alert-info{background:var(--blue-dim);border:1px solid var(--blue-b);color:var(--blue)}
+.alert-ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.alert-warn{background:var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)}
+.alert-stop{background:var(--red-dim);border:1px solid var(--red-b);color:var(--red)}
+
+/* Schakelaar */
+.sw{position:relative;width:30px;height:17px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-track{position:absolute;inset:0;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;transition:var(--tx);cursor:pointer}
+.sw input:checked+.sw-track{background:var(--acc);border-color:var(--acc)}
+.sw-knop{position:absolute;top:2px;left:2px;width:11px;height:11px;background:var(--faint);border-radius:50%;transition:var(--tx);pointer-events:none}
+.sw input:checked~.sw-knop{transform:translateX(13px);background:#fff}
+
+/* Toast */
+.toast-c{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r);font-size:13px;font-weight:500;pointer-events:auto;min-width:200px;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:tin .22s ease forwards}
+.toast.out{animation:tout .2s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.toast.ok{background:var(--green-dim);border:1px solid var(--green-b);color:var(--green)}
+.toast.neu{background:var(--bg-el);border:1px solid var(--bdr);color:var(--txt)}
+.toast.wn{background:var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)}
+.toast.stop{background:var(--red-dim);border:1px solid var(--red-b);color:var(--red)}
+
+/* Input */
+.f-input{background:var(--bg-el);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:var(--sans);font-size:14px;padding:9px 12px;outline:none;transition:var(--tx);width:100%}
+.f-input:focus{border-color:rgba(123,110,246,.45);box-shadow:0 0 0 3px var(--acc-glow)}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+@media(max-width:640px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:14px}.topbar-nav{display:none}}
+</style>
+</head>
+<body>
+<h1 class="sr-only">WorkCore — Taken en focusmodule</h1>
+
+<header class="topbar">
+  <div class="brand"><div class="brand-dot"></div>Work<em>Core</em></div>
+  <nav class="topbar-nav" aria-label="Modules">
+    <a href="index.html" class="nav-chip">Dashboard</a>
+    <a href="liftcore.html" class="nav-chip">LiftCore</a>
+    <a href="cardiocore.html" class="nav-chip">CardioCore</a>
+    <a href="resetcore.html" class="nav-chip">ResetCore</a>
+    <a href="workcore.html" class="nav-chip cur">WorkCore</a>
+  
+    <button onclick="exporteerData()" style="font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer" title="Exporteer data">↓ export</button></nav>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="energie-badge" style="font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;display:none">—</span>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="wc-tijd"></span>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar" aria-label="Navigatie">
+  <div class="sb-lbl">Werken</div>
+  <button class="sb-item on" onclick="ga('dashboard')" id="nav-dashboard">⚡ Vandaag</button>
+  <button class="sb-item" onclick="ga('focustimer')" id="nav-focustimer">⏱ Focustimer</button>
+  <button class="sb-item" onclick="ga('tijdlijn')" id="nav-tijdlijn">📅 Tijdlijn</button>
+  <button class="sb-item" onclick="ga('klusjes')"  id="nav-klusjes">🧹 Klusjes</button>
+  <button class="sb-item" onclick="ga('klusboek')" id="nav-klusboek">📋 Klusboek</button>
+  <div class="sb-sep"></div>
+  <div class="sb-lbl">Bescherming</div>
+  <button class="sb-item" onclick="ga('grenzen')" id="nav-grenzen">🛡 Grenzen</button>
+  <button class="sb-item" onclick="ga('middagcheck')" id="nav-middagcheck">🔋 Middagcheck</button>
+  <div class="sb-sep"></div>
+  <div class="sb-lbl">Afsluiten</div>
+  <button class="sb-item" onclick="ga('afsluiten')" id="nav-afsluiten">🌙 Dag afsluiten</button>
+  <div class="sb-sep"></div>
+  <button class="sb-item" onclick="ga('instellingen')" id="nav-instellingen">⚙ Instellingen</button>
+</aside>
+
+<main class="main">
+
+<!-- ══ VANDAAG ══ -->
+<section class="schr on" id="schr-dashboard">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px" id="wc-groet">Klaar voor de dag</div>
+    <div style="font-size:13px;color:var(--muted)" id="wc-sub">Laad handoff...</div>
+  </div>
+
+  <div id="geen-reset-banner" style="display:none" class="alert alert-warn">
+    ⚠ Geen dagstart gevonden. Doe eerst je ResetCore check-in.
+    <a href="resetcore.html" style="margin-left:8px;color:var(--amber);font-weight:500;text-decoration:none">Naar ResetCore ↗</a>
+  </div>
+
+  <!-- Daglimiet balk -->
+  <div class="card card-blue">
+    <div class="sec-lbl">Daglimiet</div>
+    <div class="grens-balk">
+      <div class="grens-track"><div class="grens-fill grens-ok" id="limiet-fill" style="width:0%"></div></div>
+      <div class="grens-lbl" id="limiet-lbl">0/—</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)" id="limiet-sub">Op basis van je energieniveau</div>
+  </div>
+
+  <!-- Context uit ResetCore -->
+  <div class="g4" style="margin-bottom:11px">
+    <div class="metric"><div class="m-lbl">Energie</div><div class="m-val" id="wc-energie">—</div></div>
+    <div class="metric"><div class="m-lbl">Stress</div><div class="m-val" id="wc-stress">—</div></div>
+    <div class="metric"><div class="m-lbl">Slaap</div><div class="m-val" id="wc-slaap">—</div></div>
+    <div class="metric"><div class="m-lbl">Dagtype</div><div class="m-val" id="wc-dagtype" style="font-size:13px">—</div></div>
+  </div>
+
+  <!-- Taken lijst -->
+  <div class="card">
+    <div class="sec-lbl">Taken vandaag</div>
+    <div id="taken-vandaag"></div>
+    <div id="geen-taken" style="text-align:center;padding:20px;color:var(--faint);font-size:13px;display:none">
+      Geen taken — ga naar <a href="resetcore.html" style="color:var(--acc);text-decoration:none">ResetCore</a> om taken aan te maken
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-p btn-sm" onclick="ga('focustimer')">⏱ Start focusblok</button>
+      <button class="btn btn-g btn-sm" onclick="ga('tijdlijn')">📅 Bekijk tijdlijn</button>
+    </div>
+  </div>
+
+  <!-- Focustijd vandaag -->
+  <div class="g3">
+    <div class="metric"><div class="m-lbl">Focustijd</div><div class="m-val" id="st-focus">0<span class="m-unit"> min</span></div><div class="m-sub">vandaag</div></div>
+    <div class="metric"><div class="m-lbl">Taken klaar</div><div class="m-val" id="st-klaar">0</div><div class="m-sub">van vandaag</div></div>
+    <div class="metric"><div class="m-lbl">Stopmoment</div><div class="m-val" id="st-stop" style="font-size:14px">—</div><div class="m-sub">eindtijd</div></div>
+  </div>
+</section>
+
+<!-- ══ FOCUSTIMER ══ -->
+<section class="schr" id="schr-focustimer">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Focustimer</div>
+    <div style="font-size:13px;color:var(--muted)" id="focus-actieve-taak">Kies een taak of start direct</div>
+  </div>
+
+  <div class="card">
+    <!-- Timer ring SVG -->
+    <div class="timer-ring-wrap">
+      <div class="timer-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="var(--bg-el)" stroke-width="8"/>
+          <circle cx="90" cy="90" r="78" fill="none" stroke="var(--acc)" stroke-width="8"
+                  stroke-dasharray="490" id="timer-cirkel"
+                  stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="timer-ring-lbl">
+          <div class="timer-min" id="timer-display">25:00</div>
+          <div class="timer-fase" id="timer-fase">Klaar om te starten</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Focus duur knoppen -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="stelFocusDuur(15)">15 min</button>
+      <button class="btn btn-g btn-sm on-duur" id="duur-25" onclick="stelFocusDuur(25)">25 min</button>
+      <button class="btn btn-g btn-sm" onclick="stelFocusDuur(45)">45 min</button>
+      <button class="btn btn-g btn-sm" onclick="stelFocusDuur(90)">90 min</button>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="btn btn-p" id="btn-focus-start" onclick="startFocusTimer()">▶ Start focusblok</button>
+      <button class="btn btn-g" id="btn-focus-stop" onclick="stopFocusTimer()" style="display:none">■ Stop</button>
+      <button class="btn btn-g" id="btn-focus-pauze" onclick="onderbreekFocus()" style="display:none">⏸ Onderbreken</button>
+    </div>
+  </div>
+
+  <!-- Doomscroll shields -->
+  <div class="card card-amber">
+    <div class="sec-lbl">Focus shields</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px">Actief tijdens focusblok — zachte reminders om op koers te blijven</div>
+    <div id="shields-lijst">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+        <div><div style="font-weight:500">Sociale media blokkade</div><div style="font-size:11px;color:var(--muted)">Melding bij navigeren naar afleidende sites</div></div>
+        <label class="sw"><input type="checkbox" id="shield-social" checked><div class="sw-track"></div><div class="sw-knop"></div></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+        <div><div style="font-weight:500">Nieuws blokkade</div><div style="font-size:11px;color:var(--muted)">Geen nieuwssites tijdens focus</div></div>
+        <label class="sw"><input type="checkbox" id="shield-news" checked><div class="sw-track"></div><div class="sw-knop"></div></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;font-size:13px">
+        <div><div style="font-weight:500">Bewuste onderbreking</div><div style="font-size:11px;color:var(--muted)">Stop-knop vraagt bevestiging</div></div>
+        <label class="sw"><input type="checkbox" id="shield-confirm" checked><div class="sw-track"></div><div class="sw-knop"></div></label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TIJDLIJN ══ -->
+<section class="schr" id="schr-tijdlijn">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Tijdlijn</div>
+    <div style="font-size:13px;color:var(--muted)">De dag als ruimte — blokken zichtbaar van 7:00 tot 22:00</div>
+  </div>
+  <div id="tl-ai-tip" class="alert alert-info" style="display:none"></div>
+  <div class="card" style="padding:14px 12px">
+    <div class="tijdlijn" id="tijdlijn-container"></div>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)">
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--green);opacity:.5"></div>Focus</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue);opacity:.5"></div>Taak</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--teal);opacity:.5"></div>Pauze</div>
+    <div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:2px;background:var(--bg-el);border:1px solid var(--bdr)"></div>Afspraak</div>
+  </div>
+</section>
+
+<!-- ══ GRENZEN ══ -->
+<section class="schr" id="schr-grenzen">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Grenzen & duurzaamheid</div>
+    <div style="font-size:13px;color:var(--muted)">Bescherming tegen overwerken — automatisch actief</div>
+  </div>
+
+  <!-- Daglimiet overzicht -->
+  <div class="card card-blue">
+    <div class="sec-lbl">Daglimiet op basis van energie</div>
+    <div class="g3">
+      <div class="metric"><div class="m-lbl">Max. taken</div><div class="m-val" id="gr-max-taken">—</div><div class="m-sub" id="gr-energie-lbl">—</div></div>
+      <div class="metric"><div class="m-lbl">Max. werkuren</div><div class="m-val" id="gr-max-uren">—</div><div class="m-sub">vandaag</div></div>
+      <div class="metric"><div class="m-lbl">Focusblok</div><div class="m-val" id="gr-blok-duur">—<span class="m-unit"> min</span></div><div class="m-sub">aanbevolen</div></div>
+    </div>
+  </div>
+
+  <!-- Pauzeritme -->
+  <div class="card card-green">
+    <div class="sec-lbl">Pauzeritme</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Na elke 90 minuten focustijd verschijnt een verplichte pauzemelding die je niet kunt wegklikken.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-g btn-sm" onclick="triggerPauze(5)">Test 5-min pauze</button>
+      <button class="btn btn-g btn-sm" onclick="triggerPauze(15)">Test 15-min pauze</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px">
+      <div><div style="font-weight:500">Verplichte pauze na 90 min</div><div style="font-size:11px;color:var(--muted)">Kan niet wegklikken — kies 5 of 15 min</div></div>
+      <label class="sw"><input type="checkbox" id="gr-pauze" checked><div class="sw-track"></div><div class="sw-knop"></div></label>
+    </div>
+  </div>
+
+  <!-- Stopmoment -->
+  <div class="card card-amber">
+    <div class="sec-lbl">Stopmoment</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Een vaste eindtijd. 15 minuten van tevoren: stop met nieuwe taken starten.</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+      <label style="font-size:13px;color:var(--muted)">Eindtijd vandaag</label>
+      <input type="time" id="inst-eindtijd" value="17:30" class="f-input" style="width:120px" onchange="slaInstOp()">
+    </div>
+    <div id="stopmom-info" class="alert alert-warn" style="display:none"></div>
+  </div>
+
+  <!-- Grensbewaking instellingen -->
+  <div class="card">
+    <div class="sec-lbl">Grensbewaking</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+      <div><div>Waarschuwing bij te veel taken</div><div style="font-size:11px;color:var(--muted)">Melding als je daglimiet overschrijdt</div></div>
+      <label class="sw"><input type="checkbox" id="gr-overtask" checked onchange="slaInstOp()"><div class="sw-track"></div><div class="sw-knop"></div></label>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+      <div><div>Energiecheck halverwege</div><div style="font-size:11px;color:var(--muted)">Rond het middaguur — past dag automatisch aan</div></div>
+      <label class="sw"><input type="checkbox" id="gr-midcheck" checked onchange="slaInstOp()"><div class="sw-track"></div><div class="sw-knop"></div></label>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:13px">
+      <div><div>Harde daglimiet</div><div style="font-size:11px;color:var(--muted)">Blokkeer nieuwe taken na limiet</div></div>
+      <label class="sw"><input type="checkbox" id="gr-hard" onchange="slaInstOp()"><div class="sw-track"></div><div class="sw-knop"></div></label>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MIDDAGCHECK ══ -->
+<section class="schr" id="schr-middagcheck">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Middagcheck</div>
+    <div style="font-size:13px;color:var(--muted)">Hoe zit je energie er rond het middaguur bij?</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-lbl">Energie nu (middag)</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="kiesMiddagEnergie('laag')">😔 Lager dan ochtend</button>
+      <button class="btn btn-g btn-sm" onclick="kiesMiddagEnergie('zelfde')">😐 Hetzelfde</button>
+      <button class="btn btn-g btn-sm" onclick="kiesMiddagEnergie('hoog')">⚡ Nog goed</button>
+    </div>
+    <div id="middag-resultaat" class="alert alert-info" style="display:none"></div>
+  </div>
+
+  <div class="card" id="middag-aanpassing" style="display:none">
+    <div class="sec-lbl">Aanpassing voor de rest van de dag</div>
+    <div id="middag-aanpas-inhoud"></div>
+  </div>
+</section>
+
+<!-- ══ DAG AFSLUITEN ══ -->
+<section class="schr" id="schr-afsluiten">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Dag afsluiten</div>
+    <div style="font-size:13px;color:var(--muted)">Sluit de werkdag bewust af — geef je brein toestemming om te stoppen</div>
+  </div>
+
+  <!-- Dagstats -->
+  <div class="card card-green">
+    <div class="sec-lbl">Jouw dag samengevat</div>
+    <div class="g3">
+      <div class="metric"><div class="m-lbl">Focustijd</div><div class="m-val" id="afsl-focus">0<span class="m-unit"> min</span></div></div>
+      <div class="metric"><div class="m-lbl">Taken klaar</div><div class="m-val" id="afsl-klaar">0</div></div>
+      <div class="metric"><div class="m-lbl">Pauzes genomen</div><div class="m-val" id="afsl-pauzes">0</div></div>
+    </div>
+  </div>
+
+  <!-- Stemming -->
+  <div class="card">
+    <div class="sec-lbl">Hoe was de dag?</div>
+    <div style="display:flex;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+      <button class="btn btn-g btn-sm" onclick="kiesStemming('slecht')">😞 Slecht</button>
+      <button class="btn btn-g btn-sm" onclick="kiesStemming('matig')">😐 Matig</button>
+      <button class="btn btn-g btn-sm" onclick="kiesStemming('ok')">🙂 Oke</button>
+      <button class="btn btn-g btn-sm" onclick="kiesStemming('goed')">😊 Goed</button>
+      <button class="btn btn-g btn-sm" onclick="kiesStemming('top')">🔥 Top</button>
+    </div>
+    <div id="stemming-reactie" class="alert" style="display:none"></div>
+  </div>
+
+  <!-- Reflectie -->
+  <div class="card">
+    <div class="sec-lbl">Parkeer losse gedachten</div>
+    <textarea class="f-input" id="reflectie-tekst" placeholder="Wat blijft in je hoofd hangen? Schrijf het op — dan hoeft je brein het niet te onthouden." rows="3" style="resize:vertical"></textarea>
+    <div style="font-size:11px;color:var(--faint);margin-top:6px">Dit is geparkeerd — het hoeft vanavond niet opgelost te worden.</div>
+  </div>
+
+  <!-- Morgen prioriteit -->
+  <div class="card">
+    <div class="sec-lbl">Morgen — één ding</div>
+    <input class="f-input" id="morgen-prio" placeholder="Wat is morgen het allerbelangrijkste?">
+  </div>
+
+  <!-- Shutdown checklist -->
+  <div class="card card-red">
+    <div class="sec-lbl">Shutdown ritueel</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Vink alle stappen af. Pas dan is de dag echt afgesloten.</div>
+    <div id="shutdown-lijst">
+      <div class="shtd-item" onclick="vinkShutdown(0,this)"><div class="shtd-box" id="sd-0"></div><div class="shtd-lbl">Mail/berichten gesloten — geen nieuwe checks vanavond</div></div>
+      <div class="shtd-item" onclick="vinkShutdown(1,this)"><div class="shtd-box" id="sd-1"></div><div class="shtd-lbl">Openstaande taken verplaatst naar morgen of Later</div></div>
+      <div class="shtd-item" onclick="vinkShutdown(2,this)"><div class="shtd-box" id="sd-2"></div><div class="shtd-lbl">Werkomgeving opgeruimd — bureau/laptop afgesloten</div></div>
+      <div class="shtd-item" onclick="vinkShutdown(3,this)"><div class="shtd-box" id="sd-3"></div><div class="shtd-lbl">Morgen's prioriteit is bepaald en geparkeerd</div></div>
+    </div>
+    <button class="btn btn-stop btn-full" id="btn-shutdown" disabled onclick="voltooiShutdown()" style="margin-top:14px">
+      Dag afsluiten ↗
+    </button>
+  </div>
+</section>
+
+<!-- ══ INSTELLINGEN ══ -->
+<section class="schr" id="schr-instellingen">
+  <div style="margin-bottom:18px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">Instellingen</div>
+  </div>
+  <div class="card">
+    <div class="sec-lbl">Werkdag</div>
+    <div class="g2">
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px">Starttijd</label>
+        <input type="time" id="inst-starttijd" value="08:00" class="f-input" onchange="slaInstOp()">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px">Eindtijd</label>
+        <input type="time" id="inst-eindtijd2" value="17:30" class="f-input" onchange="slaInstOp()">
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px">Werkuren per dag</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="range" id="inst-werkuren" min="2" max="12" step="0.5" value="8"
+               oninput="document.getElementById('inst-werkuren-lbl').textContent=this.value+' uur';slaInstOp()"
+               style="flex:1;accent-color:var(--blue)">
+        <span id="inst-werkuren-lbl" style="font-family:var(--mono);font-size:13px;min-width:48px">8 uur</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">
+        De tijdlijn en taaklimiet houden hier rekening mee.
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-lbl">Pauzeritme</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <label style="font-size:13px;color:var(--muted)">Pauze na (min)</label>
+      <input type="number" id="inst-pauze-na" value="90" min="30" max="180" step="15" class="f-input" style="width:80px" onchange="slaInstOp()">
+    </div>
+  </div>
+  <button class="btn btn-p" onclick="slaInstOp()">Opslaan</button>
+</section>
+
+<!-- ══ KLUSJES ══ -->
+<section class="schr" id="schr-klusjes">
+  <div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">🧹 Huishoudelijk</div>
+    <div style="font-size:13px;color:var(--muted)">Wekelijks herhalende taken, verdeeld per dag. Tik om toe te voegen aan vandaag.</div>
+  </div>
+
+  <!-- Huishoudelijk weekschema -->
+  <div id="huishouden-blok"></div>
+
+  <!-- Scheidingslijn -->
+  <div style="height:1px;background:var(--border);margin:20px 0"></div>
+
+  <!-- Overige klusjes (reparatie, tuin, admin) -->
+  <div style="font-size:16px;font-weight:600;margin-bottom:12px">🔧 Overige klussen</div>
+
+  <!-- Dag-suggesties overige -->
+  <div id="klus-dag-blok" style="margin-bottom:14px;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);padding:12px 14px">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px" id="klus-dag-lbl">Aanbevolen voor vandaag</div>
+    <div id="klus-dag-items" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+
+  <!-- Filter -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--muted);align-self:center;margin-right:2px">Filter:</span>
+    <button class="klus-filter on" onclick="filterKlusjes('alle')" id="kf-alle">Alles</button>
+    <button class="klus-filter" onclick="filterKlusjes('snel')" id="kf-snel">⚡ &lt;5 min</button>
+    <button class="klus-filter" onclick="filterKlusjes('kort')" id="kf-kort">🕐 5–10 min</button>
+    <button class="klus-filter" onclick="filterKlusjes('laag')" id="kf-laag">😔 Lage energie</button>
+  </div>
+
+  <!-- Toegevoegd vandaag -->
+  <div id="klusjes-vandaag-blok" style="display:none;margin-bottom:14px">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Vandaag gepland</div>
+    <div id="klusjes-vandaag"></div>
+  </div>
+
+  <div id="klusjes-lijst"></div>
+</section>
+
+<section class="schr" id="schr-klusboek">
+  <div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px">📋 Klusboek</div>
+    <div style="font-size:13px;color:var(--muted)">Beheer je eigen klussenlijst — standaard taken plus je eigen toevoegingen.</div>
+  </div>
+
+  <!-- Eigen klus toevoegen -->
+  <div style="background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);padding:14px 16px;margin-bottom:16px">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Klus toevoegen</div>
+    <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:8px">
+      <input type="text" id="klusboek-naam" class="wc-input" placeholder="Naam van de klus" maxlength="60">
+      <input type="number" id="klusboek-min" class="wc-input" placeholder="min" style="width:60px" min="1" max="120" value="5">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="klusboek-laag" style="accent-color:var(--blue)"> lage E
+      </label>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px">Categorie</div>
+        <select id="klusboek-cat" class="wc-input" style="font-size:12px">
+          <option value="eigen">⭐ Eigen</option>
+          <option value="binnen">🏠 Binnen</option>
+          <option value="buiten">🌿 Buiten</option>
+          <option value="klus">🔧 Klus/reparatie</option>
+          <option value="admin">📋 Administratie</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px">Dag (optioneel)</div>
+        <select id="klusboek-dag" class="wc-input" style="font-size:12px">
+          <option value="">Elke dag</option>
+          <option value="ma">Maandag</option>
+          <option value="di">Dinsdag</option>
+          <option value="wo">Woensdag</option>
+          <option value="do">Donderdag</option>
+          <option value="vr">Vrijdag</option>
+          <option value="za">Zaterdag</option>
+          <option value="zo">Zondag</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px">Herhaling</div>
+        <select id="klusboek-herhaling" class="wc-input" style="font-size:12px">
+          <option value="week">Elke week</option>
+          <option value="2weken">Elke 2 weken</option>
+          <option value="4weken">Elke 4 weken</option>
+          <option value="eenmalig">Eenmalig</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:5px">Weersconditie</div>
+        <select id="klusboek-weer" class="wc-input" style="font-size:12px">
+          <option value="altijd">Altijd</option>
+          <option value="droog">Alleen droog weer</option>
+          <option value="binnen">Alleen binnen</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-ok btn-full" onclick="voegKlusboekToe()" style="width:100%">+ Toevoegen aan klusboek</button>  </div>
+
+  <!-- Standaard + eigen taken per categorie -->
+  <div id="klusboek-lijst"></div>
+</section>
+
+<!-- Pauze overlay -->
+<div class="pauze-overlay" id="pauze-overlay" role="dialog" aria-modal="true" aria-label="Pauze">
+  <div class="pauze-card">
+    <div class="pauze-icon" id="pauze-icon">☕</div>
+    <div class="pauze-titel">Pauzetijd</div>
+    <div class="pauze-sub" id="pauze-sub">Je hebt 90 minuten gefocust. Neem nu een bewuste pauze — je brein heeft het nodig.</div>
+    <div style="font-family:var(--mono);font-size:32px;font-weight:600;margin-bottom:16px" id="pauze-timer">5:00</div>
+    <div class="pauze-btns">
+      <button class="btn btn-g" onclick="startPauze(5)">5 min micro</button>
+      <button class="btn btn-ok" onclick="startPauze(15)">15 min echt</button>
+      <button class="btn btn-g" onclick="startPauze(30)">30 min lang</button>
+    </div>
+    <button id="btn-pauze-klaar" class="btn btn-p btn-full" style="margin-top:12px;display:none" onclick="sluitPauze()">Terug aan het werk ↗</button>
+  </div>
+</div>
+
+<div class="toast-c" id="toast-c" aria-live="polite"></div>
+
+<script>
+'use strict';
+const WC_LS  = 'workcore_dag';
+const HS_KEY = 'wc_handoff'; // geschreven door resetcore
+
+/* ══ STATE ══ */
+let D = {
+  datum:       null,
+  taken:       [],      // { id, tekst, zone, klaar }
+  focus_min:   0,
+  pauzes:      0,
+  stemming:    null,
+  reflectie:   '',
+  morgen:      '',
+  shutdown:    [false,false,false,false],
+  actief_scherm:  'dashboard', // herstel tab
+  actieve_taak:   null,        // id van de taak die actief was
+};
+
+let instD = {
+  eindtijd:    '17:30',
+  starttijd:   '08:00',
+  werkuren:    8,
+  pauze_na:    90,
+  gr_overtask: true,
+  gr_midcheck: true,
+  gr_hard:     false,
+};
+
+let HO = null; // handoff van ResetCore
+
+// Timer state
+let focusDuur   = 25;
+let focusRest   = 25 * 60;
+let focusTot    = 25 * 60;
+let focusIv     = null;
+let focusLoopt  = false;
+
+let pauzeIv     = null;
+let pauzeRest   = 0;
+let sdTicks     = 0;
+
+/* ══ OPSLAG ══ */
+function laadData(){
+  try{
+    const r = localStorage.getItem(WC_LS);
+    if(r){
+      const p = JSON.parse(r);
+      if(p.datum === new Date().toDateString()) D = {...D,...p};
+    }
+    const ri = localStorage.getItem(WC_LS+'_inst');
+    if(ri) instD = {...instD,...JSON.parse(ri)};
+  }catch(e){}
+}
+
+function slaOp(){
+  D.datum = new Date().toDateString();
+  try{
+    localStorage.setItem(WC_LS, JSON.stringify(D));
+  if(typeof Core!=='undefined') Core.sync.planAutoSync('workcore',D);
+  }catch(e){}
+}
+
+function slaInstOp(){
+  instD.eindtijd   = document.getElementById('inst-eindtijd')?.value  || instD.eindtijd;
+  instD.starttijd  = document.getElementById('inst-starttijd')?.value || instD.starttijd;
+  instD.werkuren   = parseFloat(document.getElementById('inst-werkuren')?.value) || 8;
+  instD.pauze_na   = parseInt(document.getElementById('inst-pauze-na')?.value) || 90;
+  instD.gr_overtask = document.getElementById('gr-overtask')?.checked;
+  instD.gr_midcheck = document.getElementById('gr-midcheck')?.checked;
+  instD.gr_hard    = document.getElementById('gr-hard')?.checked;
+  try{ localStorage.setItem(WC_LS+'_inst', JSON.stringify(instD)); }catch(e){}
+  updateStopMoment();
+  toast('Instellingen opgeslagen','ok');
+}
+
+/* ══ HANDOFF LEZEN ══ */
+function laadHandoff(){
+  try{
+    const r = localStorage.getItem(HS_KEY);
+    if(!r) return null;
+    const h = JSON.parse(r);
+
+    // Datum-validatie: handoff moet van vandaag zijn
+    const vandaag = new Date().toDateString();
+    if(h.reset_om){
+      const geschreven = new Date(h.reset_om).toDateString();
+      if(vandaag !== geschreven) return null; // verouderd
+    } else {
+      // Geen reset_om maar wel energie = old-style handoff, accepteer als datum klopt via D.datum
+      // Controleer via de resetcore data zelf
+      try{
+        const rc = JSON.parse(localStorage.getItem('resetcore_dag')||'null');
+        if(rc?.datum && rc.datum !== vandaag) return null;
+      }catch{}
+    }
+
+    // Handoff is alleen nuttig als energie aanwezig is
+    if(!h.energie) return null;
+
+    return h;
+  }catch(e){ return null; }
+}
+
+function dagLimiet(energie){
+  energie = energie || (typeof Core !== 'undefined' ? Core.getEnergie() : 'midden');
+  const werkuren = instD.werkuren || 8;
+  const basis = {
+    laag:   { taken:3, uren:Math.round(werkuren*0.5),  blok:25 },
+    midden: { taken:5, uren:Math.round(werkuren*0.75), blok:45 },
+    hoog:   { taken:7, uren:werkuren,                  blok:90 },
+  };
+  return basis[energie||'midden'];
+}
+
+/* ══ NAVIGATIE ══ */
+function ga(id){
+  D.actief_scherm = id; slaOp();
+  document.querySelectorAll('.schr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('on'));
+  document.getElementById('schr-'+id).classList.add('on');
+  const nb = document.getElementById('nav-'+id);
+  if(nb) nb.classList.add('on');
+  const fn = {
+    dashboard: verversDashboard,
+    tijdlijn:  bouwTijdlijn,
+    grenzen:   verversGrenzen,
+    afsluiten: verversAfsluiten,
+    klusjes:   bouwKlusjesLijst,
+    klusboek:  bouwKlusboek,
+  };
+  if(fn[id]) fn[id]();
+}
+
+/* ══ DASHBOARD ══ */
+function verversDashboard(){
+  HO = laadHandoff();
+  const heeftReset = HO && HO.energie;
+
+  document.getElementById('geen-reset-banner').style.display = heeftReset ? 'none' : 'flex';
+
+  if(heeftReset){
+    const e = HO.energie;
+    const lim = dagLimiet(e);
+
+    // Context metrics
+    document.getElementById('wc-energie').textContent   = {laag:'Laag',midden:'Midden',hoog:'Hoog'}[e]||'—';
+    document.getElementById('wc-stress').textContent    = HO.stress+'/10';
+    document.getElementById('wc-slaap').textContent     = HO.slaap+'u';
+    document.getElementById('wc-dagtype').textContent   = {
+      'werk-kantoor':'Kantoor','werk-thuis':'Thuis','vrij':'Vrij','ziek':'Ziek'
+    }[HO.dag_type]||'—';
+
+    // Energie badge
+    const badge = document.getElementById('energie-badge');
+    badge.style.display='inline';
+    const klassen = {laag:'var(--red-dim);border:1px solid var(--red-b);color:var(--red)',midden:'var(--amber-dim);border:1px solid var(--amber-b);color:var(--amber)',hoog:'var(--green-dim);border:1px solid var(--green-b);color:var(--green)'};
+    badge.style.cssText += ';background:'+klassen[e];
+    badge.textContent = {laag:'Laag',midden:'Midden',hoog:'Hoog'}[e];
+
+    // Daglimiet balk
+    const takentotaal = D.taken.filter(t=>!t.klaar).length || (HO.taken ? HO.taken.prio.length+HO.taken.moet.length : 0);
+    const pct = Math.min(100, Math.round(takentotaal / lim.taken * 100));
+    const fillEl = document.getElementById('limiet-fill');
+    fillEl.style.width = pct+'%';
+    fillEl.className = 'grens-fill ' + (pct>=100?'grens-max':pct>=75?'grens-warn':'grens-ok');
+    document.getElementById('limiet-lbl').textContent = takentotaal+'/'+lim.taken;
+    document.getElementById('limiet-sub').textContent = `Energie ${e} — max. ${lim.taken} taken, max. ${lim.uren} uur`;
+
+    // Taken uit handoff laden (éénmalig als D.taken leeg is)
+    if(D.taken.length === 0 && HO.taken){
+      const ho = HO.taken;
+      ho.prio?.forEach(t=>  D.taken.push({id:t.id, tekst:t.tekst, zone:'prio',  klaar:t.klaar||false}));
+      ho.moet?.forEach(t=>  D.taken.push({id:t.id, tekst:t.tekst, zone:'moet',  klaar:t.klaar||false}));
+      ho.later?.forEach(t=> D.taken.push({id:t.id, tekst:t.tekst, zone:'later', klaar:t.klaar||false}));
+      slaOp();
+    }
+  }
+
+  renderTakenDashboard();
+  updateStats();
+  updateStopMoment();
+}
+
+function renderTakenDashboard(){
+  const c = document.getElementById('taken-vandaag');
+  const zichtbaar = D.taken.filter(t=>t.zone!=='later');
+
+  if(!zichtbaar.length){
+    document.getElementById('geen-taken').style.display='block';
+    c.innerHTML='';
+    return;
+  }
+  document.getElementById('geen-taken').style.display='none';
+
+  c.innerHTML = zichtbaar.map((t,i)=>{
+    const bdg = t.zone==='prio' ? '<span class="taak-badge badge-prio">Prioriteit</span>' :
+                t.zone==='moet' ? '<span class="taak-badge badge-moet">Moet</span>' : '';
+    return `<div class="taak-item">
+      <div class="taak-check ${t.klaar?'done':''}" onclick="toggleTaak(${i})" role="checkbox" aria-checked="${t.klaar}"></div>
+      <div class="taak-info">
+        <div class="taak-naam ${t.klaar?'done-tekst':''}">${t.tekst}</div>
+        <div class="taak-meta">${bdg}</div>
+      </div>
+      <div class="taak-acties">
+        <button class="btn btn-g btn-sm" onclick="startFocusOpTaak(${i})">⏱</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTaak(idx){
+  const zichtbaar = D.taken.filter(t=>t.zone!=='later');
+  const taak = zichtbaar[idx];
+  if(!taak) return;
+  const echt = D.taken.find(t=>t.id===taak.id);
+  if(echt){ echt.klaar=!echt.klaar; slaOp(); renderTakenDashboard(); updateStats(); }
+}
+
+function updateStats(){
+  const klaar = D.taken.filter(t=>t.klaar).length;
+  document.getElementById('st-focus').innerHTML = D.focus_min+'<span class="m-unit"> min</span>';
+  document.getElementById('st-klaar').textContent = klaar;
+  document.getElementById('afsl-focus').innerHTML = D.focus_min+'<span class="m-unit"> min</span>';
+  document.getElementById('afsl-klaar').textContent = klaar;
+  document.getElementById('afsl-pauzes').textContent = D.pauzes;
+}
+
+function updateStopMoment(){
+  const et = instD.eindtijd || '17:30';
+  document.getElementById('st-stop').textContent = et;
+  const nu = new Date();
+  const [h,m] = et.split(':').map(Number);
+  const eindMs = new Date(nu.getFullYear(),nu.getMonth(),nu.getDate(),h,m).getTime();
+  const restMs = eindMs - Date.now();
+  const warn = document.getElementById('stopmom-info');
+  if(warn){
+    if(restMs < 15*60*1000 && restMs > 0){
+      warn.style.display='flex'; warn.textContent='⏰ Stopmoment nadert ('+et+') — rond huidige taak af, start niets nieuws.';
+    } else { warn.style.display='none'; }
+  }
+}
+
+/* ══ FOCUSTIMER ══ */
+function stelFocusDuur(min){
+  focusDuur = min;
+  focusRest = min*60;
+  focusTot  = min*60;
+  updateTimerUI();
+  document.getElementById('focus-actieve-taak').textContent = min+' minuten focusblok';
+}
+
+function startFocusOpTaak(idx){
+  const zichtbaar = D.taken.filter(t=>t.zone!=='later');
+  const taak = zichtbaar[idx];
+  if(taak) document.getElementById('focus-actieve-taak').textContent = '🎯 '+taak.tekst;
+  ga('focustimer');
+  startFocusTimer();
+}
+
+function startFocusTimer(){
+  if(focusLoopt) return;
+  focusLoopt = true;
+  document.getElementById('btn-focus-start').style.display='none';
+  document.getElementById('btn-focus-stop').style.display='inline-flex';
+  document.getElementById('btn-focus-pauze').style.display='inline-flex';
+  document.getElementById('timer-fase').textContent='Focusblok loopt...';
+
+  focusIv = setInterval(()=>{
+    focusRest--;
+    updateTimerUI();
+    if(focusRest<=0){
+      clearInterval(focusIv);
+      focusLoopt=false;
+      D.focus_min += focusDuur;
+      slaOp();
+      toast('Focusblok voltooid — '+focusDuur+' minuten!','ok');
+      document.getElementById('btn-focus-start').style.display='inline-flex';
+      document.getElementById('btn-focus-stop').style.display='none';
+      document.getElementById('btn-focus-pauze').style.display='none';
+      document.getElementById('timer-fase').textContent='Klaar! Neem een pauze.';
+      if(document.getElementById('gr-pauze')?.checked) triggerPauze(5);
+    }
+  },1000);
+}
+
+function stopFocusTimer(){
+  clearInterval(focusIv); focusLoopt=false;
+  focusRest=focusDuur*60; focusTot=focusDuur*60;
+  updateTimerUI();
+  document.getElementById('btn-focus-start').style.display='inline-flex';
+  document.getElementById('btn-focus-stop').style.display='none';
+  document.getElementById('btn-focus-pauze').style.display='none';
+  document.getElementById('timer-fase').textContent='Gestopt';
+}
+
+function onderbreekFocus(){
+  if(!document.getElementById('shield-confirm')?.checked){ stopFocusTimer(); return; }
+  if(!confirm('Wil je het focusblok echt onderbreken?\n\nTip: probeer nog 5 minuten.')) return;
+  stopFocusTimer();
+  toast('Onderbroken — probeer morgen een volledig blok af te ronden','wn');
+}
+
+function updateTimerUI(){
+  const m=Math.floor(focusRest/60), s=focusRest%60;
+  document.getElementById('timer-display').textContent=m+':'+(s<10?'0':'')+s;
+  const CIRCUM=490;
+  const offset=CIRCUM*(1-focusRest/focusTot);
+  document.getElementById('timer-cirkel').style.strokeDashoffset=offset;
+}
+
+/* ══ PAUZE ══ */
+function triggerPauze(standaard){
+  const overlay = document.getElementById('pauze-overlay');
+  overlay.classList.add('on');
+  D.pauzes++;
+  slaOp();
+  updateStats();
+}
+
+function startPauze(min){
+  pauzeRest = min*60;
+  document.getElementById('btn-pauze-klaar').style.display='none';
+  const iv = setInterval(()=>{
+    pauzeRest--;
+    const m=Math.floor(pauzeRest/60),s=pauzeRest%60;
+    document.getElementById('pauze-timer').textContent=m+':'+(s<10?'0':'')+s;
+    if(pauzeRest<=0){
+      clearInterval(iv);
+      document.getElementById('btn-pauze-klaar').style.display='block';
+      document.getElementById('pauze-timer').textContent='Klaar!';
+      toast('Pauze voorbij — terug aan het werk','ok');
+    }
+  },1000);
+}
+
+function sluitPauze(){
+  document.getElementById('pauze-overlay').classList.remove('on');
+}
+
+/* ══ TIJDLIJN ══ */
+function bouwTijdlijn(){
+  const c = document.getElementById('tijdlijn-container');
+  const nu = new Date();
+  const nuMinuten = nu.getHours()*60+nu.getMinutes();
+
+  // Genereer blokken op basis van handoff data
+  const blokken = [];
+  const taken = D.taken.filter(t=>!t.klaar && t.zone!=='later');
+  const start = HO ? parseInt((HO.vroegste||'09:00').split(':')[0])*60 : 540;
+
+  let cursor = start;
+  taken.forEach(t=>{
+    // Extraheer duur uit taaknaam bijv. "Taak (10 min)" of gebruik werkuren/taken als default
+    const minMatch = t.tekst.match(/\((\d+)\s*min\)/);
+    const taakMin  = minMatch ? parseInt(minMatch[1]) : Math.round((instD.werkuren||8)*60 / Math.max(taken.length,1));
+    const cappedMin = Math.min(Math.max(taakMin, 5), 120);
+    blokken.push({tijd:cursor, duur:cappedMin, type:t.zone==='prio'?'focus':'taak', naam:t.tekst});
+    cursor += cappedMin + 10; // 10 min buffer
+  });
+
+  // Vaste pauzes
+  [12*60, 15*60].forEach(p=>{
+    blokken.push({tijd:p, duur:30, type:'pauze', naam:'Pauze'});
+  });
+
+  // Render
+  c.innerHTML='';
+  const uren = Array.from({length:16},(_,i)=>i+7);
+  let nuLijnIngevoegd = false;
+
+  uren.forEach(u=>{
+    const uMin = u*60;
+    const isActief = nuMinuten>=uMin && nuMinuten<uMin+60;
+    const div = document.createElement('div');
+    div.className='tl-uur';
+
+    const blokkenDitUur = blokken.filter(b=>b.tijd>=uMin && b.tijd<uMin+60);
+
+    let blokHtml='';
+    if(!nuLijnIngevoegd && nuMinuten>=uMin && nuMinuten<uMin+60){
+      nuLijnIngevoegd=true;
+      blokHtml+=`<div class="nu-lijn"><div class="nu-dot"></div><div class="nu-streep"></div><div class="nu-tijd">${nu.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+    }
+    blokkenDitUur.forEach(b=>{
+      blokHtml+=`<div class="blok-item blok-${b.type}"><div class="blok-naam">${b.naam}</div><div class="blok-duur">${b.duur} min</div></div>`;
+    });
+
+    div.innerHTML=`
+      <div class="tl-tijd">${u}:00</div>
+      <div class="tl-lijn" style="flex:0 0 1px"><div class="tl-dot${isActief?' actief':''}"></div></div>
+      <div class="tl-blok">${blokHtml}</div>`;
+    c.appendChild(div);
+  });
+
+  // AI tip
+  const tip = document.getElementById('tl-ai-tip');
+  if(HO?.vroegste){
+    const [h] = HO.vroegste.split(':').map(Number);
+    const vrij = h*60 - (nuMinuten>0?nuMinuten:parseInt(HO.starttijd||'08')*60);
+    if(vrij>0 && vrij<90){ tip.style.display='flex'; tip.textContent=`💡 Je hebt nog ~${vrij} minuten vóór je eerste afspraak. Past één focusblok.`; }
+    else tip.style.display='none';
+  }
+}
+
+/* ══ GRENZEN ══ */
+function verversGrenzen(){
+  const lim = dagLimiet(HO?.energie);
+  document.getElementById('gr-max-taken').textContent = lim.taken;
+  document.getElementById('gr-max-uren').textContent  = lim.uren;
+  document.getElementById('gr-blok-duur').textContent = lim.blok;
+  document.getElementById('gr-energie-lbl').textContent = 'Energie: '+(HO?.energie||'onbekend');
+  document.getElementById('inst-eindtijd').value = instD.eindtijd;
+  const wu = document.getElementById('inst-werkuren');
+  if(wu){ wu.value = instD.werkuren||8; document.getElementById('inst-werkuren-lbl').textContent=(instD.werkuren||8)+' uur'; }
+  document.getElementById('gr-overtask').checked = instD.gr_overtask;
+  document.getElementById('gr-midcheck').checked = instD.gr_midcheck;
+  document.getElementById('gr-hard').checked     = instD.gr_hard;
+  updateStopMoment();
+}
+
+/* ══ MIDDAGCHECK ══ */
+function kiesMiddagEnergie(niveau){
+  const res = document.getElementById('middag-resultaat');
+  const msgs = {
+    laag:   { cls:'alert-warn', txt:'Energie is gedaald — WorkCore past je dag aan: minder taken, langere pauze, lichter werk.' },
+    zelfde: { cls:'alert-info', txt:'Energie stabiel — je kunt door op hetzelfde tempo.' },
+    hoog:   { cls:'alert-ok',   txt:'Energie nog goed — je hebt de middagdip overleefd.' },
+  };
+  const m = msgs[niveau];
+  res.className='alert '+m.cls; res.textContent=m.txt; res.style.display='flex';
+
+  if(niveau==='laag'){
+    document.getElementById('middag-aanpassing').style.display='block';
+    document.getElementById('middag-aanpas-inhoud').innerHTML=`
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">
+        • Verplaats niet-urgente taken naar Later<br>
+        • Volgende focusblok: 25 min in plaats van 45 min<br>
+        • Plan een extra 15-min pauze vóór 15:00<br>
+        • Zware cognitieve taken: uitstel naar morgen
+      </div>`;
+    toast('Dag aangepast voor lage energie','wn');
+  }
+}
+
+/* ══ AFSLUITEN ══ */
+function verversAfsluiten(){
+  updateStats();
+}
+
+function kiesStemming(niveau){
+  const msgs = {
+    slecht: { cls:'alert-warn', txt:'Dat mag. Niet elke dag is geweldig — morgen is nieuw.' },
+    matig:  { cls:'alert-info', txt:'Matige dag — kijk wat je kon afvinken. Dat telt ook.' },
+    ok:     { cls:'alert-ok',   txt:'Oke dag. Prioriteit staat afgevinkt — dat is genoeg.' },
+    goed:   { cls:'alert-ok',   txt:'Goede dag. Je hebt goed gewerkt vandaag.' },
+    top:    { cls:'alert-ok',   txt:'Sterke dag. Hoge energie goed benut — noteer wat werkte.' },
+  };
+  const el = document.getElementById('stemming-reactie');
+  const m = msgs[niveau];
+  el.className='alert '+m.cls; el.textContent=m.txt; el.style.display='flex';
+  D.stemming=niveau; slaOp();
+}
+
+let sdAantallen = 0;
+function vinkShutdown(idx, el){
+  const was = D.shutdown[idx];
+  D.shutdown[idx] = !was;
+  const box = document.getElementById('sd-'+idx);
+  box.classList.toggle('done',!was);
+  box.textContent = !was ? '✓' : '';
+  sdAantallen = D.shutdown.filter(Boolean).length;
+  const btn = document.getElementById('btn-shutdown');
+  btn.disabled = sdAantallen < 4;
+  slaOp();
+}
+
+function voltooiShutdown(){
+  D.reflectie = document.getElementById('reflectie-tekst').value;
+  D.morgen    = document.getElementById('morgen-prio').value;
+  slaOp();
+  toast('Dag afgesloten — welverdiende rust 🌙','ok');
+  setTimeout(()=>{ window.location.href='resetcore.html'; },2000);
+}
+
+/* ══ TOAST ══ */
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-c');
+  const el=document.createElement('div');
+  el.className='toast '+type; el.setAttribute('role','status');
+  el.innerHTML=`<span style="flex-shrink:0">${type==='ok'?'✓':type==='wn'?'⚠':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); el.addEventListener('animationend',()=>el.remove(),{once:true}); },3500);
+}
+
+/* ══ KLUSBOEK ══ */
+const KB_KEY = 'workcore_klusboek';
+const CAT_ICONS = {eigen:'⭐',binnen:'🏠',buiten:'🌿',klus:'🔧',admin:'📋'};
+
+function laadKlusboek(){
+  try{
+    const r = localStorage.getItem(KB_KEY);
+    return r ? JSON.parse(r) : [];
+  }catch{ return []; }
+}
+function slaKlusboekOp(data){
+  try{ localStorage.setItem(KB_KEY, JSON.stringify(data)); }
+  catch(e){ toast('Klusboek opslaan mislukt','wn'); }
+  if(typeof Core!=='undefined') Core.sync.planAutoSync('klusboek',data);
+}
+
+function voegKlusboekToe(){
+  const naam = document.getElementById('klusboek-naam').value.trim();
+  const min  = parseInt(document.getElementById('klusboek-min').value)||5;
+  const laag = document.getElementById('klusboek-laag').checked;
+  const cat  = document.getElementById('klusboek-cat').value;
+  const dag       = document.getElementById('klusboek-dag').value;
+  const herhaling = document.getElementById('klusboek-herhaling')?.value || 'week';
+  const weer      = document.getElementById('klusboek-weer')?.value || 'altijd';
+  if(!naam){ toast('Vul een naam in','wn'); return; }
+  const data = laadKlusboek();
+  data.push({ id:'kb_'+Date.now(), naam, min, laag, cat, dag: dag||null, herhaling, weer, actief:true });
+  slaKlusboekOp(data);
+  document.getElementById('klusboek-naam').value='';
+  bouwKlusboek();
+  // Ook klusjeslijst bijwerken zodat item direct zichtbaar is
+  const klIsOpen = document.getElementById('schr-klusjes').classList.contains('on');
+  if(klIsOpen) bouwKlusjesLijst();
+  toast(`"${naam}" toegevoegd ✓`,'ok');
+}
+
+function verwijderKlusboekItem(id){
+  const data = laadKlusboek().filter(k=>k.id!==id);
+  slaKlusboekOp(data);
+  bouwKlusboek();
+  const klIsOpen = document.getElementById('schr-klusjes').classList.contains('on');
+  if(klIsOpen) bouwKlusjesLijst();
+  toast('Klus verwijderd','neu');
+}
+
+function toggleKlusboekActief(id){
+  const data = laadKlusboek();
+  const item = data.find(k=>k.id===id);
+  if(item) item.actief = !item.actief;
+  slaKlusboekOp(data);
+  bouwKlusboek();
+}
+
+function bouwKlusboek(){
+  const el = document.getElementById('klusboek-lijst');
+  if(!el) return;
+  const eigen    = laadKlusboek();
+  const verborgen = laadVerborgenKlusjes();
+
+  let html = '';
+
+  // Standaard huishoudelijke taken per dag met verwijder-knop
+  html += `<div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Standaard huishoudelijk (per dag)</div>`;
+  html += `<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Verberg taken met −. Ze verdwijnen uit de klusjeslijst maar zijn hier herstelbaar.</div>`;
+  HUISHOUDEN.forEach(dag=>{
+    html += `<div style="margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px">${dag.label}</div>
+      ${dag.taken.map(t=>{
+        const isVerborgen = verborgen.has(t.id);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <span style="flex:1;font-size:12px${isVerborgen?';opacity:.35;text-decoration:line-through':''}">${t.tekst}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${t.min}m</span>
+          ${isVerborgen
+            ? `<button onclick="herstelKlus('${t.id}')" style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--green-b);background:var(--green-dim);color:var(--green);cursor:pointer">↺</button>`
+            : `<button onclick="verbergKlus('${t.id}')" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">−</button>`
+          }
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+
+  // Eigen klusboek
+  if(eigen.length){
+    html += `<div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:16px 0 10px">Eigen toevoegingen</div>`;
+    const catGroepen = {};
+    eigen.forEach(k=>{
+      const c = k.cat||'eigen';
+      if(!catGroepen[c]) catGroepen[c]=[];
+      catGroepen[c].push(k);
+    });
+    Object.entries(catGroepen).forEach(([cat,items])=>{
+      html += `<div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px">${CAT_ICONS[cat]||'⭐'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}</div>
+        ${items.map(k=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span style="flex:1;font-size:12px">${k.naam}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${k.min}m</span>
+            ${k.herhaling&&k.herhaling!=='week'?`<span style="font-family:var(--mono);font-size:8px;color:var(--muted)">↻${k.herhaling}</span>`:''}
+            ${k.weer&&k.weer!=='altijd'?`<span style="font-size:9px" title="${k.weer==='droog'?'Alleen droog':'Binnen'}">${k.weer==='droog'?'☀':'🏠'}</span>`:''}
+            <button onclick="verwijderKlusboekItem('${k.id}')"
+                    style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid rgba(240,71,71,.2);background:var(--red-dim);color:var(--red);cursor:pointer">✕</button>
+          </div>`).join('')}
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function herstelKlus(id){
+  const s = laadVerborgenKlusjes(); s.delete(id); slaVerborgenOp(s);
+  bouwKlusboek(); bouwKlusjesLijst();
+  toast('Taak hersteld','ok');
+}
+
+/* ══ KLUSJES ══ */
+/* ══ HUISHOUDELIJK WEEKSCHEMA ══
+   Groepeerde taken per dag, wekelijks herhalend.
+   Gebruiker kan standaard taken verwijderen via KB_HIDE_KEY.
+   Kan ook eigen taken toevoegen via het klusboek.
+═══════════════════════════════════════════════════ */
+const KB_HIDE_KEY = 'workcore_klusjes_hide'; // set van verborgen standaard-ids
+
+function laadVerborgenKlusjes(){
+  try{ return new Set(JSON.parse(localStorage.getItem(KB_HIDE_KEY)||'[]')); }
+  catch{ return new Set(); }
+}
+function slaVerborgenOp(set){
+  localStorage.setItem(KB_HIDE_KEY, JSON.stringify([...set]));
+}
+function verbergKlus(id){
+  const s = laadVerborgenKlusjes(); s.add(id); slaVerborgenOp(s);
+  bouwKlusjesLijst();
+  toast('Taak verborgen — herstelbaar via klusboek','neu');
+}
+function herstelAlleKlusjes(){
+  localStorage.removeItem(KB_HIDE_KEY);
+  bouwKlusjesLijst();
+  toast('Standaard taken hersteld','ok');
+}
+
+const HUISHOUDEN = [
+  {
+    dag: 'ma', label: 'Maandag',
+    taken: [
+      { id:'h_ma1', tekst:'Was draaien + ophangen',      min:10, laag:false },
+      { id:'h_ma2', tekst:'Slaapkamer opruimen + bed',   min:8,  laag:true  },
+      { id:'h_ma3', tekst:'Planten water geven',         min:4,  laag:true  },
+    ]
+  },
+  {
+    dag: 'di', label: 'Dinsdag',
+    taken: [
+      { id:'h_di1', tekst:'Post + mail verwerken',       min:8,  laag:false },
+      { id:'h_di2', tekst:'Woonkamer snel opruimen',     min:7,  laag:true  },
+      { id:'h_di3', tekst:'Prullenbakken legen',         min:3,  laag:true  },
+    ]
+  },
+  {
+    dag: 'wo', label: 'Woensdag',
+    taken: [
+      { id:'h_wo1', tekst:'Boodschappenlijst + inkopen', min:10, laag:false },
+      { id:'h_wo2', tekst:'Badkamer schoonmaken',        min:12, laag:false },
+      { id:'h_wo3', tekst:'Koelkast checken',            min:4,  laag:true  },
+    ]
+  },
+  {
+    dag: 'do', label: 'Donderdag',
+    taken: [
+      { id:'h_do1', tekst:'Was drogen + opvouwen',       min:10, laag:false },
+      { id:'h_do2', tekst:'Stofzuigen (woonkamer + keuken)', min:12, laag:false },
+      { id:'h_do3', tekst:'Vaatwasser + aanrecht',       min:5,  laag:true  },
+    ]
+  },
+  {
+    dag: 'vr', label: 'Vrijdag',
+    taken: [
+      { id:'h_vr1', tekst:'Recycling naar buiten',       min:5,  laag:true  },
+      { id:'h_vr2', tekst:'Agenda volgende week checken',min:5,  laag:true  },
+      { id:'h_vr3', tekst:'Keuken schoonmaken (vloer + fornuis)', min:10, laag:false },
+    ]
+  },
+  {
+    dag: 'za', label: 'Zaterdag',
+    taken: [
+      { id:'h_za1', tekst:'Beddengoed verschonen',       min:10, laag:false },
+      { id:'h_za2', tekst:'Grondig schoonmaken (alles)', min:30, laag:false },
+      { id:'h_za3', tekst:'Ramen lappen (optioneel)',    min:15, laag:false },
+    ]
+  },
+  {
+    dag: 'zo', label: 'Zondag',
+    taken: [
+      { id:'h_zo1', tekst:'Inkopen voor de week',        min:15, laag:false },
+      { id:'h_zo2', tekst:'Meal prep (optioneel)',       min:30, laag:false },
+      { id:'h_zo3', tekst:'Huis doorlopen + kleine klusjes', min:10, laag:true },
+    ]
+  },
+];
+
+// Klusjes = eigen werkgerelateerde klussen, GEEN huishoudelijk
+const KLUSJES = [
+  {
+    cat: '🔧 Reparatie & onderhoud',
+    dag: ['za','zo'],
+    taken: [
+      { id:'rp1', tekst:'Kapotte lamp vervangen',        min:5,  laag:true  },
+      { id:'rp2', tekst:'Klein reparatiekarwei',         min:10, laag:false },
+      { id:'rp3', tekst:'Apparaat checken / resetten',   min:5,  laag:true  },
+      { id:'rp4', tekst:'Iets bestellen dat op is',      min:5,  laag:true  },
+    ]
+  },
+  {
+    cat: '🌿 Tuin & buiten',
+    dag: ['za','zo'],
+    taken: [
+      { id:'tu1', tekst:'Planten snoeien of verpotten',  min:10, laag:false },
+      { id:'tu2', tekst:'Tuin opruimen',                 min:15, laag:false },
+      { id:'tu3', tekst:'Terras/balkon vegen',           min:8,  laag:true  },
+      { id:'tu4', tekst:'Buiten water geven',            min:5,  laag:true  },
+    ]
+  },
+  {
+    cat: '📋 Administratie',
+    dag: ['di','vr'],
+    taken: [
+      { id:'ad1', tekst:'Factuur of brief verwerken',    min:5,  laag:false },
+      { id:'ad2', tekst:'1 abonnement controleren',      min:5,  laag:false },
+      { id:'ad3', tekst:'Notities archiveren',           min:5,  laag:true  },
+      { id:'ad4', tekst:'Back-up van telefoon/laptop',   min:3,  laag:true  },
+    ]
+  },
+];
+
+let klusjesFilter = 'alle';
+let klusjesVandaag = []; // ids die vandaag zijn toegevoegd
+
+const DAGEN_MAP = {0:'zo',1:'ma',2:'di',3:'wo',4:'do',5:'vr',6:'za'};
+
+function bouwDagSuggesties(){
+  const vandaag = DAGEN_MAP[new Date().getDay()];
+  const el  = document.getElementById('klus-dag-items');
+  const lbl = document.getElementById('klus-dag-lbl');
+  const dagNamen = {ma:'Maandag',di:'Dinsdag',wo:'Woensdag',do:'Donderdag',vr:'Vrijdag',za:'Zaterdag',zo:'Zondag'};
+  if(lbl) lbl.textContent = `${dagNamen[vandaag]||'Vandaag'} — aanbevolen klusjes`;
+  if(!el) return;
+
+  // Verzamel taken voor vandaag: dag-specifiek + wekelijks voor deze dag
+  const suggesties = [];
+  KLUSJES.forEach(cat=>{
+    // Categorieën die voor vandaag aangeraden zijn
+    if(cat.dag && cat.dag.includes(vandaag)){
+      // Max 2 taken per categorie als suggestie — wekelijkse taken hebben prioriteit
+      const wekelijks = cat.taken.filter(t=>t.wekelijks===vandaag);
+      const overig    = cat.taken.filter(t=>!t.wekelijks).slice(0,2);
+      const keuze     = [...wekelijks, ...overig].slice(0,3);
+      keuze.forEach(t=>suggesties.push({...t, catLabel:cat.cat}));
+    }
+  });
+
+  if(!suggesties.length){ el.innerHTML='<span style="font-size:12px;color:var(--muted)">Geen specifieke suggesties voor vandaag.</span>'; return; }
+
+  el.innerHTML = suggesties.map(t=>{
+    const al = klusjesVandaag.includes(t.id) || D.taken.some(dt=>dt.tekst===t.tekst+'('+t.min+' min)'||dt.tekst===t.tekst+` (${t.min} min)`);
+    return `<div style="display:flex;align-items:center;gap:6px;padding:5px 9px;background:${al?'var(--green-dim)':'var(--bg-3)'};border:1px solid ${al?'var(--green-b)':'var(--border-2)'};border-radius:var(--r);cursor:${al?'default':'pointer'};transition:var(--tx)"
+      onclick="${al?'':'voegKlusToe(\''+t.id+'\',\''+t.tekst.replace(/'/g,"\\'")+'\','+t.min+')'}" id="klus-sug-${t.id}">
+      <span style="font-size:12px;color:${al?'var(--green)':'var(--txt)'}">${t.tekst}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">${t.min}m</span>
+      <span style="font-size:11px">${al?'✓':'+'}</span>
+    </div>`;
+  }).join('');
+}
+
+function bouwHuishoudenBlok(){
+  const el = document.getElementById('huishouden-blok');
+  if(!el) return;
+  const vandaag = DAGEN_MAP[new Date().getDay()];
+  const verborgen = laadVerborgenKlusjes();
+  // Lees weerstatus van Dashboard schema
+  const schema = JSON.parse(localStorage.getItem('focus_schema')||'{}');
+  const regen  = schema.regen || false;
+  const vandaagDag = DAGEN_MAP[new Date().getDay()];
+  const isWerkdag  = (schema.rooster||{})[vandaagDag] === 'werk';
+  const eigen  = laadKlusboek();
+
+  el.innerHTML = HUISHOUDEN.map(dag=>{
+    const isVandaag = dag.dag === vandaag;
+    const zichtbaar = dag.taken.filter(t=>!verborgen.has(t.id));
+    const eigenVoorDag = eigen.filter(k=>!k.dag||k.dag===dag.dag);
+
+    return `<div style="margin-bottom:12px;background:var(--bg-2);border:1px solid ${isVandaag?'var(--border-2)':'var(--border)'};border-radius:var(--rl);overflow:hidden${isVandaag?';border-left:3px solid var(--blue)':''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;${isVandaag?'color:var(--blue)':''}">${dag.label}${isVandaag?' <span style="font-family:var(--mono);font-size:9px;background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.3);padding:1px 6px;border-radius:3px">vandaag</span>':''}</div>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${zichtbaar.length+eigenVoorDag.length} taken</span>
+      </div>
+      <div style="padding:4px 0">
+        ${zichtbaar.map(t=>{
+          const al = D.taken.some(dt=>dt.tekst===t.tekst+` (${t.min} min)`);
+          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 14px">
+            <span style="flex:1;font-size:13px${al?';color:var(--muted);text-decoration:line-through':''}">${t.tekst}</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${t.min}m</span>
+            ${t.laag?'<span title="Lage energie ok" style="font-size:10px">😔</span>':''}
+            <button onclick="voegKlusToe('${t.id}','${t.tekst.replace(/'/g,"\\'")}',${t.min})"
+                    style="font-size:11px;padding:3px 9px;border-radius:4px;border:1px solid ${al?'var(--green-b)':'var(--border-2)'};background:${al?'var(--green-dim)':'var(--bg-3)'};color:${al?'var(--green)':'var(--muted)'};cursor:pointer">${al?'✓':'+'}</button>
+            <button onclick="verbergKlus('${t.id}')"
+                    title="Verbergen"
+                    style="font-size:11px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--faint);cursor:pointer">−</button>
+          </div>`;
+        }).join('')}
+        ${eigenVoorDag.map(k=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 14px">
+          <span style="flex:1;font-size:13px">⭐ ${k.naam}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${k.min}m</span>
+          <button onclick="voegKlusToe('${k.id}','${k.naam.replace(/'/g,"\\'")}',${k.min})"
+                  style="font-size:11px;padding:3px 9px;border-radius:4px;border:1px solid var(--border-2);background:var(--bg-3);color:var(--muted);cursor:pointer">+</button>
+          <button onclick="verwijderKlusboekItem('${k.id}')"
+                  style="font-size:11px;padding:3px 7px;border-radius:4px;border:1px solid rgba(240,71,71,.2);background:var(--red-dim);color:var(--red);cursor:pointer">✕</button>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('') +
+  (verborgen.size ? `<button onclick="herstelAlleKlusjes()" class="btn btn-g btn-sm" style="margin-top:4px;font-size:11px">↺ Verborgen taken herstellen (${verborgen.size})</button>` : '');
+}
+
+function bouwKlusjesLijst(){
+  bouwHuishoudenBlok();
+  const el = document.getElementById('klusjes-lijst');
+  const verborgen = laadVerborgenKlusjes();
+
+  const gefilterd = KLUSJES.map(cat => ({
+    ...cat,
+    taken: cat.taken.filter(t => {
+      if(verborgen.has(t.id)) return false;
+      if(klusjesFilter === 'snel')  return t.min < 5;
+      if(klusjesFilter === 'kort')  return t.min >= 5 && t.min <= 10;
+      if(klusjesFilter === 'laag')  return t.laag;
+      return true;
+    })
+  })).filter(cat => cat.taken.length > 0);
+
+  // Weerstatus lezen
+  const wcSchema = JSON.parse(localStorage.getItem('focus_schema')||'{}');
+  const wcRegen  = wcSchema.regen || false;
+
+  el.innerHTML = gefilterd.map(cat => `
+    <div class="klus-cat-lbl">${cat.cat}</div>
+    ${cat.taken.map(t => {
+      const al = klusjesVandaag.includes(t.id) || D.taken.some(dt=>dt.tekst===t.tekst+` (${t.min} min)`);
+      return `<div class="klus-rij ${al?'toegevoegd':''}" id="klus-rij-${t.id}">
+        <span class="klus-naam">${t.tekst}</span>
+        <span class="klus-duur">${t.min} min</span>
+        ${t.laag ? '<span class="klus-laag-badge">😔 ok</span>' : ''}
+        <button class="klus-add-btn ${al?'done':''}" id="klus-btn-${t.id}"
+                onclick="${al?'':'voegKlusToe(\''+t.id+'\',\''+t.tekst.replace(/'/g,"\\'")+'\','+t.min+')'}"
+                title="${al?'Al gepland':'Toevoegen aan vandaag'}">${al ? '✓' : '+'}</button>
+        <button onclick="verbergKlus('${t.id}')" title="Verbergen"
+                style="font-size:11px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--faint);cursor:pointer;flex-shrink:0">−</button>
+      </div>`;
+    }).join('')}
+  `).join('');
+
+  bouwKlusjesVandaag();
+  bouwDagSuggesties();
+
+  // Eigen klusboek items tonen onderaan klusjeslijst
+  const eigenKlusjes = laadKlusboek().filter(function(k){
+    const alGedaan = D.taken.some(function(dt){ return dt.tekst === k.naam + ' (' + k.min + ' min)'; });
+    if(k.herhaling === 'eenmalig' && alGedaan) return false;
+    if(k.weer === 'droog' && wcRegen) return false;
+    if(klusjesFilter === 'laag' && !k.laag) return false;
+    if(klusjesFilter === 'snel' && k.min >= 5) return false;
+    if(klusjesFilter === 'kort' && (k.min < 5 || k.min > 10)) return false;
+    return true;
+  });
+  if(eigenKlusjes.length){
+    var eigenRows = eigenKlusjes.map(function(k){
+      var al = D.taken.some(function(dt){ return dt.tekst === k.naam + ' (' + k.min + ' min)'; });
+      var regenBlok = k.weer === 'droog' && wcRegen;
+      var herhaling = (k.herhaling && k.herhaling !== 'week') ? ' [' + k.herhaling + ']' : '';
+      var regenPfx  = regenBlok ? '\u{1F327}\uFE0F ' : '';
+      var klasse    = 'klus-rij' + (al ? ' toegevoegd' : '');
+      var titleTxt  = regenBlok ? 'Buiten: regen vandaag' : (al ? 'Al gepland' : 'Toevoegen');
+
+      var addClick = '';
+      if(!al && !regenBlok){
+        var escapedNaam = k.naam.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        addClick = "voegKlusToe('" + k.id + "','" + escapedNaam + "'," + k.min + ")";
+      }
+
+      var delClick = "verwijderKlusboekItem('" + k.id + "')";
+
+      return '<div class="' + klasse + '">'
+           + '<span class="klus-naam">' + regenPfx + k.naam + herhaling + '</span>'
+           + '<span class="klus-duur">' + k.min + ' min</span>'
+           + (k.laag ? '<span class="klus-laag-badge">\u{1F615} ok</span>' : '')
+           + '<button class="klus-add-btn ' + (al ? 'done' : '') + '"'
+           + ' onclick="' + addClick + '"'
+           + ' title="' + titleTxt + '">' + (al ? '\u2713' : '+') + '</button>'
+           + '<button onclick="' + delClick + '"'
+           + ' style="font-size:11px;padding:3px 7px;border-radius:4px;border:1px solid rgba(240,71,71,.2);background:var(--red-dim);color:var(--red);cursor:pointer;flex-shrink:0">\u2715</button>'
+           + '</div>';
+    }).join('');
+    el.innerHTML += '<div class="klus-cat-lbl">\u2B50 Eigen klusboek</div>' + eigenRows;
+  }
+}
+function voegKlusToe(id, tekst, min){
+  // Voeg toe aan D.taken als WorkCore taak
+  const nieuw = {
+    id:    'klus_'+id+'_'+Date.now(),
+    tekst: tekst + ` (${min} min)`,
+    zone:  'moet',
+    klaar: false,
+    bron:  'klusjes',
+  };
+  D.taken.push(nieuw);
+  klusjesVandaag.push(id);
+  slaOp();
+  bouwKlusjesLijst();
+  renderTakenDashboard();
+  updateLimietBalk();
+  toast(`"${tekst}" toegevoegd aan vandaag ✓`, 'ok');
+}
+
+function bouwKlusjesVandaag(){
+  const klussen = D.taken.filter(t=>t.bron==='klusjes');
+  const blok = document.getElementById('klusjes-vandaag-blok');
+  const el   = document.getElementById('klusjes-vandaag');
+  if(!klussen.length){ if(blok) blok.style.display='none'; return; }
+  if(blok) blok.style.display='block';
+  el.innerHTML = klussen.map(t => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${t.klaar?'var(--green-dim)':'var(--bg-el)'};border-radius:var(--r);margin-bottom:5px;border:1px solid ${t.klaar?'var(--green-b)':'var(--bdr)'}">
+      <span style="font-size:12px;flex:1;${t.klaar?'text-decoration:line-through;opacity:.5':''}">${t.tekst}</span>
+      ${t.klaar
+        ? '<span style="font-size:11px;color:var(--green)">✓</span>'
+        : `<button onclick="vinkKlus('${t.id}')" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--bdr-md);background:transparent;color:var(--muted);cursor:pointer">Klaar</button>`}
+    </div>`).join('');
+}
+
+function vinkKlus(id){
+  const t = D.taken.find(t=>t.id===id);
+  if(t){ t.klaar=true; slaOp(); bouwKlusjesLijst(); renderTakenDashboard(); updateLimietBalk(); }
+}
+
+function filterKlusjes(f){
+  klusjesFilter = f;
+  document.querySelectorAll('.klus-filter').forEach(b=>b.classList.remove('on'));
+  const btn = document.getElementById('kf-'+f);
+  if(btn) btn.classList.add('on');
+  bouwKlusjesLijst();
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  laadData();
+  HO = laadHandoff();
+
+  // Klok
+  const tick=()=>document.getElementById('wc-tijd').textContent=new Date().toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+  tick(); setInterval(tick,30000);
+
+  // Groet
+  const uur=new Date().getHours();
+  document.getElementById('wc-groet').textContent = uur<12?'Goedemorgen':uur<18?'Goedemiddag':'Goedenavond';
+
+  // Focus duur preset
+  stelFocusDuur(25);
+
+  // Herstel het scherm waar de gebruiker was
+  ga(D.actief_scherm || 'dashboard');
+
+  // Stopmoment checker elke minuut
+  setInterval(updateStopMoment, 60000);
+
+  // Middagcheck reminder (12:00–13:00)
+  const nuU = new Date().getHours();
+  if(nuU===12 && instD.gr_midcheck){
+    setTimeout(()=>toast('🔋 Middagcheck — hoe is je energie nu?','wn'), 3000);
+  }
+});
+
+function exporteerData(){
+  try{
+    const data = localStorage.getItem('workcore_dag');
+    if(!data){ if(typeof toast==='function') toast('Geen data om te exporteren','wn'); return; }
+    const blob = new Blob([JSON.stringify(JSON.parse(data), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'WorkCore_export_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof toast==='function') toast('WorkCore data geëxporteerd ✓','ok');
+  }catch(e){
+    if(typeof toast==='function') toast('Export mislukt','wn');
+  }
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

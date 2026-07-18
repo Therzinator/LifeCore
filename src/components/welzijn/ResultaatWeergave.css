@@ -1,0 +1,30 @@
+.rw-lijst {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.rw-item {
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent-mid);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.rw-label {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.rw-momentopname {
+  font-size: var(--font-size-sm);
+  color: var(--txt);
+}
+
+.rw-trend {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+  margin-top: 2px;
+}

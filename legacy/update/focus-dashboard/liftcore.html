@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LiftCore</title>
+<link rel="stylesheet" href="core.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ──────────────────────────────────────────── */
+:root {
+  --bg:        #0A0A0B;
+  --bg-2:      #111113;
+  --bg-3:      #18181C;
+  --bg-4:      #1E1E24;
+  --bg-5:      #25252D;
+  --border:    rgba(255,255,255,.07);
+  --border-2:  rgba(255,255,255,.12);
+  --border-3:  rgba(255,255,255,.18);
+
+  --lift:      #C8FF47;   /* LiftCore groen-geel */
+  --lift-dim:  rgba(200,255,71,.1);
+  --lift-mid:  rgba(200,255,71,.25);
+
+  --run:       #47E8FF;
+  --run-dim:   rgba(71,232,255,.1);
+
+  --amber:     #FFB547;
+  --amber-dim: rgba(255,181,71,.12);
+  --red:       #FF5757;
+  --red-dim:   rgba(255,87,87,.12);
+  --blue:      #6E8EFF;
+  --blue-dim:  rgba(110,142,255,.12);
+  --muted:     rgba(255,255,255,.35);
+  --faint:     rgba(255,255,255,.14);
+  --txt:       #F0F0F4;
+
+  --mono: 'DM Mono', monospace;
+  --head: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+  --r:  8px;
+  --rl: 14px;
+  --rx: 20px;
+  --tx: all .15s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Topbar ──────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,11,.9);
+  backdrop-filter: blur(16px);
+  z-index: 40;
+}
+.logo em { color: var(--lift); font-style: normal; }
+.topbar-nav { display: flex; gap: 3px; }
+.nav-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  transition: var(--tx);
+  letter-spacing: .03em;
+}
+.nav-chip:hover { border-color: var(--border-2); color: var(--txt); }
+.nav-chip.cur { border-color: rgba(200,255,71,.35); color: var(--lift); background: var(--lift-dim); }
+.prog-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: var(--lift-dim);
+  border: 1px solid rgba(200,255,71,.25);
+  color: var(--lift);
+  letter-spacing: .03em;
+}
+
+/* ── Layout ──────────────────────────────────────────── */
+:root { --topbar-h: 88px; } /* logo 72px + 2×8px padding */
+.layout {
+  display: grid;
+  grid-template-columns: 192px 1fr;
+  min-height: calc(100vh - var(--topbar-h));
+}
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+  background: var(--bg);
+}
+.sb-section {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--faint);
+  padding: 8px 10px 4px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.sb-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: var(--tx);
+  font-size: 13px;
+  color: var(--muted);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--body);
+}
+.sb-btn:hover { background: var(--bg-3); color: var(--txt); }
+.sb-btn.on {
+  background: var(--lift-dim);
+  color: var(--lift);
+  border: 1px solid rgba(200,255,71,.2);
+}
+.sb-icon { font-size: 14px; flex-shrink: 0; }
+.sb-sep { height: 1px; background: var(--border); margin: 6px 10px; }
+.main { padding: 28px 32px; max-width: 900px; }
+
+/* ── Screens ──────────────────────────────────────────── */
+.scr { display: none; }
+.scr.on { display: block; animation: fadeIn .18s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Page header ──────────────────────────────────────── */
+/* ── Syne font: grote ascender vereist extra ruimte boven de tekst ── */
+[style*="font-family:var(--head)"],
+[style*="font-family: var(--head)"],
+.ph-title, .oef-naam, .prof-title {
+  padding-top: 0.15em;    /* ruimte voor ascenders (G, H, T etc.) */
+  padding-bottom: 0.1em;  /* ruimte voor descenders (g, p, y etc.) */
+  overflow: visible;
+  display: block;
+}
+/* flex-elementen kunnen geen block zijn — override terug naar flex */
+.oef-naam { display: flex; }
+
+.ph { margin-bottom: 24px; padding-top: 4px; overflow: visible; }
+.ph-over {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.ph-title {
+  font-family: var(--head);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  overflow: visible;
+}
+.ph-sub { font-size: 13px; color: var(--muted); font-weight: 300; line-height: 1.5; }
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+.card-lift { border-left: 3px solid var(--lift); }
+.card-amber { border-left: 3px solid var(--amber); }
+.card-run { border-left: 3px solid var(--run); }
+.card-red { border-left: 3px solid var(--red); }
+.clabel {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.clabel::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Grid ──────────────────────────────────────────── */
+.g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 10px; }
+.g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px; }
+.g4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 9px; }
+.g5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px,1fr)); gap: 8px; }
+
+/* ── Metric ──────────────────────────────────────────── */
+.metric {
+  background: var(--bg-3);
+  border-radius: var(--r);
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+}
+.ml { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 5px; letter-spacing: .04em; }
+.mv {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  overflow: visible;
+  color: var(--txt);
+}
+.mu { font-size: 12px; color: var(--muted); }
+.ms { font-size: 11px; color: var(--faint); margin-top: 3px; }
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: var(--r);
+  cursor: pointer;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 17px;
+  transition: var(--tx);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-lift { background: var(--lift); color: #000; font-weight: 600; }
+.btn-lift:hover:not(:disabled) { background: #d8ff60; transform: translateY(-1px); }
+.btn-ghost { background: var(--bg-3); border: 1px solid var(--border-2); color: var(--txt); }
+.btn-ghost:hover:not(:disabled) { background: var(--bg-4); border-color: var(--border-3); }
+.btn-ok { background: rgba(200,255,71,.15); border: 1px solid rgba(200,255,71,.3); color: var(--lift); }
+.btn-ok:hover:not(:disabled) { background: rgba(200,255,71,.22); }
+.btn-warn { background: var(--amber-dim); border: 1px solid rgba(255,181,71,.25); color: var(--amber); }
+.btn-danger { background: var(--red-dim); border: 1px solid rgba(255,87,87,.3); color: var(--red); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 12px 24px; font-size: 15px; border-radius: var(--rl); }
+.btn-full { width: 100%; }
+
+/* ── Progress bar ──────────────────────────────────────── */
+.pbar-wrap { height: 4px; background: var(--bg-4); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+.pbar-fill { height: 100%; background: var(--lift); border-radius: 2px; transition: width .4s ease; }
+
+/* ── Warming-up blok ──────────────────────────────────── */
+.warmup {
+  background: linear-gradient(135deg, rgba(255,181,71,.06), rgba(255,181,71,.03));
+  border: 1px solid rgba(255,181,71,.2);
+  border-radius: var(--rl);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.wu-head {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--amber);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.wu-head::after { content: ''; flex: 1; height: 1px; background: rgba(255,181,71,.15); }
+.wu-stap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,181,71,.08);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.wu-stap:last-child { border: none; }
+.wu-stap:hover { opacity: .8; }
+.wu-nr {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--amber);
+  width: 20px;
+  flex-shrink: 0;
+  letter-spacing: .04em;
+}
+.wu-naam { flex: 1; font-size: 13px; }
+.wu-detail { font-size: 11px; color: var(--muted); }
+.wu-check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,181,71,.35);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--tx);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.wu-check.done { background: var(--amber); border-color: var(--amber); color: #000; }
+
+/* ── Oefening blok ──────────────────────────────────────── */
+.oef-blok { margin-bottom: 12px; }
+.oef-header { margin-bottom: 10px; }
+.oef-naam {
+  font-family: var(--head);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+.muscle-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+}
+.mt-benen { background: rgba(200,255,71,.12); color: var(--lift); border: 1px solid rgba(200,255,71,.2); }
+.mt-borst { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(110,142,255,.2); }
+.mt-rug   { background: var(--run-dim); color: var(--run); border: 1px solid rgba(71,232,255,.2); }
+.mt-schouder { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,181,71,.2); }
+.mt-deadlift { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,87,87,.2); }
+.oef-sub {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pr-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(200,255,71,.15);
+  border: 1px solid rgba(200,255,71,.3);
+  color: var(--lift);
+  letter-spacing: .06em;
+}
+
+/* ── Sets tabel ──────────────────────────────────────────── */
+.sets-tbl { width: 100%; border-collapse: collapse; }
+.sets-tbl th {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--faint);
+  text-align: left;
+  padding: 4px 8px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.sets-tbl td { padding: 5px 8px; border-top: 1px solid var(--border); }
+.set-rij { transition: var(--tx); }
+.set-rij.done { opacity: .45; }
+.gew-ctrl { display: flex; align-items: center; gap: 5px; }
+.gew-btn {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border-2);
+  background: var(--bg-4);
+  color: var(--txt);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: var(--tx);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.gew-btn:hover { background: var(--bg-5); }
+.gew-val { font-family: var(--mono); font-size: 15px; font-weight: 500; min-width: 36px; text-align: center; }
+.set-check {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--tx);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+.set-check:hover { border-color: var(--lift); }
+.set-check.done { background: var(--lift); border-color: var(--lift); color: #000; font-weight: 700; }
+
+/* Opbouw rijen */
+.opbouw-rij {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-top: 1px dashed rgba(255,255,255,.04);
+  cursor: pointer;
+  transition: var(--tx);
+}
+.opbouw-rij:hover { background: var(--bg-3); }
+.opbouw-rij.done-ob { opacity: .35; text-decoration: line-through; }
+.ob-label { font-family: var(--mono); font-size: 9px; color: var(--amber); width: 48px; flex-shrink: 0; letter-spacing: .04em; }
+.ob-gew { font-family: var(--mono); font-size: 13px; font-weight: 500; width: 60px; }
+.ob-reps { font-size: 11px; color: var(--muted); flex: 1; }
+.ob-check {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,181,71,.35);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--tx);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ob-check.done { background: var(--amber); border-color: var(--amber); color: #000; }
+
+/* ── Rusttimer ──────────────────────────────────────────── */
+.timer-box {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--rx);
+  padding: 16px 20px;
+  min-width: 196px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(200,255,71,.06);
+  display: none;
+}
+.timer-box.on { display: block; animation: slideUp .2s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.t-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+.t-val { font-family: var(--mono); font-size: 38px; font-weight: 500; letter-spacing: -.03em; line-height: 1.2; overflow: visible; margin-bottom: 10px; }
+.t-track { height: 3px; background: var(--bg-4); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.t-fill { height: 100%; background: var(--lift); border-radius: 2px; transition: width .9s linear; }
+.t-acts { display: flex; gap: 6px; }
+
+/* ── Progressie chart ──────────────────────────────────── */
+.pchart { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+.pbar { flex: 1; border-radius: 3px 3px 0 0; background: var(--bg-5); cursor: pointer; transition: opacity .15s; min-width: 0; }
+.pbar:hover { opacity: .8; }
+.pbar.lift-col { background: var(--lift); }
+.pbar.pr-col { background: var(--lift); box-shadow: 0 0 8px rgba(200,255,71,.4); }
+.pchart-labels { display: flex; gap: 4px; margin-top: 5px; }
+.pc-lbl { flex: 1; font-family: var(--mono); font-size: 9px; color: var(--faint); text-align: center; overflow: hidden; white-space: nowrap; }
+
+/* ── Startprofiel ──────────────────────────────────────── */
+.prof-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--rl);
+  cursor: pointer;
+  transition: var(--tx);
+  min-width: 120px;
+}
+.prof-card:hover { border-color: var(--border-2); }
+.prof-card.sel { border-color: rgba(200,255,71,.4); background: var(--lift-dim); }
+.prof-icon { font-size: 22px; }
+.prof-title { font-family: var(--head); font-size: 15px; font-weight: 700; line-height: 1.3; overflow: visible; }
+.prof-sub { font-size: 11px; color: var(--muted); line-height: 1.5; font-weight: 300; }
+.prof-card.sel .prof-title { color: var(--lift); }
+
+/* ── Extra oefeningen ──────────────────────────────────── */
+.extra-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.extra-item:last-child { border: none; }
+.ei-info { flex: 1; }
+.ei-naam { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.ei-spier { font-size: 11px; color: var(--muted); }
+.ei-equip {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(200,255,71,.08);
+  border: 1px solid rgba(200,255,71,.15);
+  color: rgba(200,255,71,.7);
+  letter-spacing: .04em;
+  margin-top: 3px;
+  display: inline-block;
+}
+
+/* ── Toggle / schakelaar ──────────────────────────────── */
+.sw { position: relative; width: 32px; height: 18px; flex-shrink: 0; }
+.sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+.sw-t { position: absolute; inset: 0; background: var(--bg-5); border: 1px solid var(--border-2); border-radius: 9px; transition: var(--tx); cursor: pointer; }
+.sw input:checked + .sw-t { background: var(--lift); border-color: var(--lift); }
+.sw-k { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: var(--muted); border-radius: 50%; transition: var(--tx); pointer-events: none; }
+.sw input:checked ~ .sw-k { transform: translateX(14px); background: #000; }
+
+/* ── WeekGrid ──────────────────────────────────────────── */
+.week-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 7px; }
+.dag { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dag-n { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .04em; }
+.dag-dot {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  gap: 1px;
+}
+.dag-dot.lift   { background: var(--bg-3); border-color: var(--border-2); }
+.dag-dot.klaar  { background: var(--bg-3); border-color: var(--border-2); }
+.dag-dot.cardio { background: var(--bg-3); border-color: var(--border-2); }
+.dag-dot.werk   { background: var(--bg-3); border-color: var(--border);   }
+.dag-dot.vandaag{ border: 2px solid var(--txt) !important; }
+
+/* ── Tabs ──────────────────────────────────────────────── */
+.tabs { display: flex; gap: 2px; background: var(--bg-3); border-radius: var(--r); padding: 3px; margin-bottom: 16px; width: fit-content; }
+.tab-btn {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: var(--tx);
+  font-family: var(--body);
+}
+.tab-btn.on { background: var(--bg-2); color: var(--txt); }
+
+/* ── Form ──────────────────────────────────────────────── */
+.f-grp { margin-bottom: 13px; }
+.f-lbl { display: block; font-family: var(--mono); font-size: 9px; color: var(--muted); margin-bottom: 6px; letter-spacing: .08em; text-transform: uppercase; }
+.f-input {
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  color: var(--txt);
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 13px;
+  outline: none;
+  transition: var(--tx);
+  width: 100%;
+  overflow: visible;
+}
+.f-input:focus { border-color: rgba(200,255,71,.4); box-shadow: 0 0 0 3px rgba(200,255,71,.06); }
+select.f-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+/* ── Alert / info ──────────────────────────────────────── */
+.alert { display: flex; align-items: flex-start; gap: 9px; padding: 10px 13px; border-radius: var(--r); font-size: 12px; margin-bottom: 11px; line-height: 1.55; }
+.a-lift { background: var(--lift-dim); border: 1px solid rgba(200,255,71,.2); color: rgba(200,255,71,.9); }
+.a-amber { background: var(--amber-dim); border: 1px solid rgba(255,181,71,.2); color: var(--amber); }
+.a-run { background: var(--run-dim); border: 1px solid rgba(71,232,255,.2); color: var(--run); }
+.a-red { background: var(--red-dim); border: 1px solid rgba(255,87,87,.2); color: var(--red); }
+
+/* ── CardioCore sync slider ──────────────────────────────── */
+input[type=range] { width: 100%; accent-color: var(--run); }
+
+/* ── Toast ──────────────────────────────────────────────── */
+.toast-wrap { position: fixed; top: calc(var(--topbar-h) + 12px); right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: auto;
+  min-width: 200px;
+  max-width: 320px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  animation: tin .22s ease forwards;
+}
+.toast.out { animation: tout .2s ease forwards; }
+@keyframes tin  { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tout { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+.toast.ok   { background: var(--lift-dim); border: 1px solid rgba(200,255,71,.25); color: var(--lift); }
+.toast.neu  { background: var(--bg-3); border: 1px solid var(--border-2); color: var(--txt); }
+.toast.wn   { background: var(--amber-dim); border: 1px solid rgba(255,181,71,.25); color: var(--amber); }
+
+/* ── Leeg ──────────────────────────────────────────────── */
+.leeg { text-align: center; padding: 44px 20px; color: var(--muted); }
+.leeg-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+/* ── Hamburger knop (alleen mobiel) ──────────────────── */
+.menu-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-2);
+  background: var(--bg-3);
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+  transition: var(--tx);
+}
+.menu-btn:hover { background: var(--bg-4); }
+.menu-btn span {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: var(--txt);
+  border-radius: 2px;
+  transition: var(--tx);
+}
+.menu-btn.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.menu-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.menu-btn.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* ── Sidebar overlay (mobiel) ────────────────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 60;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+.sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+
+@keyframes dropIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+#nav-dropdown { display: none; position: fixed; inset: 0; z-index: 65; }
+
+@media (max-width: 640px) {
+  /* Topbar groeit mee met het 72px logo */
+  .topbar {
+    padding: 8px 16px;
+    min-height: 0;
+  }
+
+  /* Verberg de sidebar-kolom uit de grid op mobiel */
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .main { padding: 16px; }
+  .topbar-nav { display: none; }
+  .menu-btn { display: flex; }
+
+  /* Sidebar als vaste overlay — normaal buiten beeld, schuift in bij .open */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 70;
+    background: var(--bg-2);
+    border-right: 1px solid var(--border-2);
+    padding-top: 20px;
+    transform: translateX(-110%);
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    pointer-events: none; /* voorkom dat uitgeschoven sidebar kliks onderschept */
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 6px 0 32px rgba(0,0,0,.6);
+    pointer-events: auto;
+  }
+  .sidebar-backdrop { display: block; }
+}
+</style>
+</head>
+<body>
+<h1 class="sr-only">LiftCore — StrongLifts 5×5</h1>
+
+<!-- Topbar -->
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="menu-btn" id="menu-btn" onclick="toggleMenu()"
+            aria-label="Menu openen" aria-expanded="false" aria-controls="sidebar">
+      <span></span><span></span><span></span>
+    </button>
+    <!-- Modules knop — alleen mobiel, schakelen tussen modules -->
+    <button class="menu-btn" id="nav-modules-btn" onclick="toggleModuleNav()"
+            aria-label="Modules" style="margin-left:4px"
+            title="Schakel tussen modules">
+      <span style="font-size:13px;line-height:1;font-weight:700;height:auto;width:auto;background:none;border:none;display:block">⊞</span>
+    </button>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARkAAAB4CAYAAADGz4ZcAABrvElEQVR42u2dd5xcR5W2n6obOk0e5RwtWQ6SLQc5yTnjQFhs4hIMLCxxYcnRsMDCwi7Lfiw5myXZgME523KUbclykJWsnEaa3PGGqu+Pun27J0iaLBlofm0NM9331q06deqE97xHAJoBvgQCPfCP//01Ai8xmAU6Aq9/5A/g5fFYB7rey2H65GA+PBQFI/6GlcNIvEZbgA67gOrDIyNilK+lR2FcR+JeEgMYlBx1GRKHRwjEMD8rXu6bd4TnV4ziPfRhUA4juT46GpcYgbHqA3xfV/1N9HPvw6WM9AAmUo66EOqBf0EMQgjECAnRgczNv3anUB9iTsUIzMdw5lAMUS4O53zqASqM4c6fPoJlVQxGyehRFiihhyfIwzFHhyq0YgwXZrSuLQ5i3+ojSHCHM5a/VRd9COf6iMuqHqy7JEZ50xwO4dHDMDH1MMYmRlgoxBCvrfXhVR9HigIQIzjOgcqOOMzzqsdovcQAvYVRnQw9jM8c7mj6WI9tsNc8nPPzV5ooGvJzHY61O1LWoHoccqQuyACtg0PFAg6lcY8kM55B+uBiCCfDYK2coVpbYgxO/Jer9aTH6Ht6hOTzSFgTfTB3aShmou71rximRhXDEPoRdfvEyAqmHqa/LPqZ89FQkGMVOxkr5aVHcCz9/SwO064Wo/S8Qz2QRs26OtQFRst8G3Gwk6h+C5QCpTSWJVBKM9KhjLEywV/O7saR6m4KYVK3FVnRSAlSCtCgtJGXkZSZ/sZ1uOb1ZePCj+SNB3qt6s+VFYqURkiU6vt524IgHJtYjKgydUfTLxdCjFnwV/SybkcKsTpWQjvQ+1TLSfVLSoGQoA8gX8OxMPRoKYRRkI8jVskcajKHoljMwoOQgjDo+e1kUjB1tsXcRS4Lj08wc6HDnAUJNj1X4Av/3Eque2RPpyM5uD1m6/4yfdDyAdU4TvL5/53K5GkhWzf4vLQ2YN2zJV5a57NrW0Cx0PPhbPvAB9rL3bocVXke6mYf6wkVFmhVURJSwtFLXE49O8XSM1McdbzLpGmCmqSLwGLzujxPPJrnklfW8Jcb83zq7S1YFoThy2cTH8o6OlL3+EhadaMhk5YlCEPNf/52Omedk2Hlw/s4dmmaWdOTaCTdRdi7U7FuTZ7H78/y6L0F1j3n9bBwEBoV/m0cMIN6puGmnw/LRotOnfLpcfQSl4tfVcN5V9Rw1HEuNZYkRFMC/ACCQBOqkExasuMln62bNeeeX8eVJ23i2aeKSMmAT6KxPC3Geu4Hc7hwBG2c4c6RtECFcMIZSW5eMYv77m9nwXEJGpodikWBlBLLMi5UArCATk+xdlWJe2/OcftN3bz0oh8fdFq9PJTKsBI5ArR+mS/8AU/qqodbfmmKt36wnmXnZqh1LEpoioEmDMwFhBAIoeMvhgqSrk3rPo+Na0pkGh3+4eTNIHpaRH+tp9Bws4Mvd5k6sJskSKTgz2sWsnNTFwuWShoaXYIApJRGLuLgr3GxbUeQtCQJBB0FzUO35/jpt9p4/IFCnJnqLU9HmnIezrzLkU7vDSX1NdwxHEzBOI7g338ykZ/fOp1zL6pBCWgrKgoegMSyBZYlTKwmMnsEAkuAUj51abj3j10cuyTJOz/RiAojc3cA4xjJNPxw1mWk5nSw3z0QbmossDejsTmNFat5z+frmDCpyF1/ylKXySCERAgJaAQahMk2WZbEdiRoQcHTtJUUliu4/JUN/Ob+OXzmvyYZ5SL6x4rpI1Q2BruXLeDzh1vzDfez/Sk6IcGy4Gu/nMSb3thIWynACwVCCqQUSNF7Gc03BcKkJ4FH78xxzDGTyQchz63M8Y4PTODGX7TT2aaMqft3ap3hW5sjIBtjobTLbvJRx7t87xdz+fn/7uPYZfUsXJjggVu7mD7PQWndqzZMG+sn0iJWhEor+ApfKc49o45kk+Sh27ImC6WPLEVysOsO5vrycN24z6knRs7ikZbBubzmulquvaaO3QUfyzL+dPm00ZRTRb2UjRDYtqTGcVn3TIlnntvPBZdYrHygk0JB8In/nGzGWjXgl0s9zuF86QPIyUgABEc7OFz+j2XBp781iZZWn43PB1x+SQ3PPVNi3ZoSGcvCktI8Z7Uw67LMqYiPSWPZ5hDcW/R4z/vHc+lra1DKBJRHav31KMmJHsL1h0z1IA5yYzGE62g9dPeiB+pUGJNWCLj6LXXkVYgtjYhXxtlfQMX8zpaa1Q91UwiKLD0nyWN3tTHeTXDS8gZ+/ZNWzrg0TbpWoEJd8aePEEWijxAFJQYgoIfDZRzKYVgeq1KaukbJyWfW8r1v7OX0i2qoFYKH7+xg2UWNhDrJ9hdDLGmhtaoK4pTl0ljKWpSLVE0M0NMhr3p7Q7QH9IgogEPNw1gToQ2Z6mEwJ9Bgq7IHypfRH5y7HIuZOc/m6OMTlHQlhiKjoK2o+rBSECoIA00YhrhC8OQDBbZtVZxyWi2FHKzfZ3Hlm8ex6pEu/vDDVrzSgSPm4ghWJGNhDQwX/zSaz6SHeu8I3Vsqwv99u4X9uwOuevVU1u6W+IFm6YkZNm/r4uG7ukgJTRhCGGpUIFBKVLnioEOQQiAwLneRgGNPTjFhsmWylmJ48tEnbHCYDkEx0u7SoRZ6SCaxGMDD6P58Z/PFMy+qpSmVRAUgIjM2KClSroXSoLQJ8qZdiwbXpjHhYllGCuYdZ7N+NdQEaabNS3HPLfvZuT3LrNkOP/1GJ35Jj2q9imZkBI1DKGcxRCkajhIcK7qBkXTvdTRn+azitz/u4vilLh2dRe78YytTZ2vSYZ7VD+WYMiuJ0BLHFjQmHBoTFilHGuc8BIUg7Tr4JRWtg8bzNZMbLU45O2UQ6ANwmfQg9t2RYGVLcRgWeUD30ocW5n6LEJX57XlX1KIwaCelNEnbZtXDHg/flaPWESQc0IFm43M+X/jwXj76jt2sX6VxRZqjTqxn47OdYJc49bwEf/llFx+5difzliQplnTs3h1KAMQozuWwsj96GNfQo68EB/Osw4kDDvS61dZAd1bRPDXFtee8yK2/aePMSxspWbD+2QLHnuJiCYcNzyo+98EWrv/XfWx8zkNqi4QrqLMtHr6zwLOPFknZtnGPtIkRnn91nUGUqyMjmyAOpJTFwa3TahBl+fe2HiWBHqqZNiygVJQBmDbb5oQzkuSVRkoRPbxi8kyLV524jRNOS3LSmQmyWU06De1tATf9NMeWTR7/8/tpTJkqWfdCic99ei/HnGgzc16CtnafUy9OkqkTsHNgAKOB0HoOFY17yPsPcAFGy5weq6LYsXK7ZPTvuImSC1+R4sYfOTRMlDz/lMd3by3S2qKZPtliX0c3X3p/C088lOead2T49Y9K6EBS1wBPrvBYvbLIn1fPQUU+mLAgrzWnnp+hcZxF+/6wz9r22LRjBGzTB1LKevBu6YilsEcC+zAUvpUeSsYSaAVXv7mOK66qI18KkTaoUJOwBaufyPH7n2ZZdnaaYrdFLq/ZvcNn6WkppkxPsHJFnnXP5cgkAmprLLZt9pm9QFLwiyRtwSO3ZHnoztKRgWAcI4vp5fgSo3CdctX1/r0hXe0lFhyXYsFiF9uBXRsLzFkg2PhCie9+rYPnny5xzTtrOepYh+dXBfieJt+l0drixec8Ln5VIzNnWZSCACkEfqCYUOew4cUSL6wuYdlGjo8U72K043SjJgAjDY8vxxksS/DLB2aw9OQkHgokhIFiXMLhI+/exWP35bnqDRn+87OdPb5/+T/UMXu+RWuLz+aNAa0til3bA3LdisXLbGxb8NQKf0wnbSSCpC8XOoDDPd6BypjWYNmCsy5OUchqHn+gQLpGMnWmpL7RZs5RkolTJC9tUNzym3yP73/0q8389L86ufSaer7yX+PYX/KxbIlSggSah+4p8PZLdw6qdOVInGvRT9jgiIeUDWSQxorRnHpuLV/67iTStR5Nk2xCH7TQJITgFSds4x8/3MhNP+rk6YdLhitG06cim5fbBL3MT6dDAvXE2FS/j8ZLWlFBZaA59xUpTjsnxa++l+WOF+bg6QCtwbVt9uwo0N0u+Jc37WbdM6VBK5r+nu9IkV15OIVUDNBdGnCVt4YLrq7lpRfy1NQ7qFCikaTtBM8/E3DM0jSnX1DPmic8lAI/0ISBwSZIy8R0jFBElpGI/HFp3n8NimG4LulQYyFDzUhpRhYqMBLZLYGRkbJMlBHmsQzJMvDTFFMGvqF3eOKhIle9eQJz5iV48fmApOWChkAFJDKCll0Bl722PrKaxKDHJhi7jhPiSFUyB2pWdbDfDdSMVUozabrD9Dk2nR3QkEoShqZIzUKy8fki17x7HNvW+XglHbOYle+rQnNyqNDQOZTBwAaIxZhygIxmY7vDVRMzlNYz/WXqBsIzNNKv/uQ0DCsyoTH4q1iGop97x3O62zUtuwNe/74mNjxXxAaUCgh8xbjGJJ1tiuOWpqlvkjGgdDBjG2qIYbSV9ZgqmdESbmmZeqPXvK2B3ds8ps21UBQBhZCQDTxq6wUnn1LDc093mQmWh3fMI7EhB1t+8XJoeStE/8ploEA6PQbrMyQZjcAi65/Pc8YFtdiWT1F5CGmKKyUWEyY7dLUFXPSqerQ+cCHuYK2bA86VHtnnF6OpZIZS5DiSi6hCSKbhpLNd1j5d4LgTbfKhxrIkUgo8L2T+8S4JQvbuODIiLHqUhfrlYnUdSvBHU8kPVNGPCIo7usjOTT41FixamsDzwLJspBQUlMfRJ1qsX1Pk0lc1YllD75F1KOtmIEpoJOEncjQ2zEAGP1KdGy3L1CJd9Jpa9rd4jJvgMj6dIQwNylepEMeVTJiWwtchXW3BYd9Ifa4tRmZRxWFQHi/XoPih3MbRao3b0R4Sas3kmUmkLdAqBBSBr5hQl8ZyDKZr2XkZY81Yo3vAjcX6ydFcxJES9IMGBrXZoddeN46n7/c598paCnhIoSPiBvOIgR/gCEjWyP5rng7TRtLDvMFobYbRbqsx0ib5WMvvUMdRW2uREA5BUL0FJVJIAkJOWp7kqUeyXPuexigueHhs3JHsHisP92IOZ6HLJEInnJGitt6mdbfHkpMS5IIwUiQ6NhUc26alw2P2gmRECK5HdFOJw7TImtFvJzxa6zfWiHAxzGcfikKPD0plXKaZCxJs39eF66hYPoUAYQlyYchJZ2bYvbXEwuNdps+xDUeNHHuNMlIN7QTDqMI+IuIBkUnyjo9P4IHbull0UpKMFRE0CxErE6UUdY7kvz7XysRpFnMWOKhwZJty6THeoKMhEAfafIdTiY1WDdRwFNxg5KYMgQiV5piTXLACfvCNduosQRhWCH4FmiAIaUzaTJvl8txKjzd/cBxoU7U9mnMk9OgdOOWSDI60IsmBKRhTTj9xqs2SZSnu+WMHF70qTR4PKRUVXLbAtS127g3YvTXgkoubufpNTZElJEZE8F+O83fIjTRKSuxwK+8RmSM9uPUuH4avfEsjy06vY/umgK5SEtu2TZ+j8mYUggIB519Vw703dXPpa+pJZUxnhIPpmcHERMUg41MjIbdyoAs5UoHaEQsmRSXx//Cuep59IkemVnPcogwFz1BslgmDtIakdHj2yQKvvq6G+hqPC16dIpHsu3hDDXbqUd4sf011SH8rNVW612HY0GRx8dV1zJyiuOg1CV54JkfSslAqYqXXhpKkEGgWn5Cho92nZVeJi16djpoQDm4ORwrGoEdKyYy1Lz4SLxVqbAcuf30Dv/9RKxdc2YDU0vDElI8brRFCkw+LTJmrWXZ+PXuKiuYJsPTMtFkwOURFWoUOrhCRH57YxuG+pxijZxFjpMzKvC5WvL596WEHutZla/msi+tIpyR78j7nXlnD5Jkhngpi8voyUU8YaFyhWbwsxW9/2Mar3l7fp6ngaFFrjppB8HI8naRlJv3ks2uwLYsn7i9w5qUpiiLEdaKMkxARi7wgVJrZCxPYroLQ4ol78ixZljTXEkZBlHlXy0JmWQLLFj2FS5jPlQN5ZXRwGBrYuNbme8NRNuJlthZjqQRHO05lyOdNLE+FZYa7CgI8Xv+qWqry76RVYduUEYm9rALjnHh6hheeLuE6KWzHpmmCTah0hQRMGHS6kxCURMi5VyS47895ps9NMmOeg1IMGgF8pLzskfbjR6JH76GqOCMiQ656YyP33pSnaZxk7twMbR0+uU6PSTMc05s4go9KIVG+6YWTzkh2vBRSU2fFGSilAFVRYCpSHOWXFWEVwhDTpwmYMt1mwlSbuiaBCgT7dvls2ehTKuoe1xnrDfty79NzuIr6yt1BQzSpjGD2UQnGTZRooehs1bTsCNizK4zXX1pmrNUyEa9BVQmKpbVx7ZXHtpcCzjg/SdaLuGQivl8d9Z92LMG29QUaJrkcf0IjtmzhiXs8Lr2mlu/9WxsyKrR8uRXt2sMRiJE4acq9qYWO6L2r2LmV0mV3taerpAzj+8IlCT7xlh0cd0oNaWx++ONdXH7tuEgJqR4jEgJQGoeAfbtCaptNwC0I4LhTXE6/xGbOgiRNzS7JlM2ebR4P3prnjj/k8CLFUdcoufL1Ga58QwPzj0mSqQMnIigvBAG7tyjuuinLj/6znf17wrid6VDmcqw29ZESuzicSlJG6zR9rs1bP9DAOVfUMmVmAlcoNAEekmyHYNPzBW75dRd//GWW7g6jSTJ1kotemeL0ixzGTbIpFV3a9gU8/3SWR+/0eelFn4YmiV/SZLtDHHQ146+xZLSxviUgLZtf/Xc7//qZycw7zuGmn3Tw/i9N4ftfbkNFrHm6P9dd9PX5jMjrAR12oykXfa49GjezrMpD66qYSnX72AP7tD0/U+b0mHt0gv+5aQ6XLVrLv/9sElLY7Nzs8fHPTKbFy2HJ3ilLkzKsTyT55Dt3oLTNqsezXPn6Wgolj1IpYO5RKebMT7FgcYrmGheN5vkXsnz5w/tJpeGT3xjP3FkpfBRFZRZPRZWUUgocW5LBZvvugM+/bxe335g9qKIZS0UyUl06R8paPRIsp3L1tFJwzTtr+cS/j2dcg02OED9QMQm4kCY+4wpwsNi8OeCrH9mDHyg+9c1m5s1NooC2NnhpbYFN6wu8tLFEbb2DX7S4/XdZlpyYYvxMh09eP5FWr4AVNWHSaISOAKOhYlwixWc+tJMFJ9ns36f4xr+28adnjuJtF2ygZXdoyPB1z0P6UHuofG5X8wcb1gI9Kr3de6+7PVxzeyA0keZB+n5KazjulCSz5toEYYjtRMjHUKA8ePT+HB2tYTyRUhihCEOYeZTFjq3tES9qyE++3co3b5hMVmcjX1hWxhbhACwpCNDs2Bpy1mUJps2p5ZbfZDnjoiTXvquB6bNTICx8X9FWLIGA+YuS/PC2qWgEaWy6wxCvpLEd09LCEiI+mzxfUwh9micLvvv7qXzug3v42bc6sSLXaaxjF9VrM1Ju2GCt1dFqQTzsuREmKBuGmg//exMf+ug4ulVAa8FH2lHRohRRSEUT+tAVQDKtmTnb4Vs3TkZiUOVtxRCBwK2VHHdGimNOTbFjY8ivv9/B6sfyvP2jTezdXWTjGg9N2GOFRGXHI4Ugrz2ufmsdn37HHpZfliYMFHt3Fjjq+BQtu7MIaXiTiOJ/YagZN8nmpDNchNQ4joXGKA/Htti83mfNyoJx9/vhTToUy+NQ5l+PdEzmYPy0ZeWw/NIk51xUixIWUljYTsDvf7Sfxadn+OJ/T0BgxSIpsKnBQiPY2lrgjRds4YXVXtyc3BKCEM3sBQk2rTNMdd/6bCvzj0uyYEENWd/rgX8RuqLKpSUoeAE7tpb4xf94bNvo8fVfTOatbxxHKwWKnkIQIoXAto3iyHsaUDjSYsXDWWbMt5k7JUGH1vi+wpK6LCoIIbBsKHkaD80X/2sy3V2Km37SHfv8h7MlyJHgDo3F9wdEciZN3O26j9Xz4Y8201oKQYLtivhk0pEFrEKJm5CMcy2eXZ+lsy3guJOTFENzN8e2zec1eJ6Rg5kLXb76zRn897f38KnrdjN1tkttrSCv/Vh56epQvRBIC4oBHHt8inRG86OvtQGwbYPHgmNdVtxRUQrl8Z98jsuP/jyPyTU2goBc1LxQRAefRvDBt2xny7oC17ytiXxBojEgwBX35Lj3z1H3StX/HB5xKexyPl9Is0mVgiveWMfPb53BOz7YwHUfqOND72+mY79GC4fPfXMa+SCko+jRWVJ0lSReYPOF63fxmivWsfbpLr5z0zTqG634yctk7qmMonWvUTK7tikWn5LCxkeHvcKIkYLRSmMD2zeV2L3dZ/c2n9deV8+b3ljLznyWwDe9i6UVObii0lq0LBJTpll85UN7+NkPOvG6QxpcEWWVjKmko7eUAi002SDk89+ewtyFDmFo5mYoCzcaGSNxBIxhtO59qBSvjBT+ktNSfPzLU2j3QoTUWNXpoCgYq7SmPiHo2ufz7a+38/0vdzBrViruxVRuPYsw7Y8ty7hXvq/YWejmn95Xy9mXZdi7NWT39pDduywcy4riK7qnWa81WoW4wIlnZshH7J1b1neTTITx09mWQGvBlBku/+8383l2ZRdves0mvvmNDkqhS2dJ0VkKaC96FJXP9f9vKp1tkC9afOj9E3j7+xt55wea+PnNU3nFNRm0AjvKpA4UijEmpFWin+CT1mXSHk0QaFJpwb98aRyBttjXrfEDxZ/u2cs3P9vCa65rIGHbBKGN4zgA1CZCvv+NHXzrc/vZ/KJP3g+YO9vh7R+pj9t4licgDAOyHX6s3KZMT6BxDRCvH3shVIJ6YfPr77Sz8IQMX/rhBK5+YwMF7WLZJtMktIgh1tW1TUIKvFAzZ26Ca/65kY+9cxdXnPASN/6qi3o3iWVJVFgFZhCglKBY0tSmBe/+dGNP55jRxZYMBawlRsGiOGJf2sjRuz5VhyTEDyRKy0iIRSRf4DgOGSfBz77XwSuWbOHLH93NWz7cxMRJNoGykFL24IyInSCtIwUkCLTDtf80jm/8ajyTpln86aft1AsRB3GrGw3qCDPjAxOnO7G45LOQTEcxHB0hhLXm3Z9uZsqEFArBi88V+fJHdvHTb+2iPmEu7DgWRR8aMg5XvKmBL7x/Fw+u6qToB+ztLlHQmg99eSKJpCAIdLx/te7LtySG4UINWcn0ruPQCiZMFkyZIZk+2zDUXfKaWmbOdMh5JWxXkLCT/OHHBRxXsPxSl4LOIaVCKUXStdi5K+S7/96KbQu2bAx56HYfgcur3zGB8ZMkQZVPGXo2tbWJ+BDIZ4ugi3EgtnfspzZhs+bFgNWPFfjWr8Zz4SuTLFhsU4rM1xjkIHo9V/QLyxK0Fn3OWd7AK99Sy9aXQj74ht184B+3ERQCEm55gYy53ZywaMqYiu/L31DPxGlGEZWRm6Ne2T0EBTRWYLfBXn8kAXzlQO/CxS6XXj4OJDSlLZpdi9DXUfYSMq5FR4vHO67Ywmf/qYWWXYp//EAjJxyXpr3o90Tg6sgtrwrIagGWLcnrgCXLLM6+PMOXvzeVe//UzfYWi2TCMelrKl8UZdSd1gjC+MxyHEEhp+Lxh6Fm+hyby19bjxfm+P2PO9myzmQzv//v7ezdL3FtgVIKKTRF7XH5a+sRAn7/o3bSjoPjWhR8mDnH5qJXppk6w2LKDMmU6RbN4+WAcTlDVjKDErZof378P8dz97oZ/OGZ6dz34jze9sFmlp6ZxtYWaIHtCNryRe6/LctxJyeYPj1ByY86IoWKlLC466ZuutorYLhffLuLB1e0M3e8z/JLk7EvDbB7W0jjeCsew9OPeUjhmo1eBdUGjRSSQrfizj+18MUfTmb6DBsnYZOqlSbzU5U219WdsrXuQW4khSTQIeddXoOU4LiCm37eydsu3UXbXkHKtbCUzX03dfOFj+3h5t918PCDOX7xnx10dyiTTTvMJsHB4OaDqV8Zbf7YkbLedD/JBiE0u7cH/PR/21lxf5Hf3tDOJ963k4dv6YbAJuPabFkf8ubzdnDvX/K4CWP5nHqeja+9qGAxCmvrXp651mhR4XUNlSZTawGSE5Ym+cS3xnHz/+1Dl3SPSS/LnR+CI2Dt6kJlk9qSlzYYq73snp1/dZqZ9Q53/DnLn37ZhRVljva3BNz1h27S0jbJEikohZpZc23mHe1y71/yZAOQNqBDHC0566Ja/uVL47hv3Rz+sHoG96ybzXs/1xDHfnrPox4JJTNQ+gDLMlr/gqvTvO+D47BSNvUNDu3ZAv/7lf0sXOIQiACQJKXFhjUene2KMy+qISFMnMSUuUs8rbnr5q44rW2Q1poffHU/GrjktbWR22NGt3WDYvzEiiVzzx/zPPpEjmkpF9sRVZgbgZDQ7Xtc++4mjlucotvDoIGRpsdNWGl0XnaZKhrUWDNaGxNXaU3TeNO3OAw0jiN44qECbzh3M9vWl3DdEue/Mk0QaN7/2hbecPZ2vvwv+8hnK7zBQ7UEDldcRA+B1Hosgr0DtXZ6909CQ0er4vPv2cWbz93GR97YQm1zgjMvy9CQhLXP5njdeZtZ/7yP7QgC33yvsUmaFsdKoIiq/KnUyOmqwQhteqxbllEwQgo6PI+TTktx2eszdHsB0rKqiNI1woIp6STrNnnc+n/5eOTjp9js2GIQf0Fg9t3F19TRpUp876t7IkWgY5G979YuQmT84CpQJCzBsgvS7Nzqs32zIhmNKxQwa6HD/3ypnYIP9Y02iXqLj35+EsvOTxlFZQ1vZQdO9SD6OW2iD73mbQ34yqdUCslol7tuNJXQC5ckKYQ+Wge4+Dy/KgfACaenCDCQf60NvmTPXp/nny7FrToNCTg8ck+JNRtLnHJ2iskzrAhdqdmyoUh3u4dlwfyFLoW84h+WbeffvrCXPVt8k8bWBpAXhiH1jRbpWknOC7At4y+XiuDlNBnXwg+qdn+vZ3VtQdKB+pRDWkpu/Gl7ZNkIfF9jWbBxrc+rT9vOq07dzuuX7+TFZzxS6Qiqbos+G3AwVsNgMlJCCCxLYttW/28riiUMRkEMkAZyrI00PcTPlROOrmue+gs/mMAXPz+L2mSS2//SznWX7aJlp8K2BYFv6t8AbvpJnpSUNKQkaVvg2CKusDbnUaUfhB9CjeuQ6wwoZAMsaWQu72kaxjuk04ZEXKCj9LVF9z745c/aeM2ybXS0a+qbjEWfTMO2l/woVqSZNc9l6UkJHnm8lTUr/ch6N5gtreG5p4q0dGhcp1Ino4ETTk+igfVrsiSiiSgozbEn1FPMKe75Y4GMsCnkFVoL/uGt9SOyTvaAzVXd62+RxTFhssWJp2coCoFlOQihufcvHcxemKTOkXSWTOBUIXn+SQ8hYd5ChwBlcv5akBSw+cUinW06Tns3jhfMWeDy1IoSD/7F48MfHMfxJ7ewe1seKaFU1PglY2Je/52ZOK7m0RX7ydSC0gohzESJqI5JRelGyzI1Ilor0tLha5/cw6XX1LF8WS3thHheiNYqAmqZ9OX+nT75XMi+nSG/+XEnf/m/HEJAEJb7YktcV9Lepmh/QlVZehYChQr0oDeEEGUBLsPIRdWe131It0zWRBKGalDgv5FMqcfVwgcJcPfGzvTum6yURquBl5wMZ6yep/mXrzbyweuaeXpDF//zb3u48WfdsVtejgGGEffQ737cTSEvufLaGiZOs6lrthk3WVZ722gErgvNtuSRlTn+fEMHH/23SYQ6NM8pIQwqJ5mOJ8mnUCjS2VXgHz/UwPEn1bB/f4mPvnE3gScoFSqQkCWnp5go67jnd/tQCpadl+CldT4tOxVSwt6dPts25Fl6coJc5C0EKI461lj+a1eVeOWrG0GEqAAaEyHT5to8dEeO172pGcsKKAnFiWdmqKmTZLvUQfE0hyoRsgd7QlSQhgYIdMzSNOOakmS9IpYtyIaCdc96XHJNLTbawKUtQQnBhudKTJ3hMG5CkkD5SCEIQo2NYN2aQlxgCNCxX+MeL5gy0+L233fzoQ+WOOG0FHfcmEcpmDTVdHVMZSQzF2lmTrQ47YxxSAQ5wAt1zNXRU0Oa7RoqSKcEJ5yV5nVnb+Mj10/iqjfVMmWKcaNiIKQD29oL/OxbHfz2J/neSaJoYyg8ry/scjhoyr6KRB90YYU0iGbLkpx66mIWLpxLTU06iknZKBWSy+Vp78iyefN2Vq16vl/BGQqitxrYdiDg5UjFaPQghPuAxNYROPLy16V59Rua+MhH9vKbH3bQ1alimEFvFG25QPIvv+7kL7/u5G0frOF172imIZFGRYVvEokE9uz3+MVPW/naJ1v5+i+nUJsRtJfKfNQGvaKrBimEOYSnzEzz7vdlKBPHPrclwLIh8KGx2aZlh7FmTj0nQx7Ng7d6zD7aorbBYt+uUgwfCQPNhjUllp2cQWMwZr7WTJrqUFsneGF1kQCNkNqELFActdjhyfuKFFBYDniBZuI0h9kLHZ594uCtmQ+lL+zhnAQA849O4KLRISRcQeu+Evv3hBy1KEm5bsyyBfliwLbNPgsXp0i7kqwX1SwJUEg2vRD0wgwInlpRYuJUyQurimxuL7DoRDf+yNSZLtu2BMxbaDN1YkhrUSGEqVqTQkcpdaPkRHS6CnQUX9BYlqDDL/GKVyW55ZUpvvzx3XzvG3s586IMpyyvYepsB2RIoStk+ybTutaU/IsYOSmlRCnFGWecyNnLl+F5JRAmW6Y1pNO13H3XQzz+xDNIWUlbHsrd0VqTyaT47nc/x/jxzQR+SKh8whBqasbz4x/dwK9/82csy0KpEEtKglDxutddzsc+dh3HHjMPy05UhXOdSKIDoJ4f/+hHvP26T2JJi1CpPkpTxEru0FZXWfjCUFPfKFl8SoLZCx0y9VYE8CpfJ7IOhawo0TKIEY1SgqRrs3pljgduLfQAiA2FG+Wgf4tifptf9Ll40Way3SqOMfY+GHqXU9i2AVxu3aR46K4iL21QpOoMCnf/zoAnVxS4/9Ysu3cGnHtliitfm6TT97HscsWSrvA662gs0iQVwkDTpszGD1FMn55gznyXrjbF1FkOe3b42DYcd1Ka5zd3sWl9kckzLR64tRDNcSWeuOH5YqU+CnOYNzYIZsxx2fhikYL2ooNBEeIwb2Gam37QQnuHT22DoFTU1CXhqGMTRsnIoWct7MGeJL3d9FkLnQgqbUS5ZYdHoaCZNsc12lIILCFoaw9o36+ZMdfFQaE0WNEJ7FPxOQ0AyqyCV4LtL5lrv7DKZ+EJaWpqJNmswklAqQT5rCBJHYVkAa9oINth5CY5rsRBUAoic6+Hc6AQaDxsvv/rmfyT2Mxffl3iTzd086cbug8yD7pH6EYIwb996YOcfc75QEdVmEsCDaxefW2sPAZywkshCLXmxBOO4Y1vfC1Q6OXUZPiP//h2xRS1JH6g+Mxn3sH113+IMPAoFHJonYuEuWzRCVSoqK0T/PFPd8cPNBBlctCDRgsSScG7Pt7E667LMHmqix0xu1bjWnWkZCrz09NxCtHU4/DOd+4AChFl5SjFcqLnfWGVHx+CKuy/jqeHBaWNCxUEcM+f89zz5/wBd8zZlzn84E+TMVIeRuql50UtS5KwLYpKEUY4FREBOtOJBA5Jst2aZNKOZ62+yWLOPJfb/9iJ1rBrS9jD+i2/tmwoERIYm0iADsC1YcZ8m7v/VKKzXVPfJAgDCIEZc10KRc2e7ZqGBgutfUAyf1Ea6Br5mExv5dIfcKtsTk6ZkYiqMUynxu0vGQzBpKk20UGGjWnBqTXMnJuIN6rGRK5zJZ8dW70+MUYBWI4Jvq1d5bP8vHGMn2aRfVHx4uoir/+nWm78SScf/cB2PvqVBsalHSQShUah2dMRsHuzx7xjkwZKHecaTbsUy1JseD7HAzcX2fRi0K8SsKSIsQk9xiYFoVLMmjGZY4+bR657R2QVmO5/yZTLxg1rufuuh2OXakAbVwpQcN55p6JUQFdnF7ZtslnJZJJtW9fz6COr4kfxA8Wll57F9dd/mGx3h6G2sMwGD6tSHlopkkmXlj07ePyx1eZ3oWLihHG4CRelwiggbFRBe3sHuWz+gH2oyzxLyRT8781TueT8Rjoo0l1S0efDqC5H9GjJoKMNRw9H1vTI2t3lc/+t3dHYRsjVEhVXp/dzyAhA2m9NzwBcswNbp5qNL4T824f2cc7lLiedXVc5oqJB2NKiY79i+4YCx52aos6VWFhIDH9AR8HnA+/YREd7wHGnWPzyO0VzqM9zaXLTPLNyd4yh8X3dR4Hu2OKRDUKkpWMAH0hmzk/gezna9mqamswEhCgmTjNqbPd2j+OOS1NewWlznNj6G2qMzB5S9D46AV1XMGmahR/7pLBjS0A6LWhsFsa+EQKJoK3FSM2ESS6qXO2jwZKStnZF276wj5LRVQ/3wqoiKWymzHDY/KLP3t0h//e9Dr7+8yZ+8NUsly/OsmhJiubxFral2LPTfOafPtHEUcdoiqHBywhhYkQisqYmTHFYel5I87QGtm1U7Nzs07o3ZNf2gL07A7q7FChwnIi8SJUxERIhQs4862Sam8fT3dUeIZc1fhCSSGR49NFnKXketmXcmYG8wuhz55xzEloXY5i31grbSfDQQyvpzuaxI+pGx7H5zKffHSkxaUiXMJmGTCaNEIkqV6mGlU8+Sss+UxNTW1fDA/f/hMlTJuJ5xciVsUgkMlxy6Vt4+OGnkUKi+5EwGRWqfvLbzVx4vsuefA7bsbBsK457UQVMM/8R/QAkzEbNODZr1naxd+fI4on0ASo743sMMM6ge8V03ERUS2cJMnWCyVMtxk+2GTfZYeoci6mzHGbMdZkx18J2DJBUR1XdSivCQJFKwCP35PnSB/cxf5FLfYON55v0+nOr8jQ02Xz7N9P4/tda6Gw3azB1tkOIYN3qYgTp6GUQRANtaw3p7NA0juvJQTN5uhPhaUIWHm3CCyGapnES24Zd24rYpMw4UUydaQLbZbjJUJrvDatAsqZOUt8sCFERw5eiZadPfaNNusaKN5aFoDVSMo0THGM4izKHhqB9v08hpw8YAAXY9EIRnxzNE+xYg99/a5H9ezWvflMj+/f6vLAmx7p9irWrQ5onh/z7T5s57dQMEsjgmOpUNHmlDIkVklSdy9JTXU451dwvwCeMjPtSyaJ9L7ywsps//aKT+24rEviV1dQaLr10OTF3jS7HfiRaa2655f4B4UzKAmBJSagUixbN4ayzTsCyJHV1tSA0KgyR0uWOOx8yC2dLiqWQk5Yu5KSTj6aQ70JKae6lBalUDStXPsfzz60HodBK0tzczPe+95v4BD7l1ONYcPR0CrkSiUStscCSDuvXb2HVqrXR/Kt+8VFhCEvPTPL6t42n3fNxHUAo0FHgPCy38qiyprSOiZqqG8qHSmNpxWP35nskFQbjxg+W62goLmLZKEum4YIrMixdnmHabIeaWk1NfYiTNFB+IktShzbZDguhJE3NkIwCCyKKkdlJiw9+polMvccXP9BFKi1YcKzFlJkul/1Divomm298aj8vrC7huALf00yabpHX+9mywYuyDv0/SL5b090eMm6cTRlvqjHZYID2fR4WrrFktCJTY1NTK9mzPaDMXxCiGDfBIVMbZZhGw106lAnaOF5SU18RCA3s2x1S22BhCwdflyJFotm3x/i/DY0WYWwkayw07ftDfK+nSdtbM+/a5pMNXOYuSgFdcSbquadKPPfUHmpqBROn2px/VYr3fzbD/MUBdY2Ce+5r4dlH4IVV0DRO89q31nHU4gz1SYGFxJDiKVScgLRQ+GzfnOeZxxQr71Y8dl+WHVv92KoylJ6KpqYGzjprCYFfwIr4F7VSJBMOu3ftZsXDxq1Rh7BidK9876yZ03n+hZ3kc91Ru1KFkJJctsj9DzwZb0wh4OJLluM4dRQL+7FtE8hNpZKsXLmGc859I8Viqc/9XMfGUwGXXHwuUIPv57G1hx9qUul67r9/Ffl8AduyCMKwH9Ih85tXv6URF0FOCaQtYknWAuoTdjS3Osaz6n6T5wLtSBQBK+7I9VEJB0uxj1SFdg9lVXXD3un2qA6WfDfc/Kscd9yUJ5mWBD74noqslapkZkTnWddoMW2WzYVXJzh2cZq7bvbYta3EgiUJlpylueSNgmNPy6DyKZ58sMT9d3isuKtEV0cYW41lb3vmfJeOLknr3rD/OYgGnc9pOjt8JHashxRQ32yUzP49QRznMe69TV2Dxb7dlXrAUGtq6syeLSsZPYT5HZYl0zDOIuEaHhUpjZne2hJS1ySxIsi1iP7X3WlmKV2jK1tam8xCrtOLF4Wwgh0olxSFCrLdmrZWmDzDjecyjGqBhDB/z77os+lFnx/+RxdHL3ZZuszl6CUuKIdNL3Zy+/NFfvW9LmbOdVh8isv8Y1wmT0th2zZKKVr25Nm6MWTTuhLPP+2R61Z9smk6yioRhiw79XimT59KNtttnl9DqBTpRIrHHnuI/fvb4gzUIdPAkaskpeCuux7mtttfUTntI9bAslVnSRmTFy1fvhSti1FYUaHCEMtK8utf30ypVCKdThL4QQTUMkdaqBSObXPueSehlIdlu8atFQFQ5N57H8WyDEpVammUhKogSsPA0Jieem6aovZiUjIiBKytbb7zjRYevDUXYU1EVYC56litSg0HoebZJ7049V9Ox0ZYteqwad/TLg6aRyH9sO/cijL9h9AVRHc5thgB5cpAUB2llaXQfVLZwjJ0I1obrFapGPaREaq47MNQ09oS0NoS8MwTRaATgHmLHBaflqB1h8v/3uax7lmPZx7LxyyMxmKMKsFVJVw+dVaSXTsNkFQIgZRGq6so/qajeVAKsl0Vq8TEWKC2wVypu1tVBhqFA2pqBe37QxQgpEYpjeNKMrViwAEYPXKWjLlbXYMJVZVN6hDIdYY0TXKRERS/jDbs7jC3d5KVorCy8LS3B5X0bRl81ouh3fdg764CTc09zV2lerLHl2MFzz/t8fzTRmjPu7yO93xiIhqPW3/fwb03F9i6yQdyQPuBMz1VPL39mdcXXni6CSJrjYiCyZF4cMcdD1cFBw+9KDoOqGuUCvpkCyqbyCiJ0FNMmjSeJYvnUSpGZEZa4zg2uWw3t9zykCkczRd7ZK5UtFbHLj6KRUfPpVjImTFqTTKVZueO/dx66/0RqE/1sSjKrsz8Yx2mzZKUAoWM0tJKQZ1r89tf7uMrH2kZMiamXMR46MBM/38vn/zVKXZ9gGuVN2SodD84papnL+/HsGydHST+08/vLKsM7tTUNUqufnOKx+8v8NDtrX1c0XKsqNplLF9n3HhDDVvW19W4JNFL2XV1aCQV91SjSaTMWnW0VmelDKNTps4i2xWarHBkJNiuJF07vLICe/AKpvJzbb1tlInSBm2KJJdTTKuRCFSPSc9nTUCvbMmIWDmqmC+10lYWmsfZfO5/p6KDgC/8827aWhUtO7qZOCmyZJTudzHL6EwRseipEO69pYt7b+li8akJrn5Dije9s45dOyyefKSbZ5/02LnV72G1xNcMoWm8xeTpgo0vBNHpAaEKcRyHc885GaVKVR3+BK7r0tXZwd33PDKorJKUEq0UJ510LNdf/15KRQ/LstFobBs6O7K8971fpq29kze/+QquueYS6urqqK9vxvdLSKnjmEep1MV//McHDHoWm3S6mZ/+5Ff85re38qY3XsHrXv8qJoyvgaqMmxBGuVmW5Jc3fAOBIgw9kuka1q/bzoc+9CXjTkaPevoFKdJS0O4ZV8lAusza3vbbbNQupuJK93Z7qkmbytiRMn5FKZh9lMMFV9Ry9JIkdU1lmtM4Cl6lnMtEPpqWHSVu/W03j91frCgXDbYDn/qvKUyfLfE8FaGSNQlH8vl/3kNHu+C1b6tn6RkZGpoVlqvRyqWYh+vfv41Na0NklK1beobLea+oYdaCJMmUTahVhBDXVEN4yxRs2baQ+27N8udfZ0GZA7SjVfEfH++KJ8KyzLNr3T9Op5xokRIydXl2PWZiVw1Ngs99ZwbFbIkvvHcvpVIlLgiafLYnoZpG4CaNkilkwx6AQIkBthpLJkp7K7BtTU1ddenE4FxVMRAlE5vCVbatZUUnX7qKF0GArxTFgiaR6jkMjcDzDGWl7fT0uAWCfL4ietIy5vg/XJfhmlenSFJg57ZavvbRTrKdNseemIlZ8noMq9cBVzabRfQMWsMzj5d45vESzRNsll9Yw9LlSa56YyPSCunoKNDZJsgXQ0BRX+fgJiSOcNn4Yo5Nazsil06iQ8XixQtYePRcioWiIboCVBiSTqV59NHH2bx5h7EcBpgmkVIQKLjmtZdy6aWXg24H4UT2YYaHVzxIZ1cWx7F5z7vfxKnLTiEM2iiVclFWSJixaUina7jyqovKthGQ5Otf/zZaa97zntex7LTTCLwOPN+PvhuhoIOApqY0V111jtnQOgTRzI5tP0BrHcd8hIDTLqwhRCKkUS0ogetK9uz3WP1Y0dCNqoFgcHQfC+Tdn2rkvZ8aR33KioP1Fdie6Ik5qbBGI0nzj+9u5LMf2s3P/qs7Lm6cPd/lze9pxKmKELkItu8vcsyJST76tQkcNSuJD4SEhICLZMfeEnt2mMMyWQtf/sEkrrimweC86FuZLKtLBSIYhURz7ZvqOfX8dj77rpZYXqVVAQb2oWaNyMXj65abFKahcXySUhRne+fHJ/Cua+rIUuKx+7r50w25uLMGQD7XU71rBK5j9kOxqGL+vDIKOZUW7MwpwsgIUMokbVK1MmobJKPgfnmQEa4tHAbit39+Xh3jCmrqJDKCLQph6nx83xDslE+nsvtdKphmbLZT4WoXUSYm9EWs9coBzTMubKbL13z0X9tYcmaSRFKw7pk88xc5PSrsexwg/ciuroL3l+M3rS0Bf7ihgz/cYH4/YYrFxCkW4yY7JNICv6TYv6fE3h0BLbvC2N0RGH9cARdecBqJZIbuziK2Yza30hqEy913PYbWGsu2UEE4IOvQxGMkZy0/kcDfTy6XR0qTpamrz3DzzQ8ThiELjprLomNmkcvuNfeolqpy7EZpuruzaAXJVJqNG17kvvseZ+bMKRx99ExyuX1oVf6u7uEGB4Gi5HWZrIPSZGokN954RxVaVjNzrs1xJ6XIhwYTJZCEGjJYPPNoN637wgEjnHu7pu/6RBOf+9JE2oKAtmJQKUDEsA0arSV6Rmap1BglkpIPfHEyd95YYO8Og+A64bQUjg5oywdYtmHmdSyLXA4+/51JTBgn2V/0EFHhaBiAk4AHb8mR7dIkkoJv/t8Urry8lv2l0KDIhe4B0kP0Ln7QFYtbKt5wXSM3/biLpx8tHrpdTq8OHWVF7bqC1j2SLes0jiuYNlPwng9u5aNfbeb8q+v40w25eG9VsEY9Gw9blmWUr6d7psyARLICNdCxqyOozRiclldS/R4O/SVsBuQulWHdl19bw/Lza8h7PlJqhLDIuA633NSBVgqLIL5R4INf0tgJ0SPQoNGEAVXd8ioPLdCooBJU1ApqawVHL25k7QtFfvatbv58Qx4h4YffaOOG77TFVv5gi+WqPZcygZ5S0LIrpGVXCHh9hR9wbMMchjCBXYDzzz8dtBcFJ82D2paF72W5/c4VcdR+oDEupTTHHDOP449bQBCEuK6L1obG1PPauetuk7o+44wTqK2tIdvdbQpSe2y+yP9GmFID5eO6Lo8/vgalNBdccBr1DU1ku7uwbDsuBI2tA61Mxk9aKA3ppGD3zm2sfPI5g+GNNtaJZ6YYl5F0lJQJTkbrZqFYcWdXJYg/QMSujNza2Qts3vfZZto8Y7LbtoyLW3U1l4I2KyMkMc2BxvQ3CgJNMq2ZOstm93Yjm2dfVo8QDpZT4WNRKKbMcFChprOgsSIrMCo1BZHgyRWG0+WqN9Vw5eW1tBQCQyAfWVQx34ouxxKjMpYIR6W1BmlYIi2tWHC8y9OPFvugv4Xoq1h6xKiid7YTrjh+M4W8wnUFn3nXXjo7FFe/ZTJLTk1i27sJAh0d5NVlGaKH52CC9wLdq2jCcYzHoVR1++YAr6i54Iokl1xZSzYIkEKgtYVjSe67tZu7/pivuKcDjcmUzdZjT0ry7f+bSiJC0Wo0AdAE3PbHDjN5VLhbwtBMqCjDykWVKilH7lVFE+oqs6v6laqR1DXmuf3G/UgLXvPWWl7zhjqypTDKehggnVngnvlFEUX+qdo8lcBddE9d9ZmqzQlRzROCMBA4lsP6tTk+9bZ9cTMupTRzZk9n6dKjKZVKUeraPFsqlWLNsxt49tl1kcJUA0JHmgxUyHnnnUYq3UB31z5s2/wunXF5cuXzPPfcBqQQXHHl+aaAI6oH0mW0W4SPSSTKykNi2wYc+Oe/3APA1VedD6TQdEeAuep6mpBEIhWp1RA/8HHdZh55+AHa2jqwLEkQKc1zL6/HrHwQn4SWI+gsBjx2b6HfmNlB0bTRLrvqzXXUJS3aiyG2HdnCWpBxLRIV2zg+q31CckEYWw7xGlIJwjc2S44/NUURHZNNlcFlSkkytsSxy6e3jhMP3brIY/cVsGzBNe9qJh/FRMqummUJEgJKShkXAgNktKVxuQJfIYSO+WYQEPg941P/8fOJHHdCgqIfRps66kQgqgINkRIz/L+VbpbpRIL77yjw9U/t5cXVXVzxxnpqGwTt+3tapgcD1PZUYRH1p69M4iFyhSwstIb6Jof3XDeevfjRnjd9ol751gxXHL+djWv9A7ZnsQ8Mbdece3k9Ce3Ski/EFaQaQT7Cp8w+JkmI1QMiXiYFEr1QnWUtp6vQoL1TfuV/3ZQkKRz27VGoEK55dw2LZifJR0upe32lV4OJqtO5d8hR98Fp9EV2mo0bAA2keHplHi/QESeM2fjnX7CMhsZxdHe1Ytt2HOCVVpK7734Uz/OxbYugl6ukD2hhmb+cf94pQPmkk9FJ2cgDDzyD7wckEg6f/vS3+NrXfsAvfnY906ZPolQKkdJChZpMppEvf+Xb3HTTHdi2E7saa555ESkEn/r0f/H97/+On/3sq7iOREVRcqUlqWSa977vep56ai2OY+H7HlI6bN+2Kzq5zAlX1yA58fQMJVQUAzK/T7k2zzxd5KV14SH7afXXrE9KOP38DD6BKXDFQmlByrF55IFuHvhzljCM4gSWcSNPOM3lstfWUgorhZeOI2jd57N1vbFK5x3rMHlKSMmPyhmiiuekY1MqeTx4fze7t4Z4XllpK9IZm93bfHZuCZi9wGH+IoeSCqPYm7ES812Kj75nJxue8xFWOU0vqasXfP3n05g8zaEU+CA00oZ8COvWlOIMVdN4m3Mub2Rik8JDR/GcnrKq+4TKK1aUDTTNFHz9k5odm0MSdjlGWoW2Fr3AMzFa5iB6pzp2jERjk0gJXlzjsSvQZGOFaGq4mmtczrwkzca1nQek67QPJgWTpiQIdfUgTXCxVLQoFYnNsvIpYtlRLYVX+XyZwNKyRC/lU/EFy+RB5b/YtkBoh0LeEPZk6mvY5/mEvmlXEhfOaNEDORpPcBU9oqhiDAPd5/Nlc6t8kghpR/62JkeeW/+vo8pPNte6+KKzTGWHkLHlJKVAhUVuu/XBftPPB3eVFBMnNHPaaYvxPS8mlTJtSXPccUfF/Vqz5kWOXjiXSZOn4/t+dH+Dr8nnO/jpT25iw8atfRfaslizZj3jxzXR0JAhl8tiWQ5aQ8J12LmrhZ///E/kcoV+hc+SJha1ZFmKyVMUeS+MWs8IlBa4SB6+K08YMqjOmeXTb8Y8h/nHpCgphbSMgrVsaN1X4H2v2U7b/r6bY/3aGq68toGC7yEtw1qXEC7Prcyxf6/5/ElnpkgKKITG2tIKbAm7t5d4/2u38/RjhYPGypaelaYxlaSjVMKK3OYGO+DmP7Zz86+y/X6nUCoiZDKicICk7bB5Q5FNL3rx3CxcnKCxUdBRiiw5LaKMvephlRkYSHxUV2RLgu1CXaPA9wRCp7Ccnj6qbVfrmcgTCQNCP+obVr5PRJ5eKhmiLiklYYQqVAQEoQHMFkMfIUPQVuQPG89galTfxAGKgA8a+A19n6RUjM8k4vi0jaTDNkGgUiHawFGu0JYmqGTaklQIkiWmkbgKqXTlqxK6ZLInU1sQaFwRkkgKgwTWOaa4NiXXjrW5NDXcVRof+nKqE5vYOjqnTKrVihbDlEQEgSD0IQhCgkDhlRTFvGLj8x7PP+nHuB2lFM1N9Zx+2vEEXiGK+iu01iSTSbZs2cUTK9cMKB4jqoB9YRhyzrmnMH7CBLLdnViWZa6ZsNmyeQuPPraqh2t11VXnkUzV0t21P3KrFKlUipVPPMtLm7f3DOhqIoExwnzt665AyBrQecqsgbaTZMVDj5HLFXAdu4KPEeVWwbosh5x6bgpXWORVCBEAU0pBSYc8fFeuas4HZsWYOJ3mlOVJxtXImHdFhZqMI3ng8W7a9psYRNk6siLGuvNfkcJGxRtSKXDwWXFHRyzzZ15ch4+DkH68LhlH8OVv7Obpxwo4jojhOKK6M6MFvqc5++JaFL6RHl2W3RqefGB/xSXRFWKx0y9Ic9T8GnK+Z3J7oSLhCB69u5NcFhIJE38744JanMDFFkVc14BXjUTLqH5dV0lvNfd0hDfDoaXk4xU1riNwhB8TocdB20QVJi1SAEpr/ABSKdnD4tGA52vcpDQUIIHBa4coCnlFd5cmkYBaUgTRNVVCIygRlPRQcDLmS91dIV/5QgtNEyySaYFSPrkuxTMrfQp5k2VSZWsAgbDBcSGfU5XJibRzJgO+r43SoOIbKwSJKBVe5vbdvyvgg/+0iUnTHMIAPvGW/Sw5IUmqwcF1JF5RkcuFFApRCC80gazAN6ZoqaTwfSN8YWB4Ub2SxvcUvg9amRNJKUHgK3zPKDavaBSM52kKOUWhoONAmSUkipBTlx3PpMmN5HJFLMs2JQZhiGWnueuuR8lm85E5P7BSgrJhdf55p0Uuko7dL8tO8dDDa8jni/E1tdace+7Jxq0qxwiUQMgU99z7BGGosC3LfLbqHkEYkky4LFt2PEplKwjYSAzuuuvxOOYUqr4QchXVIp18TsIUxEapOq2MkG/b7PHcU16PgOOACxg1nHVRbeTiRjEVARYWT9znx1nOsnUUhsZqXro8jYeK0da2DR0ln5UPGhzJjLkuR5+QoaiCiF9IISzo9gIevacYN0jrg+qN7ldXL1lyeiK6hxW5Y9Cay/Ls6hw1dQLHNaBT2xKUSorTzk/gEKKVgWMIKQnQPHBbPh671vD9r7Xwm++3UVMrSCQlritI1wgSKUEiaZFICFIZgZMA1wHXhXRaYrkSpTVCSdY9nyefg0Qy5GPv2k7rXhUnT8qxzbI9X8bCFCO4SDIle4H4BH7JUMmKXi6W7UIuG/LJt+7nmBNSpGsVENDdFdLdIRCW3e8JUq6LtQ92zu7eESCQ/Ofn9/T7Ka9okABELoNrQyIpomJHHdMECCBdG0GxC+Zhq0+7dEb0wLsUi5o7bszzvs+Ow7IEa1f5LDgmRbFVY0kfoQ3pVG2tIpWSWLZjTGGtkVJjWSqCRssIjapiSL2QEitynUKtEdKKqrJDBBrLclDCXPd/v7yPNWVWsGisr3jFeQiZQutidHpW2Iduu+3Bfiyqg8XdBEEQkkolOfPME1FhVAMVoTDB4q67HoktGN8PmD59EieffAxesYglpLHNpECFHnfe+XAfS6JMFKW14uhFc5k/bwrFQiHamAI3kaSrs8ADDz4ZpeFVH3kpuzRzj7ZZeHzaVLRHWTUVapKOxdMP5cl160H1/i4rtfpGyYlnpShq4w6XA6s53+eRe7IRqE73GMtRx5iykEJgaFyVgqRj8dxzBTauNbGwpWckGV8DHdHmUUqTdG2eXV3gpXX+AbMhZdT40jMyTJuSIud5MWu/0gppKb7352mmTbFViQaqEGoaoCvwIxS1wHUcdu8NWf1YMbbSp85y+NAXmxHYOMJGh6FBcWujQHw/MKUgPghhoZQk8BVhGODlzAHqeXkevKOIlIJ0bcgdf8jilXRcWgGQSstePakF2U7zm8YJspKoFkZiCjlTLmIjKUahERUpHxXC737awe9+2tFjrt710Wba2/wDH6T6AEqmnMK69Xed/M/vpjL/2AkU8uC4FiW/RCIR8Psf5mnfr2LAl1YSGzPIbFdU/1C13TJ1ZaShjgNMZahYpsaKN0f5UMl2K9INmjAUTJ6tWf9inhdXhxQLyuBzZGT+heVeR7qatqRHcWUlgySqPlPR1Lr6w1V6vG1fEH8vUCHpdJLzzltGGJQqKU+tSSQS7N69hxUrnhowyldHmJtQa447bj7z5s+gWDQpcQ0kEg5trftYseLJHqfE2ctPpbFpPNmuDoPDiSqnN23azJNPPRevX3W214o24dlnn0wiWUe2q91w1GhNIpHikRWPGfDgAbAt5TT9svMyNCQtOkqGjD3meibkwTuygy5OLJcoLD4lyZTJCXJeEI816QrWrinx0lq/B6dNOSlx+gW11DoO7cWSyURp4riQHyERzrqwrpxsBmFiNi6CJ+7vNh1DbdEvl0w5tnDGRRkcQhPUj9FzAtuxmDS1pxNTduPDqLkhMlLAQvPsE1na9pkOlaHStO4J+ean2mI3qxJmrEqXROyOhs8oupeCbKcikYajjrOYd6xNZ5dHbaOmu7NCxSCiyUpnRORpVOY/22UUcE19ZMloARICNLkuRbrWQsToaxMgaWtRLD09wTXvqKGjU5KwbUqlgHRNwMyjBP/8yq74wBgwTqZctNa2L+QT1+3himtr8EPzBPlcQOCHaAXdHUGEDjRpLiuqZ+rqUKbSOopDaaAuajWby2oMhC/KbAA1dU7lvlF1tVfSdLcr3v/ZJk65JODDr+2kriHBte9s5FufayEIGJOXoMJWd8KSRcyZM5VisWh4VigXkaVY8fCDtLZ1HLQgsj9eXhRccsmZOE6KYqGIbVtopXDTNTz9wFNs27Y7ri0CuPjiM3qkILVWWHaGhx5a1cNV68EBGI3nkovPNAFrKaKxh4DkjjsfjIF9qh+UWLmy+MwL6yJkK3HK13EsWjpKPPFA4ZCxqAN1wDjtwhpcNFml0ZGSSWDx2L1deF5PZVBOjZ9xURpVFcgXAnwCHr3buCV1DRYnLk+RR8dZMCE0PvDo3aUDFxsJ49LYDpxybtqkvq3IYqRcBAu+r3plLKOQgahkh8PQmBUP3patgK6UQdvu2uYNWhbTNZL3X9/MjT/u5KkVPr96eAo7NwhWP9mN7xkrUkUoaymhtl5W1QIaZZuNSnjM3yo61deQ7VKMn+rGmS7DNmAYKh1XsHa1T6gs0jWg8WnfH/Ldr3TR1VEhGheDqV0qK5qtGz3+50tt/X7mpDMNbUO58EsCDU02O7YWCTBoTS00Ckldo7lVd2d1ctnwttQ2WDEKUoqKuX/7jV3c98BUfnpTN3t3aF71j7V86JMT+NF/7KOzQx+U3PggxbqH3PzVc6CrlMFlly2PlYG0q/ndJLf85d6YUPtAhkzvBHqoDMr3wgvOBB1EOI7y9y3uuPORGKXp+wGNjXUsX34ygV/o1dZEcdvtD/ZI2evqokilmT59snGzSvloYwps26ZUynPnnY9ULNg+GBbz+8ZxFieclqSkzaZDRO6BLXj8CY+9O/UBcRIHRDkH5junnpumhI6fSUjwUDx4e76HJVpOjU+eZnP8yRkKOkIWa5Oh3LnL44VVZvMed1KKadNdCr4Xc9g4jmTPHp9VjxT6gDN7F0zOW+Qyf5GDF4ZxuxMtBAlbkKz0fexV4kCPZIQAPDweu68ndkgMzKPu4642NAs+8KEGWls8fvDVTjY+E/LWaxv4ykd397LYIV0jqK2L2Cmj4IhA0NUZWTJ1VmTlmHn3SoruTkVdgxUVN5vDvlAIyHWHvLQu4OlHiofcX4Ouwi73xJWyV5o4Coy1toQGp2GXI/SC5gk2bftC8vkQN2WKhhTQOM5YMm37Aqy4KMMQ49Q0atwEFPM9S/VXP+px8YW7WbvKCEoypdm936OQ11Wu0ACDi4Ou5a3KsoWGge7CC09HKy/apKamxXUd2ttauf+Bxw1WQ9NDAfSvwHSkTBRz501nyRID7JNRiYBt25SKOe66e0WPby098RimTZ9IIZczG11rEgmX/fvaePSR1T2slgpcX6LDkOXLT6KpeSK57g6T7lWadCbF00+t5dnn1pkDQal+KSbDULP0jDSTxifJ+lFBqC5nDi0eiYKoli0gGDgGW2uYc7TL/GMSlEIVBWdNDdTOnYU4jlEOZJbduaVnppnQIOkohVEMSJFAsubRAm37zIdPPjtBAkUuChIrpUkKyeqHs3S2R8HiA7mGSrPs3DQZ2zapayvqBOlIHr4vxy/+uy3+XU8hEz1iEZYF3V0BW9b7PZSaHkyFIZX+1MW8Yl8hwHGN5fC5f97LDd9pZ+uGoDJPohznlNTU2ag4nG4UYkdr2ZIp8zqZrgWFgkdnR0jTeGNulZMw+VxIR6spKpVWOVZYhSoLD72/Dlkgqfspgy/LWEebIttlyKsCTwEWjRMtst2KzjbFxGlW5LNrxk2IlMx+Hxlp+nJla+M4SV2DpJhXPXZl4MMjdxdjVOm4yTbFoskQ9U5aj1ZjsbL7s+Co2Rx73DxjxUS0CqHSpDO13HXX42zduusQUKeeL8c2/YbPP+80amrTZLs6sR3XANtSKVavXsvatS/FKVKAiy4+EykdE3xEorTCcROsXPkYO3ftjZn1eohBZD5fccX5kWIM47iREBYPPPi4qVtJOBF40Cg/VV2wBZx1SQ0WgbFYbR1hnyRFLXnwjhxKgfIGUaskTer6tPPSNCQk7UUfy474kZE8/VCJXFbgJiq1Z5YlCEua087P9IqfmGYkK+4qxEW9y87P4BFUaowiU/6hqOxBSghUf/IeuWMX10SlkhHsQYElQn73o1bu/GN+WO73UGW1mNeUipr6Jtvsv3bFEw8Ve0Iior1Z12BR12AAl+XEhcSQygE0NlmUS5skmq4OA0icONWO3UAL6GoP6e5UsaLTQ6AUHBKfTPk22U5F214YP96iZAgcGD/JxFdaWwSTp5mnU2gax5vTfeeWUiUgXDa5awXjJ1m07OqbOi3X/4UhTJuVoH2frrSx1SPU6KuMFdD9g+VMrdIyUqkaurvasS07UnwhWoe8+OIGFi2aGzPJVVqGih6FY1KaUovubIFtkVK68soLzTJEoLowDBFScv/9j+N5Po5tE4Qhjm1zztknoVUxtizNtRPcc+8TPcZa3SAuVIqGhjpOP20RvtcdWUvlwHmK++57MsIHhf3OiQoMwHLpmSlKKEMpEfnrWgsEAaefnyYMDHhOqwptQc+dVcbbCGwp2b7Jo1CAsy6ur0DvI3CYJuTOP3SjQo1XNawwMFb0KWenKEUKxHAfCzqKPk88YHA60+c6LFxsU1QqOn1NGrY9X4pdl7BfK8ZYDeMnWRx/SpJCnPrW2K5Fa1bz8J2FwR1SvYoh9TAUT7EA3Z0+4yZGFm9EahWGfdkVx0+ySLmagq+r5CJk7w4PBDQ0W3EluQ20RIx44yclze+jkoI9O8H3D4izGz0lgzYa0/dhz86QY46NYgkoxk81ymTPDo8lJ9rRo2maJ9okU7BtY8nw1YuKKZixE0ydkeD5p/s+TRgS172Pn5Rg745iBSmr9bCViz6E+VrW3JddtjxC+Vbq8C1bUiwUePc/vY73vvcN9Gakj9OJEdpSKcjUNPOHm27hVa9+H1Mmj2fp0nn4XhZLGkVjNr/irqjLQbmG5Njj5nP84kUUC2VEsEkjl4rt3H3Xip6xixjoZ1yd05YtZtr0aeSzOSw7AjQKje918L73XsPRC2ejdRjRMNazbu16/vDHO5CWSblOn2sz8ygbT8mohxVxQaAXaj79jcmUvqZjtKrQvbojRhF9HQpcx2LrS0WuOH4rTeMsFp9iU9B+jB6WlsTTgqv/sYFpM+1YmbquJPQ1x52WYNY8h5JvYkMqhJQNTzyVZdtGs5tPvyBNY9qls+hFrhKkHZvnnymyZUPYA0vSOx4TYlC+k5ocujzf8PyY3DW2FfL6f25k55YgzmjFG1hXojRaC1wbnl2V49mVfo8eUr1lbyChmXJ8VCno6BBMnp6OFWXf65orz5ibwEWSU2HULwxKwNaNPo3NFo3jRET4JrCw2LvdyM6kqQ5BtL8sJHu2BbEbqUI9JAvNHqpZJyzjf+/cUsSm3EJBM2m6ueS2zUUsUjEAKVMjmTzdZsdmn0JIfMKgwUEyfY7bs56pl2uWzggmTXd46uGBVfkORPEe6u8mBqCYOXMKp5xyLKVivqptiIjqqKLsg+5LfV85LGWEqQmAEndGCuSMM05k4sSpZLPtBuWrFG7CZffudp566vkeAnjuuaeQSLh0l/I4jkMYKtLpJKtWrWXtiy/F5QlxxEdUNsAxxxyFECmUziJ1WFEyfshFF5/FRRdfEH0rBJr43Gc/z41/0NjSBgImT3dIuoKiFykDXcmkaC0oeAphCUSZqjNmuqyiE8BkElPC4emHOyjkNSeenmDceIuCbzpJ6Ihy1QsVF1xWy2WX1VYFUc3/AhRZP4yhBaHSJHB45O5SnHE8/fwUEh03+9Na4wIP352tKtc4cOr6mMVJ0ztK93TJbdfmXz83oSpt0ZutxTglIZJ6HK57+0aeXWnmrA/z3iAtmzJ2p31vwOyj07GiPFBSY9b8RCx3WhtisWxOsWurz9SZLpmkJB/NowS2v2QC5s2TbIJozi0U218q9rsvB7OX7MF8qb+H3/RCyQxTmKLCCVNdbEew7tlSbAar0DS1nzHb5bEHCnS0F2kcZ+H55TySYu4xzkEj1xOm2Iyrddm20RuosTVsP1lKidYhZ555Eg2NzWS72iNLoBpnU1Wy2SPCrisl/RGGx3VTZLtL3H+/iYOcc+7JkVVU7tetcZwUjz7yAC372nBsKyYhv+Ti5WjtxS6C1hoha3jwwaf7FGTGxkMVh4jWAZUKZR0riVw2h1K5qJIbpOjkppvuiOIT5t5d7SG+8lEoU84hrPhBRZySKZfAlLsYRsnTKjtea4VPgfv+bHorNY5zkTqD1gV0VWcDAeRLIVnda0WjbqAxSZgSOLZFe9Hn5qgh3/iJNied0UhehxH/rVEqHjaP31/s1+LrHd9z3HKwtVLdXi5b6PDDA9sgwoAybUuwfV+Oe/+Uj9HSw47ZRLK0Y4ti2XkODU2S9lZ1QLmfsyARt8/VWuNKwZ69Hq37FMvOTWLjmPicMCyW658rkkxKmidpAq0MbAPFprXF4cc1+4EtDGjjlhdqwwseJWTUJkPT0OAydabNxmdLeIiIxc6cJLMXupSKmp1bfeyIXFoKgY9m5oKEMQnDfhrkAPOOTpLSNrt3BBwAbnHwmMsQFFKZ5/WiC8+I4xbVbz8ICAKfMAgIw5BQRe8wJAwVQRASBoogDPE8H2kJVq16jg0btpFIOJx5xgl4pSxhGBL4Ab5fRKkwpu4sk35PmzaRE044mkLeN+jPQOH7HmGY44EHVvZYj+pnLqN3n1i5JkKnCvzAj3pW6ypIvUJpj0TSYeNLLWzYsC3uUy4EvLjGY9MLNs1uHZ4foU/9MO6maP41XRDDQBOEmiCk8g6M1SSERUubxerHTFfMzeuLhKKAZSkCPyTwdXQNUFr0FdUoDlS+p2Vrmm2b/3d9O1uiDMuiExOMHwfFoiAMJb4vkCJk+9Zs3DGyv/a3oioL+cJqD0dKEDoak+lEUEEyi5iRIK6uFQK0qQ5PCos1jwa0t1ZKHgYb7zyQ3O58KaTeSTJ5htPHwijvH8cVzDzKwUfFiQMH0/BNKZhztGO4E5TpQVbUNi+9oJgyy6auNuqpbkO3p+PWK1oNrEXNIS2ZwZz+5YVa/3yBjo4iNfWSkqepSwjmLkzwxAM5urM+qYzEi8iXjzo+iRCwaW3I0qUSjcGGeGhmzE3S0GTR3hr2ZvsEYOGSFIEI2b2t70PrEbRqKkFPM9kTJjTzyqvPx7ZTNDRZ9OGl6PFz787J1S6UAibw4IM/IgxDzl5+MscvXgL4uImacpgbyHP33Q/HGBeAq668gHHj5wFtVedCglx2H4888nQfDEZMSh51P7j//sf5969+l499/F3Rkvc+AS2MHdrMQw/daBrSRZaRlKaq/rPv2MXXfzKRoxYKrCqx0VVtZ8UBxU4QoqlFcstzOfbuUjiO5Pmni/z39Xv5l8+Ow7Gc2O3oK7Ciz1oqBC2tHl/7t8389D+7cFyJ7yle8boGxlsJnFQxanmjqMfhnpWtdLWrfvtdV0CLBmV72++6+MWlbbz2jTVYUTmu7reRSg+G4mhckjosHri9s9ysdOApx16WjO5HiLduLJHQgoUnJHlhVc8e1eXvTprqMHFaAk/7URM749qvW2P2zvxjk5GVI0y9V1vI1g0+yy+rxRU2haBEKinZudVn+6Zg4FARRrglSjnotW93yIuri5x+ToZ86OMgOOHUGu79S5YdmxSLFrt4+PgI5h+fQmt47qk8176xJjZ/A18zYaJk5lE27Y/25CMpb54lpyXpCHJs21ga0EOLgzz0oWI21WyKNTUZvveDm/C8XORCWcRsrqKn1SP69MRQcbdJFSosW/Kzn//B9HMMQv77v28gl+80kQalcZwkLXs72LJ5JwLwI/dn955W/uMb/4PvdRuCb6VIJjNs2rSTln1t/QbBdVVKVgAf/8Q3uekP93L++cuYPn0cyUQCpQWB71HyAnzfJwhCfvnLm2OmPkGlc+Cqx7K8YmmWcy9Js3BJmkxtVLCpjLDqqoZFgmoXqZICTtpw/x3dZm2FwXr89+faeeTOEqcuz1DXrIwlKyIFKw1VJkpH9zHsd4WcZsPzPisfKtCy2xxUgW8EZvVjOb6+L8QLQ7QyFmU6YXP7n7sPCcosh9V8pfnXN+3it99LcuryFLXNMhqX6JEkKLvDvctSwkBwz805k1kNB3fEHcyqBti6oUQgAk5ZXsNNP+7s8YVyS6E5C22a6jTdno6hAqBYs9JkxuYuSMUckC4WWzd1k8tpjl3qYmESAC4O65/Nk+3Wg6ZSZaSUTDk9Fwaw+okCZ5+TwYCNNcecbKgh1q4KWbJYkkPgAzPmWiRTgqcezlFUEmmpOINU59icsCzN6kcr2rmsbGrqBItOTrJ5vcf+vfqgq9G7f/eBFM0hrZ9oUl96aRv/+q9fHlHsjQAefGglDz608hBjMPNz0023c9NNtx9kc+iDniblTNMTT6zmiSdWD2h8qle/YCkNWPK2m/LcdlN+2HNQ7nUtJDz5cJ4nHx7aNXsXZN7wnY5hATOrXY+VK4qsXDG8mMSA73cImYybHG4P2NWmWHJ6Gsc1dBRC9ApcL01GFBjRHNmCrmLI0ysMif6UWTa+MrElG8GzK43KOfbkBEGEDZIonnokN6Cg76H2lRyJCXzknhwlDE6ipH0WLbVwE4InV3QZjgxh/PjGRotjlyZZv6bEzp0erm00pBSmkOu0C5I9XLEy8fcxJyaY02zxzKPZiOld9KJHPvhDavoN8/RZ5LJrLWXlbVkCx7VxXQvXtXCq3q5rV/1/u8ffHKfv23VtLEvEnQUdx+75meh75ecuvy1L9v2sY2M7Vo/PVfN59f6dqU0y17FtyxBKWxa23fN9IMrGMjbJsozQHuht9/q3/HP5HTXarFTPRshY24k+4xz87URv2xFRjyIdt7+R0hCeOW7lc+W3ZVU+c6B39d+FMGNy3EG8q+4n5cAUy0DApHEgX5peSs880cVx85MsOj5VWfMqq+mUs1N4Zc4XpXGlZMsGn13bFMefkqAhowii6nWBz2P3ZkmlJUefmKSgNZZjkQ8DHomycUMB4InhWDI9CAKjwODKB/OsfzHHvAUuXTmfiU0Jlp6RZMVdOfKhwLJDfE+TdlyWnZ3hyRUFnn/SY9a0WoqYgGhBhSw+rYYJUyxadlVxnmrNha+pMdWzD5Y1qx5wmrrfz+gDKKJ+SxU0YTga1ZgDv27vRmtDfVVfJ+7QGJn7MWOFPkiMQPfXveLg1kA5OVPphin6CG0YAqEe7nTGcZXhxOd6cOio0cKRDy5WqKsgFaHSrHyowGsumcTZV6Z45smCOXSjJMX0OTbHn5qhpCI3J4SElqx6pAQCTjk7beo0wxA7IegowKP3FFh2XoYJdQ77sz6NtTarVmZZu8qvNNobxrPZw/lymUagVNR8+/NtfP/XU3FrIE3Ip74xjn84YwcvrM5x/NIUXcInQHPKORn4t/08cneeK19ZFxFaG0KryY0OZ15Uw00/7YzZz8ZNklx5bSPbsh4rHyxGKcEDZAcGuJD9fS+VhvGTJI4je5yUIuraiIg2Y9QnpwyzVhGZUhhUNqsOdQUjE7UZVaoCQKwmWFdV7V91nCGobPoyr3S/+CHVUwH4noqwE+a6vl9F2KqrXKAIX9LfJjKWRgVgplXPzMuhFIoQFba4sEddi+73s2W4v4EfVVYxkZRxvywhjVUhRQ/YTaXTaFVMQgKyF/I4BhtE1krvftdUr4sQ8b+WZdrASsvIgmlYVy6JqJ4XUwfl+5rA03i+ors7pGN/pcPpcPp2xyGAaL0euSvP/i928Yo3pPjBVwWFvOk04PuaC66qY0KtTVuxaPokSQgFPHirKQw86Zw0vkF3kRI2Dz/ehVaCj32jgbQMmFjrEhLyrc+0EgRlr2F4ytYe/uloKmlv+U03b/V3cOryDPmiojYNM+bY/PGGbk5amgIU+dDn+NMsxk+S3HNzJ+3/3oyTMgshhSDQite9q44//LwTSxpKrU98fQpzmzP8/De72bFF9VvpO5x6kEp7WKNMXFdQVy9IZSzqGqG+0aG21qauUZCu1TQ0CtK1NjX1LrV1DomUIJ0GO2EY/mxHYlmmKK9CoyhR2BFbjohPXB1CEJrOC1qJuF+1YfMz9UNaE7eBjTmJy9ZcTPtoiiX9UhDNTZTq9XWsdEAaxRL6gGbfnoCXXvBY/1yRjWtDdm4JaNkTYIyrgysfevW0LtML9FYoAlNvNnWWzdyFDkcdm2D2QpdJ0xxjqlfxP1pWz/ZtqYyFtDRaG5S15VhVuzqqfBMCoSucKVKa/t22pWOFJIVBZktpYzumTseKmq5VG/VliL1C4/umDXAYWHhFQbHoU8iHFPOabIdHd3dId0dIR5umo03R0aHIdga0t4R0dYZ0dhiqzrgqeojKpXeWqeyyrnmqwGMrcly4vJmPfV3xxQ/siVxZwSvfnKGkSwY0qiUJB3bu8Xj03jxzF9ksWizJBwFIcITkL/+XZdZ8m0fv8Lj9dznSSYeH78ny0B2FqFWNHvT+EgOxZIbSz0gIuPOmLHfe1JO8KJfr4INfbMJ2oVgIaMokee11jfy/L7Wy4u4cl19dS2cQYtmSnK84eVktr317A7/5QQcnLHOYMR92lwr8+nsdB0zGj4RRWyrC9pdCE57v8SocJPAtcBOCVEqQTEkytZBIWmTqJHX1knSNpK5Rkqm1qa2zqG0SpNOSukaLugaLTK0gU2uTSBrCdDdhgGCuZQr+TKdxiazafFF3n4hX36BoVdywxo7/Vmkdouib3IYFxyY57wKjCEsIOrs1u7cX2bKuyKa1PpvX+Wxe77N9s09bi4qsxwOHz+saBdNmOcw+ymHWApt5i2xmL3CYOitDQ4NDMkpPB4joJK1m76vwnojoeSsxCzeubS5DH2U8EyJOIRu8siYEfASBB54H+aymkFcU8nm62jW57oBclyKfU3R1hHR3arJdAd0dphAwnw3p6lQUciHFAuRzmlJRUSyoiCB/9F8Hu0u5VOS3P8hx+pkTWbhEcsyJNmue8HnLh+pZvMSlq2SKVz0f6h2HX/+xg1xW8ab3jiNj2bTmA1JJix37stz1p25a92qefaqlj2Wq1ND2l2bkjIA+F7Csvr1ewkDzro8188WvTiCLwkZQ8BVXn7INreH21XMo6QDPE0hhUAmhr/nmZ/aweV2JD39xHFu3ad77qm0Hbft6sAcZaOyGXr3nRD/fLJ/YeoTkzXFMAWIqbfoUpzLmFE9loKbWKKp0RlLXIKhtsKlrlNTWWtQ12dTUW6QzkkytIJ2xSKQMUbWTEDgO2BHdemXTlpWUwa14hPhBaDhzpXEV3ejk0ShKKNpbQ/bsDNi+SbFlfcCGF/JsWe/TNMFi4XEZ5iy0mT5PMGWmxfhJLpnI6grQlND4gUaFhgbVcSUJDGl2BdIm4oIGFWGKQ6UpFQPDyVy0yOdCctmAXFZRyId0tiq6On1yHZr21pDO9oBsZ0g2a1gB8lnD0ZzPagoF0zp5pBREjwB7nyhlT9nQo6CTBJUA9c/unkYmIfnvf2tn0QlJ/vlTE1DCHDhKa9IJi2x3yMULN3HU8S6/vG1qvP4pJB9+905u+G5X1OOqrMiNRV1d1DkYJSFGQskM6oaiohHf+v4mLn5lnaHvdC327lZ85V/3cNZFdVz/7fGk0k5sxEoELiFg8cSTXbz1km10tOkeCzcY/MtwNakYSJaqqked6PVDj/vrCpJ45BSVsaSSKUimBJlIOdXU2dTWS2pqI4uqRpLOOGRqBPVNklkLJVNmWjTWJ3AxjeBKhJRUYJjftMS2LRwbHDRlEoASGidSYAptLAcl8AON1gHS0ti2IIHExiYEsiWfPdsDXlobsG+XJp8N6e72KeQUnR2abKcilw3JdmkK+ZBsZ0ipqCgVoZDXlEpq2PPVMwMn+spHuRxC900GDDYlPZqvcsHlpGkWP7tzFscfnQI0xahIGUIEku5WwYfesp0tG3N8/GsTSSYNPsu1XG77Y44b/rc97is/Uh7BaOy/YWkmN2FoNmfOdZkxxzGBytgCCvE8zZqVXoz8rV7galTwGAx1VK7dhyGtupmmoKqHVN/NMBKKSkqDDp0932HOwgTzjraZv8hhxlEpmie5ZGzi5jEempLSBH55s0uTLraNQ2NHdlIRaG/32L6pyMYXiqx/VrF5ncfm9SV2bg0pFtWIK4lqQejN80wvXqmezQBHV/hH8/ploK9lw3EnuliOwLaiKvmoXGfjOp+W3QGJpEnOHBaF2N88DDcSfqCXZZsIfHWgtRxQVOGhhetIOEFGS3CGc80etSvVSusASqp68x2oq0BNnamYnz3fYf4xCeYvSjF7fpKpsy0ax0ncyN3qysH+XbD1JY9NL2RZt6bAxrUBO7b67NsTHjCALEXPphu6SgtUfu6b6j5SZGCoB4oeYfkYyL6oTpRIWdWmMSrI1WMgsyO2Z4YTgTbgp37iH/RDgPRXpmAO+zOJ6vRxlCk6gLHRNE4yY47LzLku7a0BG1/02Lc76MFU2ONgsSrEXSPtIv6tvvrjYDb9t/rWhqvDuHfG0mJ8WS3YYL7w1zxxfdySg1g98SFRBeyLfXx9BK7hEXwgjYa1M1rzdFgsmb+/jgzTejRfslxVHNnpI51pG4nnHsuY2mDve7hP98MlV4fNXfpbc39GewP1+7cB3vRwnkqHqpb/W7ag/1rmRB6Jm1WM0cNrMXb316N8DT2Mm+phjmE4pGH9cadUE2aIIayJGIW/HQ5Z+GtRulKMwOSOxAk9mOv1J4RDEqp+igFHUmGKw/R9McZC1B8uQgxwPcUhFI8+xDXEAMfT+29ikHIsRnEdxShf/2XnMYyo1RJdbCjEUoMZW3XqdqxM0JezqTtSYx/NQOaRvC6jeo8hXHy4saThDnPQ7tJgTpRDDmOYnR0H+vn+TsQeGLhqLIno+yxDOSlG030c7VNPj+F1DnYgHE5X5ZDjFIfJzdEjY+EzhvPcLxhvMDc/XNH8kfjegcBMw8kCHE4L5nBbT6MZ0PxrCgwfbhlhjO8vD3bqH2m+/mB88oE2zTqUAOgjePEG5CqKwa3fcD4zkJhGNSpZDCJGcaQkFvq1EsTg5fNwBVs0fzup8yNiIKIf90kPVYFEfM16NBTFERjb+GuQgeHOK0fA3I40xmo01kAOZRQDJRYejCI+HNaT7iUsvS2g6mzTIa0jPXqLq4e4AQY6j2IUBL/aWhnr+MBQ7ycGeL0yi+FohgmGum/0COyJkZaNUTk8hq1NR7ggcjjR9b+WWMDL/TmOtDjGaMvNgUCKR9I6DnQscjRuPmxtqoevTQeK0xgQsbQYWwvr5bb5/9rnRh9go4sBytVQ8FxDsWrFIH8/avtcDEHJiDESzqEoiUNNwKE2wYACnXpgEyzGcH4YIaEdDUEbbY6WA/08VoA2PcjnHIhrNVClIkbgGoNSfiOA3xiU9XW4eV3GKvU52qnzv7+OLHfqb62WaKyfaVDu0lgpmKGkSAer3cUojPPvCubIiJeMpts0FDdxqO7+YK4nRuCZRssyl0ei4OjDIaVDuL8ehQUZ6DD/HhMa2FqNFjJZMzJxlKGECEaKQ1eM0T4cdWtpLGgEjhTMwt9dp7+/jkQ3/lD7ZbQJrUbdkhkKjcABzURx+Ey+sXSdxF/xxhrS98SRO7ahjnswVvAhD1Ex+D2pR0hWj8gDd9QrrocQnP5btjpGMsj9t4I5ejlsyCNprsc8JjOUNNugrqPHbpP9NVgompGrMh/stcQIbswj3WLsHcgVh2mfHdGK80jnXx2rSflb4mb9++vwrueRKGtDGdOALZmhRMgHc43BgqnEIXxeMUrjPFzWxsvdYjrcYxdH0FwNh35zqJSkIzW2vwr82JEyoAOOo1dblCNRKR2OeX7ZWKn9xOxMbyg9yOtEDer+3khq5CyZkThFxDAEdaxjIPoQf6iuzh6skI/2aT/YeR6JE1GP8JqMFnF4dS/1+JCoUhQDruDW+pAKZijWOWJk1+VIsC7H7AAajq83GjwrDGEjHq6eOX8rMZkjrQXwkbYuLwc56G+McqRvMBrw5pHiWRnt8Yy5VXWExDvGOlZxuK85Ftc+2P0OF/br74fk319/f/2VbYS/ls35/wG9ml+nMMiw/wAAAABJRU5ErkJggg=="
+       alt="LiftCore"
+       style="height:72px;width:auto;display:block;image-rendering:crisp-edges;">
+  </div>
+  <nav class="topbar-nav" aria-label="Modules">
+    <a href="index.html"   class="nav-chip">Profiel</a>
+    <a href="liftcore.html"  class="nav-chip cur">LiftCore</a>
+    <a href="cardiocore.html"   class="nav-chip">CardioCore</a>
+    <a href="resetcore.html" class="nav-chip">ResetCore</a>
+    <a href="workcore.html"  class="nav-chip">WorkCore</a>
+  
+    <button onclick="exporteerData()" style="font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer" title="Exporteer data">↓ export</button></nav>
+  <span class="prog-pill" id="prog-pill">5×5 · Beginner</span>
+</header>
+
+<!-- Sidebar backdrop (mobiel) -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="sluitMenu()" aria-hidden="true"></div>
+
+<!-- Mobiel module-dropdown (schakelen tussen modules) -->
+<div class="nav-dropdown" id="nav-dropdown">
+  <div style="position:absolute;inset:0" onclick="sluitModuleNav()"></div>
+  <div style="position:absolute;top:calc(var(--topbar-h) + 8px);right:16px;background:var(--bg-2);border:1px solid var(--border-2);border-radius:var(--rl);padding:6px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:dropIn .18s ease;z-index:1">
+    <a href="index.html"    style="display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em" onclick="sluitModuleNav()">⚡ Focus Dashboard</a>
+    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+    <a href="liftcore.html"  style="display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--lift);background:var(--lift-dim);text-decoration:none;letter-spacing:.03em" onclick="sluitModuleNav()">🏋 LiftCore</a>
+    <a href="cardiocore.html"   style="display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em" onclick="sluitModuleNav()">🏃 CardioCore</a>
+    <a href="resetcore.html" style="display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em" onclick="sluitModuleNav()">🌅 ResetCore</a>
+    <a href="workcore.html"  style="display:block;padding:10px 14px;border-radius:var(--r);font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;transition:var(--tx);letter-spacing:.03em" onclick="sluitModuleNav()">💼 WorkCore</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar" aria-label="Navigatie">
+  <!-- Terugkeer naar Focus Dashboard — visueel los van LiftCore navigatie -->
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r);font-size:12px;color:var(--muted);text-decoration:none;transition:var(--tx);margin-bottom:4px;border:1px solid var(--border)" onmouseover="this.style.color='var(--txt)';this.style.borderColor='var(--border-2)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+    <span style="font-size:12px">←</span>
+    <span style="font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase">Focus Dashboard</span>
+  </a>
+  <div class="sb-sep"></div>
+  <div class="sb-section">Trainen</div>
+  <button class="sb-btn on" onclick="ga('dashboard')" id="nav-dashboard"><span class="sb-icon">⚡</span>Dashboard</button>
+  <button class="sb-btn"    onclick="ga('training')"  id="nav-training" ><span class="sb-icon">🏋</span>Training</button>
+  <button class="sb-btn"    onclick="ga('extra')"     id="nav-extra"    ><span class="sb-icon">➕</span>Extra</button>
+  <div class="sb-sep"></div>
+  <div class="sb-section">Analyse</div>
+  <button class="sb-btn" onclick="ga('progressie')"  id="nav-progressie" ><span class="sb-icon">📈</span>Progressie</button>
+  <button class="sb-btn" onclick="ga('geschiedenis')" id="nav-geschiedenis"><span class="sb-icon">📋</span>Geschiedenis</button>
+  <div class="sb-sep"></div>
+  <div class="sb-section">Instellen</div>
+  <button class="sb-btn" onclick="ga('persoonsprofiel')" id="nav-persoonsprofiel"><span class="sb-icon">👤</span>Mijn profiel</button>
+  <button class="sb-btn" onclick="ga('cardiocore-sync')" id="nav-cardiocore-sync"><span class="sb-icon">🔄</span>CardioCore sync</button>
+  <button class="sb-btn" onclick="ga('instellingen')" id="nav-instellingen"><span class="sb-icon">⚙</span>Instellingen</button>
+</aside>
+
+<main class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<section class="scr on" id="schr-dashboard">
+  <div class="ph">
+    <div class="ph-over">Vandaag</div>
+    <div class="ph-title" id="d-groet">Welkom terug</div>
+    <div class="ph-sub" id="d-sub">Volgende training bepalen...</div>
+  </div>
+
+  <div id="rc-warn" style="display:none" class="alert a-run">🏃 CardioCore sync — morgen looptraining gepland. Houd vandaag de intensiteit licht.</div>
+
+  <div class="card card-lift">
+    <div class="clabel">Volgende training</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px">
+      <div>
+        <div style="font-family:var(--head);font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.3;margin-bottom:4px" id="d-naam">Training A</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:3px" id="d-oef">Squat · Bench · Row</div>
+        <div style="font-size:11px;color:var(--faint)" id="d-week">Week 1 · Sessie 1</div>
+        <div style="font-size:11px;color:var(--amber);margin-top:5px">Incl. warming-up per oefening + roeimachine</div>
+      </div>
+      <button class="btn btn-lift btn-lg" onclick="startTraining()">Training starten →</button>
+    </div>
+  </div>
+
+  <div class="g4" style="margin-bottom:12px">
+    <div class="metric"><div class="ml">Squat</div><div class="mv" id="m-sq">—<span class="mu"> kg</span></div><div class="ms">5 × 5</div></div>
+    <div class="metric"><div class="ml">Bench</div><div class="mv" id="m-bp">—<span class="mu"> kg</span></div><div class="ms">5 × 5</div></div>
+    <div class="metric"><div class="ml">OHP</div><div class="mv" id="m-op">—<span class="mu"> kg</span></div><div class="ms">5 × 5</div></div>
+    <div class="metric"><div class="ml">Deadlift</div><div class="mv" id="m-dl">—<span class="mu"> kg</span></div><div class="ms">1 × 5</div></div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Weekschema</div>
+    <div class="week-grid" id="week-rooster"></div>
+    <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:var(--lift)"></div>Kracht</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:rgba(200,255,71,.35)"></div>Voltooid</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:var(--bg-3);border:1px solid var(--border)"></div>Rust</div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="metric"><div class="ml">Trainingen</div><div class="mv" id="st-totaal">0</div><div class="ms">afgerond</div></div>
+    <div class="metric"><div class="ml">Streak</div><div class="mv" id="st-streak">0<span class="mu"> wk</span></div><div class="ms">opeenvolgend</div></div>
+    <div class="metric"><div class="ml">Totaal volume</div><div class="mv" id="st-vol">0<span class="mu"> t</span></div><div class="ms">alltime</div></div>
+  </div>
+</section>
+
+<!-- ══ TRAINING ══ -->
+<section class="scr" id="schr-training">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div class="ph" style="margin:0">
+      <div class="ph-title" id="tr-titel">Training A</div>
+      <div class="ph-sub" id="tr-datum"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="ga('dashboard')">← Terug</button>
+      <button class="btn btn-ok" id="btn-afronden" onclick="ronAf()" disabled>Afronden ✓</button>
+    </div>
+  </div>
+
+  <div class="pbar-wrap"><div class="pbar-fill" id="tr-pbar" style="width:0%"></div></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;margin-bottom:18px" id="tr-plbl">0/0</div>
+
+  <div id="oef-container"></div>
+</section>
+
+<!-- ══ EXTRA OEFENINGEN ══ -->
+<section class="scr" id="schr-extra">
+  <div class="ph">
+    <div class="ph-over">Accessoires</div>
+    <div class="ph-title">Extra oefeningen</div>
+    <div class="ph-sub">Thuisuitvoerbaar — dumbbells of barbell, geen gymtoestellen vereist</div>
+  </div>
+
+  <div class="alert a-lift" style="margin-bottom:14px">🏠 Alle oefeningen zijn uitvoerbaar met losse gewichten. Geen kabelmachines, geen bankje — de vloer volstaat.</div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="toonExtraTab('A')">Training A</button>
+    <button class="tab-btn"    onclick="toonExtraTab('B')">Training B</button>
+  </div>
+
+  <div id="extra-A">
+    <div class="card"><div class="clabel">Borst & triceps (push)</div><div id="eA-push"></div></div>
+    <div class="card"><div class="clabel">Rug & biceps (pull)</div><div id="eA-pull"></div></div>
+  </div>
+  <div id="extra-B" style="display:none">
+    <div class="card"><div class="clabel">Schouders & triceps (push)</div><div id="eB-push"></div></div>
+    <div class="card"><div class="clabel">Posterieure keten (pull)</div><div id="eB-pull"></div></div>
+  </div>
+</section>
+
+<!-- ══ PROGRESSIE ══ -->
+<section class="scr" id="schr-progressie">
+  <div class="ph">
+    <div class="ph-over">Analyse</div>
+    <div class="ph-title">Progressie</div>
+    <div class="ph-sub">Gewichtsontwikkeling per oefening</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn on" onclick="toonProg('squat')">Squat</button>
+    <button class="tab-btn" onclick="toonProg('bench')">Bench</button>
+    <button class="tab-btn" onclick="toonProg('ohp')">OHP</button>
+    <button class="tab-btn" onclick="toonProg('deadlift')">Deadlift</button>
+    <button class="tab-btn" onclick="toonProg('row')">Row</button>
+  </div>
+
+  <div class="card">
+    <div class="clabel" id="pg-naam">Squat — progressie</div>
+    <div style="display:flex;align-items:baseline;gap:9px;margin-bottom:4px">
+      <span style="font-family:var(--mono);font-size:32px;font-weight:500;line-height:1.2;overflow:visible;display:inline-block" id="pg-huidig">—</span>
+      <span style="font-size:13px;color:var(--muted)">kg huidig</span>
+      <span id="pg-pr" class="pr-badge" style="display:none">PR</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="pg-stijg">—</div>
+    <div class="pchart" id="pg-chart"></div>
+    <div class="pchart-labels" id="pg-labels"></div>
+  </div>
+
+  <div class="g3" style="margin-bottom:12px">
+    <div class="metric"><div class="ml">Begingewicht</div><div class="mv" style="font-size:17px" id="pg-begin">—</div><div class="ms" id="pg-begin-d">—</div></div>
+    <div class="metric"><div class="ml">PR gewicht</div><div class="mv" style="font-size:17px" id="pg-max">—</div><div class="ms" id="pg-max-d">—</div></div>
+    <div class="metric"><div class="ml">Sessies</div><div class="mv" id="pg-sess">0</div><div class="ms">trainingen</div></div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">1RM schatting — Epley (gewicht × 5 reps)</div>
+    <div class="g5" id="rm-grid"></div>
+    <div style="font-size:10px;color:var(--faint);margin-top:9px;font-family:var(--mono)">Epley: 1RM = g × (1 + reps/30) · Alleen als richtlijn</div>
+  </div>
+
+  <!-- Extra oefeningen progressie -->
+  <div style="margin-top:8px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="ph-title" style="font-size:18px">Extra oefeningen</div>
+      <div style="font-size:12px;color:var(--muted)">Alleen actieve extra's met data</div>
+    </div>
+    <div id="extra-prog-container">
+      <div class="leeg" style="padding:28px 0">
+        <div class="leeg-icon">➕</div>
+        <div style="font-size:13px;color:var(--muted)">Activeer extra oefeningen en doe trainingen om data te zien</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ GESCHIEDENIS ══ -->
+<section class="scr" id="schr-geschiedenis">
+  <div class="ph">
+    <div class="ph-over">Archief</div>
+    <div class="ph-title">Geschiedenis</div>
+    <div class="ph-sub">Alle voltooide trainingen</div>
+  </div>
+  <div id="gesch-lijst"></div>
+</section>
+
+<!-- ══ RUNCORE SYNC ══ -->
+<section class="scr" id="schr-cardiocore-sync">
+  <div class="ph">
+    <div class="ph-over">Integratie</div>
+    <div class="ph-title">CardioCore sync</div>
+    <div class="ph-sub">Kracht- en looptraining in balans — automatische aanpassing</div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Synchronisatieregels</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span style="font-size:16px;flex-shrink:0">📅</span>
+        <div><div style="font-weight:500;margin-bottom:2px">LiftCore ma/wo/vr · CardioCore di/do/za</div><div style="font-size:12px;color:var(--muted)">Perfecte afwisseling — geen overlapping tussen kracht en cardio.</div></div>
+      </div>
+      <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span style="font-size:16px;flex-shrink:0">⏰</span>
+        <div><div style="font-weight:500;margin-bottom:2px">Minimaal 6 uur tussen sessies</div><div style="font-size:12px;color:var(--muted)">Nooit kracht en hardlopen op dezelfde dag binnen 6 uur.</div></div>
+      </div>
+      <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span style="font-size:16px;flex-shrink:0">🚣</span>
+        <div><div style="font-weight:500;margin-bottom:2px">Rowing warming-up telt als cardio</div><div style="font-size:12px;color:var(--muted)">5 min roeimachine (~900m, weerstand 3–4, SPM 20–22) wordt gelogd in CardioCore als lage-intensiteit cardio.</div></div>
+      </div>
+      <div style="display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span style="font-size:16px;flex-shrink:0">🔄</span>
+        <div><div style="font-weight:500;margin-bottom:2px">Deload LiftCore = Easy week CardioCore</div><div style="font-size:12px;color:var(--muted)">Deload weken worden automatisch gesynchroniseerd. CardioCore loopt dan ook op verlaagd volume.</div></div>
+      </div>
+      <div style="display:flex;gap:11px;padding:10px 0;font-size:13px">
+        <span style="font-size:16px;flex-shrink:0">⚠</span>
+        <div><div style="font-weight:500;margin-bottom:2px">Volume aanpassing bij hoog loopvolume</div><div style="font-size:12px;color:var(--muted)">Boven 30 km/week: accessoires weggelaten. Boven 45 km/week: alleen kernprogramma actief.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-run">
+    <div class="clabel">Wekelijks loopvolume</div>
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:8px">
+      <input type="range" min="0" max="60" value="25" id="run-slider" oninput="updateRunVol(this.value)" style="flex:1">
+      <span style="font-family:var(--mono);font-size:14px;font-weight:500;min-width:46px;text-align:right" id="run-lbl">25 km</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted)" id="run-advies">Normaal volume · LiftCore volledig schema actief</div>
+  </div>
+</section>
+
+<!-- ══ PERSOONSPROFIEL ══ -->
+<section class="scr" id="schr-persoonsprofiel">
+  <div class="ph">
+    <div class="ph-over">Persoonlijk</div>
+    <div class="ph-title">Mijn profiel</div>
+    <div class="ph-sub">Persoonsgegevens en trainingsprofiel</div>
+  </div>
+
+  <!-- Eerste keer banner -->
+  <div id="pp-welkom-banner" class="alert a-lift" style="display:none;margin-bottom:16px">
+    👋 Welkom bij LiftCore — kies hieronder je startprofiel om te beginnen. Kies conservatief: te licht is altijd beter dan te zwaar.
+  </div>
+
+  <div id="pp-sync-banner" class="alert a-amber" style="display:none;margin-bottom:14px">
+    ⚠ Niet ingelogd — wijzigingen worden alleen lokaal opgeslagen.
+  </div>
+
+  <div class="card">
+    <div class="clabel">Persoonsgegevens</div>
+    <div class="g2">
+      <div class="f-grp">
+        <label class="f-lbl" for="pp-naam">Naam</label>
+        <input id="pp-naam" type="text" class="f-input" placeholder="Jouw naam" oninput="markeerPPWijziging()">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="pp-geslacht">Geslacht</label>
+        <select id="pp-geslacht" class="f-input" onchange="markeerPPWijziging()">
+          <option value="">— kies —</option>
+          <option value="man">Man</option>
+          <option value="vrouw">Vrouw</option>
+          <option value="anders">Anders / niet vermeld</option>
+        </select>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="pp-leeftijd">Leeftijd</label>
+        <input id="pp-leeftijd" type="number" class="f-input" min="10" max="100" placeholder="bijv. 32" oninput="markeerPPWijziging()">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="pp-lengte">Lengte (cm)</label>
+        <input id="pp-lengte" type="number" class="f-input" min="100" max="250" placeholder="bijv. 182" oninput="markeerPPWijziging()">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="pp-gewicht">Lichaamsgewicht (kg)</label>
+        <input id="pp-gewicht" type="number" class="f-input" min="30" max="300" step="0.5" placeholder="bijv. 82.5" oninput="markeerPPWijziging()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Trainingsprofiel</div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="prof-card" id="pp-pk-licht" onclick="kiesPPProfiel('licht')">
+        <div class="prof-icon">🪶</div>
+        <div class="prof-title">Licht</div>
+        <div class="prof-sub">Squat start 30 kg</div>
+      </div>
+      <div class="prof-card" id="pp-pk-midden" onclick="kiesPPProfiel('midden')">
+        <div class="prof-icon">🏋</div>
+        <div class="prof-title">Midden</div>
+        <div class="prof-sub">Squat start 45 kg</div>
+      </div>
+      <div class="prof-card" id="pp-pk-zwaar" onclick="kiesPPProfiel('zwaar')">
+        <div class="prof-icon">🏆</div>
+        <div class="prof-title">Zwaar</div>
+        <div class="prof-sub">Squat start 60 kg</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500">Alle startgewichten aanpassen</div>
+        <div style="font-size:11px;color:var(--muted)">Past alle lifts tegelijk aan</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="gew-btn" onclick="pasProfielGewichten(-2.5)" style="width:34px;height:34px;font-size:16px">−</button>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--muted);min-width:30px;text-align:center" id="pp-gew-preview">—</span>
+        <button class="gew-btn" onclick="pasProfielGewichten(+2.5)" style="width:34px;height:34px;font-size:16px">+</button>
+      </div>
+    </div>
+
+    <div class="g3" id="pp-gewichten-grid" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Synchronisatie</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px">Status</div>
+        <div style="font-size:11px;color:var(--muted)" id="pp-sync-status">Lokaal opgeslagen</div>
+      </div>
+      <span style="font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px" id="pp-sync-pill">lokaal</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+      <div>
+        <div style="font-size:13px">Laatste opgeslagen</div>
+        <div style="font-size:11px;color:var(--muted)" id="pp-bijgewerkt">—</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="syncPersoonsProfiel()">Sync nu</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-lift" id="pp-opslaan-btn" onclick="slaPersoonsProfielOp()" disabled>Opslaan</button>
+    <button class="btn btn-ghost btn-sm" onclick="herstelPersoonsProfiel()">Annuleer</button>
+  </div>
+</section>
+
+<!-- ══ INSTELLINGEN ══ -->
+<section class="scr" id="schr-instellingen">
+  <div class="ph">
+    <div class="ph-over">Configuratie</div>
+    <div class="ph-title">Instellingen</div>
+    <div class="ph-sub">Programma, rusttijden en voorkeuren</div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Programma</div>
+    <div class="f-grp">
+      <label class="f-lbl" for="inst-prog">Actief schema</label>
+      <select id="inst-prog" class="f-input">
+        <option value="sl5x5">StrongLifts 5×5 (beginner · +2,5 kg per sessie)</option>
+        <option value="madcow">Madcow 5×5 (intermediate · HLM weekstructuur)</option>
+      </select>
+    </div>
+    <div style="background:var(--bg-3);border-radius:var(--r);padding:12px;font-size:12px;color:var(--muted);line-height:1.65">
+      <strong style="color:var(--txt)">SL5×5</strong> — Voeg 2,5 kg toe na elke geslaagde training (deadlift +5 kg). Overstap naar Madcow na driemaal falen op hetzelfde gewicht.<br><br>
+      <strong style="color:var(--txt)">Madcow 5×5</strong> — Wekelijkse progressie met HLM structuur (Heavy/Light/Medium). Ideaal na ~3 maanden SL5×5.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Rusttijden</div>
+    <div class="g2">
+      <div class="f-grp">
+        <label class="f-lbl" for="inst-zw">Squat / Deadlift (sec)</label>
+        <input id="inst-zw" type="number" class="f-input" min="60" max="600" step="15" value="90">
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="inst-li">Bench / OHP / Row (sec)</label>
+        <input id="inst-li" type="number" class="f-input" min="60" max="600" step="15" value="90">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px;margin-bottom:14px">
+      <div><div style="font-size:13px">Geluid bij einde timer</div><div style="font-size:11px;color:var(--muted)">Melodie speelt als rust voorbij is</div></div>
+      <label class="sw" aria-label="Geluid">
+        <input type="checkbox" id="inst-geluid" checked>
+        <div class="sw-t"></div><div class="sw-k"></div>
+      </label>
+    </div>
+    <div class="clabel" style="margin-bottom:10px">Kies melodie</div>
+    <div id="melodie-kiezer" style="display:flex;flex-direction:column;gap:7px"></div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Gewichten & stangen</div>
+
+    <div class="f-grp">
+      <label class="f-lbl" for="inst-stap">Stapgrootte ± knoppen</label>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="stap-125" onclick="kiesStap(1.25)"
+                style="flex:1">1,25 kg</button>
+        <button class="btn btn-lift btn-sm"  id="stap-250" onclick="kiesStap(2.5)"
+                style="flex:1">2,5 kg</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px" id="stap-hint">
+        Huidige stapgrootte: <span id="stap-huidig">2,5 kg</span>
+      </div>
+    </div>
+
+    <div class="f-grp">
+      <label class="f-lbl" for="inst-stang-recht">Rechte stang (olympische barbell)</label>
+      <select id="inst-stang-recht" class="f-input">
+        <option value="10">10 kg — lichte stang / dames barbell</option>
+        <option value="20" selected>20 kg — standaard olympische stang</option>
+      </select>
+    </div>
+
+    <div class="f-grp">
+      <label class="f-lbl" for="inst-stang-curl">Curl stang (EZ-bar)</label>
+      <select id="inst-stang-curl" class="f-input">
+        <option value="7.5">7,5 kg</option>
+        <option value="10" selected>10 kg</option>
+        <option value="12.5">12,5 kg</option>
+      </select>
+    </div>
+
+    <div style="background:var(--bg-3);border-radius:var(--r);padding:11px 13px;font-size:11px;color:var(--muted);line-height:1.6">
+      Beschikbare schijven: <span style="font-family:var(--mono);color:var(--txt)">1,25 · 2,5 · 5 · 10 · 20 kg</span><br>
+      De schijfberekening verschijnt per oefening tijdens de training.
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-lift" onclick="slaInstOp()">Opslaan</button>
+    <button class="btn btn-danger btn-sm" onclick="resetAlles()">Data wissen</button>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- Rusttimer -->
+<div class="timer-box" id="timer-box" role="timer" aria-live="polite">
+  <div class="t-lbl">Rust · volgende set</div>
+  <div class="t-val" id="t-display">1:30</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-style:italic">Rust 3 minuten als het zwaar was.</div>
+  <div class="t-track"><div class="t-fill" id="t-fill" style="width:100%"></div></div>
+  <div class="t-acts">
+    <button class="btn btn-ghost btn-sm" onclick="stopTimer()">Stop</button>
+    <button class="btn btn-ghost btn-sm" onclick="plusTimer(30)">+30s</button>
+    <button class="btn btn-ok btn-sm" onclick="stopTimer()">Klaar →</button>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+<!-- Supabase SDK voor standalone sync -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* Supabase init — werkt zowel standalone als via index.html */
+(function(){
+  var SB_URL  = 'https://edgzrpmaqpjtzeiqhisw.supabase.co';
+  var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZ3pycG1hcXBqdHplaXFoaXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3Mjc5NjIsImV4cCI6MjA5NjMwMzk2Mn0.j3kElkxEkn3YVcfBnmj9hLz3-F4o9KrVfLOZmz5rTl0';
+  if(window._supabaseClient) return; // al gezet door index.html
+  if(!window.supabase) return;
+  window._supabaseClient = window.supabase.createClient(SB_URL, SB_ANON, {
+    auth: { persistSession: true, autoRefreshToken: true }
+  });
+})();
+</script>
+
+<script>
+'use strict';
+
+/* ══ DASHBOARD SCHEMA — gedeeld met alle modules ══ */
+const FOCUS_SCHEMA_KEY = 'focus_schema';
+function laadFocusSchema(){
+  try{
+    const r = localStorage.getItem(FOCUS_SCHEMA_KEY);
+    const std = {wekker:'07:00',slaap_herinnering:'22:30',
+      rooster:{ma:'werk',di:'werk',wo:'werk',do:'werk',vr:'werk',za:'vrij',zo:'vrij'},
+      lift_dagen:['ma','wo','vr'],cardio_dagen:['di','do','za']};
+    return r ? {...std,...JSON.parse(r)} : std;
+  }catch{ return null; }
+}
+const LS = 'liftcore_v3';
+
+/* ══ DATA ══ */
+const STD = {
+  versie: 3,
+  profiel_gekozen: false,
+  profiel: 'licht',
+  programma: 'sl5x5',
+  trainingen: [],
+  gewichten: { squat:30, bench:17.5, ohp:15, deadlift:45, row:20 },
+  extra_actief: [],
+  run_km: 25,
+  inst: { rust_zw:90, rust_li:90, geluid:true, melodie:'readycheck',
+          gewicht_stap:2.5, stang_recht:20, stang_curl:10 },
+  actieve_training: null, // opgeslagen AT voor herstel
+  actief_scherm: 'dashboard', // welk scherm actief was
+  hProg: 'squat',            // geselecteerde progressie-oefening
+};
+
+/* ══ PROFIELEN ══ */
+const PROFIELEN = {
+  licht:  { squat:30,   bench:17.5, ohp:15,   deadlift:45,  row:20   },
+  midden: { squat:45,   bench:27.5, ohp:22.5, deadlift:60,  row:32.5 },
+  zwaar:  { squat:60,   bench:40,   ohp:30,   deadlift:80,  row:45   },
+};
+
+/* ══ SCHEMA ══ */
+const SCHEMA = {
+  A: [
+    { id:'squat',    naam:'Back Squat',      sets:5, reps:5, type:'zw', stangType:'recht',
+      spier:'Quads · Glutes · Hamstrings',       mcls:'mt-benen' },
+    { id:'bench',    naam:'Bench Press',      sets:5, reps:5, type:'li', stangType:'recht',
+      spier:'Pecs · Triceps · Ant. deltoid',     mcls:'mt-borst' },
+    { id:'row',      naam:'Barbell Row',      sets:5, reps:5, type:'li', stangType:'recht',
+      spier:'Lats · Rhomboids · Biceps',         mcls:'mt-rug' },
+  ],
+  B: [
+    { id:'squat',    naam:'Back Squat',       sets:5, reps:5, type:'zw', stangType:'recht',
+      spier:'Quads · Glutes · Hamstrings',       mcls:'mt-benen' },
+    { id:'ohp',      naam:'Overhead Press',   sets:5, reps:5, type:'li', stangType:'recht',
+      spier:'Deltoids · Triceps · Upper trap',   mcls:'mt-schouder' },
+    { id:'deadlift', naam:'Deadlift',          sets:1, reps:5, type:'zw', stangType:'recht',
+      spier:'Hamstrings · Glutes · Erectors · Lats', mcls:'mt-deadlift' },
+  ],
+};
+
+/* ══ EXTRA OEFENINGEN ══ */
+const EXTRA = {
+  'A-push': [
+    { id:'floor-press',   naam:'Dumbbell Floor Press',   spier:'Pecs · Triceps',       equip:'2× dumbbell' },
+    { id:'chest-flye',    naam:'Chest Flye (vloer)',     spier:'Pecs',                 equip:'2× dumbbell' },
+    { id:'closegrip-fp',  naam:'Close-Grip Floor Press', spier:'Triceps · Pecs',       equip:'Barbell' },
+    { id:'diamond-pu',    naam:'Diamond Push-ups',       spier:'Triceps · Pecs',       equip:'Lichaamsgewicht' },
+  ],
+  'A-pull': [
+    { id:'chin-ups',      naam:'Chin-ups',               spier:'Lats · Biceps',        equip:'Pull-up stang' },
+    { id:'inv-row',       naam:'Inverted Rows (tafel)',   spier:'Rug · Biceps',         equip:'Stevige tafel' },
+    { id:'db-row',        naam:'One-Arm DB Row',          spier:'Lats · Rhomboids',     equip:'1× dumbbell' },
+    { id:'rear-delt',     naam:'Rear Delt Fly',          spier:'Post. deltoid',         equip:'2× dumbbell' },
+    { id:'bicep-curl',    naam:'Barbell Bicep Curl',     spier:'Biceps',               equip:'Barbell' },
+  ],
+  'B-push': [
+    { id:'lat-raise',     naam:'Lateral Raise',          spier:'Mid. deltoid',         equip:'2× dumbbell' },
+    { id:'front-raise',   naam:'Front Raise',            spier:'Ant. deltoid',         equip:'2× dumbbell' },
+    { id:'arnold-press',  naam:'Arnold Press (vloer)',   spier:'Deltoids',             equip:'2× dumbbell' },
+    { id:'skull-crusher', naam:'Skull Crushers',         spier:'Triceps',              equip:'Barbell' },
+  ],
+  'B-pull': [
+    { id:'rdl',           naam:'Romanian Deadlift',      spier:'Hamstrings · Glutes',  equip:'Barbell' },
+    { id:'good-morning',  naam:'Good Mornings',          spier:'Hamstrings · Erectors',equip:'Barbell' },
+    { id:'shrugs',        naam:'Barbell Shrugs',         spier:'Trapezius',            equip:'Barbell' },
+    { id:'superman',      naam:'Superman Hold',          spier:'Erectors',             equip:'Lichaamsgewicht' },
+  ],
+};
+
+/* ══ STATE ══ */
+let D = laadData();
+// Herstel AT en hProg van opgeslagen state
+let AT = D.actieve_training || null;
+let TIv = null, TRest = 0, TTot = 0;
+let hProg = D.hProg || 'squat';
+let gkProfiel = 'licht';
+
+/* ══ OPSLAG ══ */
+function laadData(){
+  try{ const r=localStorage.getItem(LS); return r?{...JSON.parse(JSON.stringify(STD)),...JSON.parse(r)}:JSON.parse(JSON.stringify(STD)); }
+  catch{ return JSON.parse(JSON.stringify(STD)); }
+}
+function slaOp(){ D.bijgewerkt=new Date().toISOString(); if(AT) D.actieve_training=AT; D.hProg=hProg; try{ localStorage.setItem(LS,JSON.stringify(D)); }catch(e){ toast('Opslaan mislukt','wn'); } }
+
+/* ══ MOBIEL MODULE NAV ══ */
+function toggleModuleNav(){
+  const d = document.getElementById('nav-dropdown');
+  if(!d) return;
+  d.classList.contains('open') ? sluitModuleNav() : openModuleNav();
+}
+function openModuleNav(){
+  const d = document.getElementById('nav-dropdown');
+  if(d){ d.classList.add('open'); d.style.display='block'; }
+  const btn = document.getElementById('nav-modules-btn');
+  if(btn) btn.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function sluitModuleNav(){
+  const d = document.getElementById('nav-dropdown');
+  if(d){ d.classList.remove('open'); d.style.display='none'; }
+  const btn = document.getElementById('nav-modules-btn');
+  if(btn) btn.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ══ MOBIEL MENU ══ */
+function toggleMenu(){
+  const open = document.getElementById('sidebar').classList.contains('open');
+  open ? sluitMenu() : openMenu();
+}
+
+function openMenu(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-backdrop').classList.add('open');
+  document.getElementById('menu-btn').classList.add('open');
+  document.getElementById('menu-btn').setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden'; // voorkom scrollen achter overlay
+}
+
+function sluitMenu(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-backdrop').classList.remove('open');
+  document.getElementById('menu-btn').classList.remove('open');
+  document.getElementById('menu-btn').setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+}
+
+/* ══ NAVIGATIE ══ */
+function ga(id){
+  D.actief_scherm = id; slaOp();
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(s=>s.classList.remove('on'));
+  document.getElementById('schr-'+id).classList.add('on');
+  const nb=document.getElementById('nav-'+id); if(nb) nb.classList.add('on');
+  const fn={dashboard:verversDash, progressie:()=>toonProg(hProg), geschiedenis:verversGesch, extra:bouwExtra, instellingen:()=>{ vulInstUI(); bouwMelodieKiezer(); }, persoonsprofiel:()=>{ ppTijdelijkDelta=0; verversPersoonsProfielUI(); }};
+  if(fn[id]) fn[id]();
+  // Sluit sidebar op mobiel na navigatie
+  sluitMenu();
+}
+
+/* ══ DASHBOARD ══ */
+function verversDash(){
+  const L=volgendeLetter();
+  const oef=SCHEMA[L];
+  document.getElementById('d-naam').textContent='Training '+L;
+  document.getElementById('d-oef').textContent=oef.map(o=>o.naam).join(' · ');
+  const nr=D.trainingen.length+1;
+  document.getElementById('d-week').textContent=`Week ${Math.ceil(nr/3)} · Sessie ${nr}`;
+  const g=D.gewichten;
+  ['sq','bp','op','dl'].forEach((k,i)=>{
+    const ids=['squat','bench','ohp','deadlift'];
+    document.getElementById('m-'+k).innerHTML=g[ids[i]]+'<span class="mu"> kg</span>';
+  });
+  document.getElementById('st-totaal').textContent=D.trainingen.length;
+  document.getElementById('st-streak').innerHTML=Math.floor(D.trainingen.length/3)+'<span class="mu"> wk</span>';
+  const vol=D.trainingen.reduce((s,t)=>s+(t.volume||0),0);
+  document.getElementById('st-vol').innerHTML=(vol/1000).toFixed(1)+'<span class="mu"> t</span>';
+  const uur=new Date().getHours();
+  document.getElementById('d-groet').textContent=uur<12?'Goedemorgen':uur<18?'Goedemiddag':'Goedenavond';
+  document.getElementById('d-sub').textContent=`Volgende: Training ${L} — ${oef.map(o=>o.naam).join(', ')}`;
+  document.getElementById('prog-pill').textContent=D.programma==='sl5x5'?'5×5 · Beginner':'Madcow · Intermediate';
+  bouwWeekRooster();
+}
+
+function bouwWeekRooster(){
+  const c = document.getElementById('week-rooster');
+  const dagLabels  = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  const dagSleutels = ['ma','di','wo','do','vr','za','zo'];
+
+  // Lees volledig schema van Dashboard
+  const schema      = laadFocusSchema();
+  const liftDagen   = schema?.lift_dagen  || ['ma','wo','vr'];
+  const cardioDagen = schema?.cardio_dagen || ['di','do','za'];
+  const rooster     = schema?.rooster || {ma:'werk',di:'werk',wo:'werk',do:'werk',vr:'werk',za:'vrij',zo:'vrij'};
+
+  const vi     = (d=>d===0?6:d-1)(new Date().getDay());
+  const recent = D.trainingen.slice(-7);
+
+  c.innerHTML = dagLabels.map((d,i)=>{
+    const sleutel    = dagSleutels[i];
+    const isLift     = liftDagen.includes(sleutel);
+    const isCardio   = cardioDagen.includes(sleutel);
+    const isWerk     = rooster[sleutel] === 'werk';
+    const klaar      = recent.some(t=>(t=>t===0?6:t-1)(new Date(t.datum).getDay())===i);
+
+    let cls   = 'dag-dot';
+    let icon  = '—';
+    let sub   = '';
+
+    if(isLift){
+      cls  += klaar ? ' klaar' : ' lift';
+      icon  = klaar ? '✓' : '🏋';
+      sub   = `<div style="font-family:var(--mono);font-size:7px;color:${klaar?'var(--green)':'var(--lift)'};letter-spacing:.02em">${klaar?'klaar':'kracht'}</div>`;
+    } else if(isCardio){
+      cls  += ' cardio';
+      icon  = '🏃';
+      sub   = `<div style="font-family:var(--mono);font-size:7px;color:var(--run);letter-spacing:.02em">cardio</div>`;
+    } else if(isWerk){
+      cls  += ' werk';
+      icon  = '💼';
+      sub   = `<div style="font-family:var(--mono);font-size:7px;color:var(--muted);letter-spacing:.02em">werk</div>`;
+    } else {
+      icon  = '🏖';
+      sub   = `<div style="font-family:var(--mono);font-size:7px;color:var(--faint);letter-spacing:.02em">vrij</div>`;
+    }
+
+    if(i===vi) cls += ' vandaag';
+
+    return `<div class="dag"><div class="dag-n">${d}</div><div class="${cls}">${icon}${sub}</div></div>`;
+  }).join('');
+}
+
+/* ══ OPBOUWSETS ══ */
+/* ══ SCHIJVENBEREKENING ══
+   Beschikbare schijven per kant: 20, 10, 5, 2.5, 1.25 kg
+   Algoritme: greedy van groot naar klein, maximaal 4 van elk
+   stangType: 'recht' | 'curl' — bepaalt welk stanggewicht gebruikt wordt
+════════════════════════════════════════════════════════════ */
+const SCHIJVEN = [20, 10, 5, 2.5, 1.25]; // beschikbaar, groot naar klein
+
+function berekenSchijven(totaalGew, stangType){
+  const stangGew = stangType === 'curl'
+    ? (D.inst.stang_curl  || 10)
+    : (D.inst.stang_recht || 20);
+
+  const perKant = (totaalGew - stangGew) / 2;
+
+  if(perKant < 0) return { ok:false, stangGew, perKant:0, schijven:[], totaalCheck:stangGew };
+  if(perKant === 0) return { ok:true, stangGew, perKant:0, schijven:[], totaalCheck:stangGew };
+
+  // Greedy: pak grootste schijf die nog past
+  let resterend = Math.round(perKant * 100) / 100;
+  const schijven = [];
+  for(const s of SCHIJVEN){
+    while(resterend >= s - 0.001){
+      schijven.push(s);
+      resterend = Math.round((resterend - s) * 100) / 100;
+    }
+  }
+
+  const totaalCheck = stangGew + schijven.reduce((a,b)=>a+b,0)*2;
+  const ok = Math.abs(totaalCheck - totaalGew) < 0.05;
+
+  return { ok, stangGew, perKant, schijven, totaalCheck };
+}
+
+// Render schijven als HTML-badges
+function renderSchijvenHTML(totaalGew, stangType){
+  const r = berekenSchijven(totaalGew, stangType);
+
+  if(!r.ok){
+    return `<span style="font-size:10px;color:var(--red);font-family:var(--mono)">
+      ⚠ ${totaalGew} kg niet mogelijk met beschikbare schijven
+    </span>`;
+  }
+
+  if(r.schijven.length === 0){
+    return `<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">
+      Lege stang (${r.stangGew} kg)
+    </span>`;
+  }
+
+  // Groepeer identieke schijven: [20,10,5] → "20+10+5 per kant"
+  const gegroepeerd = {};
+  r.schijven.forEach(s => { gegroepeerd[s] = (gegroepeerd[s]||0)+1; });
+
+  const badges = Object.entries(gegroepeerd)
+    .sort((a,b) => parseFloat(b[0])-parseFloat(a[0]))
+    .map(([kg,n]) => {
+      const kleur = parseFloat(kg) >= 20  ? '#6E8EFF'  // blauw — 20kg
+                  : parseFloat(kg) >= 10  ? '#C8FF47'  // lift groen — 10kg
+                  : parseFloat(kg) >= 5   ? '#3ecf8e'  // groen — 5kg
+                  : parseFloat(kg) >= 2.5 ? '#f0a347'  // amber — 2.5kg
+                  :                         '#FF5757';  // rood — 1.25kg
+      const label = n > 1 ? `${n}×${kg}` : `${kg}`;
+      return `<span style="font-family:var(--mono);font-size:10px;font-weight:500;
+               padding:2px 7px;border-radius:4px;
+               background:${kleur}18;border:1px solid ${kleur}44;
+               color:${kleur}">${label}</span>`;
+    }).join('');
+
+  return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:5px">
+    <span style="font-size:10px;color:var(--muted)">Per kant:</span>
+    ${badges}
+    <span style="font-size:10px;color:var(--faint);margin-left:3px">= ${r.perKant} kg</span>
+  </div>`;
+}
+
+function opbouw(werkgew, stangType){
+  const stang = stangType === 'curl'
+    ? (D.inst.stang_curl  || 10)
+    : (D.inst.stang_recht || 20);
+  // Afronden op huidige stapgrootte
+  const stap = D.inst.gewicht_stap || 2.5;
+  const rond = g => Math.round(g / stap) * stap;
+
+  return [
+    {label:'LEEG',  gew:stang,                                reps:5},
+    {label:'40%',   gew:Math.max(stang, rond(werkgew * .40)), reps:5},
+    {label:'60%',   gew:Math.max(stang, rond(werkgew * .60)), reps:3},
+    {label:'80%',   gew:Math.max(stang, rond(werkgew * .80)), reps:2},
+  ].filter((s,i,arr)=>i===0||s.gew>arr[i-1].gew);
+}
+
+/* ══ TRAINING STARTEN ══ */
+function startTraining(){
+  if(!D.profiel_gekozen){ toast('Kies eerst een trainingsprofiel via Mijn profiel','wn'); ga('persoonsprofiel'); return; }
+  const L=volgendeLetter();
+
+  // Bepaal welke extra oefeningen bij deze training horen (A of B)
+  const extraSleutels = L==='A' ? ['A-push','A-pull'] : ['B-push','B-pull'];
+  const actieveExtra = extraSleutels
+    .flatMap(k => EXTRA[k])
+    .filter(e => D.extra_actief.includes(e.id));
+
+  AT={
+    letter:L, datum:new Date().toISOString(),
+    oefeningen:SCHEMA[L].map(o=>({
+      ...o, gewicht:D.gewichten[o.id],
+      werk:Array(o.sets).fill(false),
+      ob: Array(4).fill(null),  // max 4 opbouwsets, null = onaangeraakt
+      isExtra:false,
+    })),
+    // Extra oefeningen als volwaardige sets — standaard 3×10, gewicht uit history of 10kg
+    extras: actieveExtra.map(e => ({
+      ...e,
+      sets:3, reps:10,
+      gewicht: haalExtraGewicht(e.id),
+      werk: Array(3).fill(false),
+      setGew: Array(3).fill(haalExtraGewicht(e.id)),
+    })),
+    wu_roei:false, wu_mob:false,
+  };
+  ga('training');
+  bouwTraining();
+  document.getElementById('tr-titel').textContent='Training '+L;
+  document.getElementById('tr-datum').textContent=new Date().toLocaleDateString('nl-NL',{weekday:'long',dag:'numeric',month:'long'});
+  document.getElementById('btn-afronden').disabled=true;
+}
+
+// Haal het laatste gebruikte gewicht op voor een extra oefening
+function haalExtraGewicht(id){
+  for(let i = D.trainingen.length-1; i >= 0; i--){
+    const t = D.trainingen[i];
+    const gevonden = (t.extra_oefeningen||[]).find(x => x.id===id);
+    if(gevonden && gevonden.gewicht) return gevonden.gewicht;
+  }
+  return 10; // standaard begingewicht voor extra's
+}
+
+function bouwTraining(){
+  const c=document.getElementById('oef-container');
+  // Warming-up blok
+  c.innerHTML=`
+  <div class="warmup">
+    <div class="wu-head">Warming-up — roeimachine & mobiliteit</div>
+    <div class="wu-stap" onclick="vinkWU('roei',this)">
+      <div class="wu-nr">01</div>
+      <div style="flex:1">
+        <div class="wu-naam">Roeimachine — 5 min</div>
+        <div class="wu-detail">~900m · weerstand 3–4 · SPM 20–22 · telt als cardio in CardioCore</div>
+      </div>
+      <div class="wu-check" id="wc-roei">○</div>
+    </div>
+    <div class="wu-stap" onclick="vinkWU('mob',this)">
+      <div class="wu-nr">02</div>
+      <div style="flex:1">
+        <div class="wu-naam">Dynamische mobiliteit — 5 min</div>
+        <div class="wu-detail">Heuprot. · schouderrot. · wervelkol · enkelmobiliteit</div>
+      </div>
+      <div class="wu-check" id="wc-mob">○</div>
+    </div>
+  </div>`;
+
+  // Globale knop: alle oefeningen van deze training ±2.5 kg
+  c.innerHTML += `
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-3);border-radius:var(--r);margin-bottom:12px;border:1px solid var(--border)">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em">HELE TRAINING</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:12px;color:var(--muted)">Alle sets</span>
+      <button class="gew-btn" onclick="pasHeleTraining(-2.5)" title="Alle oefeningen −2,5 kg" style="width:32px;height:32px;font-size:15px">−</button>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">2.5</span>
+      <button class="gew-btn" onclick="pasHeleTraining(+2.5)" title="Alle oefeningen +2,5 kg" style="width:32px;height:32px;font-size:15px">+</button>
+    </div>
+  </div>`;
+
+  AT.oefeningen.forEach((oef,oi)=>{
+    const obs=opbouw(oef.gewicht, oef.stangType || 'recht');
+    const isPR=isNieuwPR(oef.id,oef.gewicht);
+
+    const obHtml=obs.map((s,si)=>`
+      <div class="opbouw-rij ${AT.oefeningen[oi].ob[si]!=null?'done-ob':''}" id="ob-${oi}-${si}" onclick="vinkOB(${oi},${si},${s.reps})">
+        <span class="ob-label">${s.label}</span>
+        <span class="ob-gew">${s.gew} kg</span>
+        <span class="ob-reps">${s.reps} reps</span>
+        <div class="ob-check ${AT.oefeningen[oi].ob[si]!=null?'done':''}" id="obc-${oi}-${si}">
+          ${AT.oefeningen[oi].ob[si]!=null ? (AT.oefeningen[oi].ob[si]===s.reps ? '✓' : AT.oefeningen[oi].ob[si]) : '○'}
+        </div>
+      </div>`).join('');
+
+    // Elke set krijgt eigen gewicht-state én reps-state
+    if(!AT.oefeningen[oi].setGew){
+      AT.oefeningen[oi].setGew  = Array(oef.sets).fill(oef.gewicht);
+    }
+    if(!AT.oefeningen[oi].setReps){
+      AT.oefeningen[oi].setReps = Array(oef.sets).fill(oef.reps);
+    }
+
+    let werkHtml='';
+    for(let s=0;s<oef.sets;s++){
+      const sg = AT.oefeningen[oi].setGew[s];
+      const sr = AT.oefeningen[oi].setReps[s];
+      werkHtml+=`
+      <tr class="set-rij ${AT.oefeningen[oi].werk[s]?'done':''}" id="sr-${oi}-${s}">
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted);width:28px">${s+1}</td>
+        <td>
+          <div class="gew-ctrl">
+            <button class="gew-btn" onclick="pasSetGew(${oi},${s},-2.5)" aria-label="2.5 kg minder">−</button>
+            <span class="gew-val" id="gv-${oi}-${s}">${sg}</span>
+            <button class="gew-btn" onclick="pasSetGew(${oi},${s},+2.5)" aria-label="2.5 kg meer">+</button>
+            <span style="font-size:11px;color:var(--muted);margin-left:4px">kg</span>
+          </div>
+        </td>
+        <td>
+          <div class="gew-ctrl">
+            <button class="gew-btn" onclick="pasSetReps(${oi},${s},-1)" aria-label="1 rep minder" style="width:22px;height:22px;font-size:13px">−</button>
+            <span style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:20px;text-align:center" id="rv-${oi}-${s}">${sr}</span>
+            <button class="gew-btn" onclick="pasSetReps(${oi},${s},+1)" aria-label="1 rep meer" style="width:22px;height:22px;font-size:13px">+</button>
+          </div>
+        </td>
+        <td style="width:36px">
+          <button class="set-check ${AT.oefeningen[oi].werk[s]?'done':''}"
+                  onclick="vinkSet(${oi},${s})" id="sc-${oi}-${s}" aria-label="Set ${s+1} afvinken">
+            ${AT.oefeningen[oi].werk[s]?'✓':''}
+          </button>
+        </td>
+      </tr>`;
+    }
+
+    c.innerHTML+=`
+    <div class="oef-blok card">
+      <div class="oef-header">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <div class="oef-naam">
+              ${oef.naam}
+              ${isPR?'<span class="pr-badge">PR</span>':''}
+              <span class="muscle-tag ${oef.mcls}">${oef.spier}</span>
+            </div>
+            <div class="oef-sub">
+              <span>${oef.sets} × ${oef.reps} werksets</span>
+              <span id="oef-gew-lbl-${oi}">${oef.gewicht} kg</span>
+            </div>
+            <div id="schijven-${oi}">${renderSchijvenHTML(oef.gewicht, oef.stangType||'recht')}</div>
+          </div>
+          <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+            <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em">ALLE SETS</span>
+            <button class="gew-btn" onclick="pasAlleSetGew(${oi},-2.5)" title="Alle sets −2,5 kg" style="width:30px;height:30px;font-size:14px">−</button>
+            <button class="gew-btn" onclick="pasAlleSetGew(${oi},+2.5)" title="Alle sets +2,5 kg" style="width:30px;height:30px;font-size:14px">+</button>
+          </div>
+        </div>
+      </div>
+      <table class="sets-tbl" style="margin-bottom:6px">
+        <thead><tr><th colspan="4" style="color:var(--amber);padding-bottom:5px;font-size:9px;letter-spacing:.08em">OPBOUWSETS</th></tr></thead>
+        <tbody>${obHtml}</tbody>
+      </table>
+      <table class="sets-tbl">
+        <thead><tr><th>Set</th><th>Gewicht</th><th>Reps</th><th></th></tr></thead>
+        <tbody id="wb-${oi}">${werkHtml}</tbody>
+      </table>
+    </div>`;
+  });
+
+  // ── Extra oefeningen als volwaardige werksets ──────────────
+  if(AT.extras && AT.extras.length){
+
+    // Scheidingslijn
+    c.innerHTML += `
+    <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0">Extra oefeningen</div>
+      <div style="flex:1;height:1px;background:rgba(255,181,71,.2)"></div>
+    </div>`;
+
+    AT.extras.forEach((ext, ei) => {
+      if(!ext.setGew)  ext.setGew  = Array(ext.sets).fill(ext.gewicht);
+      if(!ext.setReps) ext.setReps = Array(ext.sets).fill(ext.reps);
+
+      // Geen opbouwsets voor extra's — direct werksets
+      let werkHtml = '';
+      for(let s = 0; s < ext.sets; s++){
+        const sg = ext.setGew[s];
+        const sr = ext.setReps[s];
+        const ei_s = `e${ei}-${s}`;
+        werkHtml += `
+        <tr class="set-rij ${ext.werk[s]?'done':''}" id="sr-${ei_s}">
+          <td style="font-family:var(--mono);font-size:11px;color:var(--muted);width:28px">${s+1}</td>
+          <td>
+            <div class="gew-ctrl">
+              <button class="gew-btn" onclick="pasExtraSetGew(${ei},${s},-2.5)" aria-label="2.5 kg minder">−</button>
+              <span class="gew-val" id="egv-${ei}-${s}">${sg}</span>
+              <button class="gew-btn" onclick="pasExtraSetGew(${ei},${s},+2.5)" aria-label="2.5 kg meer">+</button>
+              <span style="font-size:11px;color:var(--muted);margin-left:4px">kg</span>
+            </div>
+          </td>
+          <td>
+            <div class="gew-ctrl">
+              <button class="gew-btn" onclick="pasExtraSetReps(${ei},${s},-1)" style="width:22px;height:22px;font-size:13px">−</button>
+              <span style="font-family:var(--mono);font-size:13px;font-weight:500;min-width:20px;text-align:center" id="erv-${ei}-${s}">${sr}</span>
+              <button class="gew-btn" onclick="pasExtraSetReps(${ei},${s},+1)" style="width:22px;height:22px;font-size:13px">+</button>
+            </div>
+          </td>
+          <td style="width:36px">
+            <button class="set-check ${ext.werk[s]?'done':''}"
+                    onclick="vinkExtraSet(${ei},${s})" id="esc-${ei}-${s}" aria-label="Set ${s+1} afvinken">
+              ${ext.werk[s]?'✓':''}
+            </button>
+          </td>
+        </tr>`;
+      }
+
+      c.innerHTML += `
+      <div class="oef-blok card" style="border-left:3px solid rgba(255,181,71,.4)">
+        <div class="oef-header">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div>
+              <div class="oef-naam">
+                ${ext.naam}
+                <span class="muscle-tag" style="background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,181,71,.25)">${ext.spier}</span>
+              </div>
+              <div class="oef-sub">
+                <span>${ext.sets} × ${ext.reps} werksets</span>
+                <span id="eoef-gew-lbl-${ei}">${ext.gewicht} kg</span>
+                <span style="color:var(--amber);font-size:10px">${ext.equip}</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;align-items:center;flex-shrink:0">
+              <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.06em">ALLE SETS</span>
+              <button class="gew-btn" onclick="pasAlleExtraSetGew(${ei},-2.5)" title="Alle sets −2,5 kg" style="width:30px;height:30px;font-size:14px">−</button>
+              <button class="gew-btn" onclick="pasAlleExtraSetGew(${ei},+2.5)" title="Alle sets +2,5 kg" style="width:30px;height:30px;font-size:14px">+</button>
+            </div>
+          </div>
+        </div>
+        <table class="sets-tbl">
+          <thead><tr><th>Set</th><th>Gewicht</th><th>Reps</th><th></th></tr></thead>
+          <tbody>${werkHtml}</tbody>
+        </table>
+      </div>`;
+    });
+  }
+
+  bijwerkPBar();
+}
+
+function vinkWU(type,el){
+  if(type==='roei') AT.wu_roei=true;
+  if(type==='mob')  AT.wu_mob=true;
+  el.querySelector('.wu-check').classList.add('done');
+  el.querySelector('.wu-check').textContent='✓';
+  bijwerkPBar();
+}
+
+function vinkOB(oi, si, maxReps){
+  // ob[si] = null (onaangeraakt) | getal 5..0 (cyclisch aflopend)
+  const huidig = AT.oefeningen[oi].ob[si];
+  let nieuw;
+
+  if(huidig === null || huidig === undefined){
+    nieuw = maxReps;           // eerste klik: toon max reps
+  } else if(huidig > 1){
+    nieuw = huidig - 1;        // tel één rep af
+  } else {
+    nieuw = null;              // bij 0 → reset naar leeg
+  }
+
+  AT.oefeningen[oi].ob[si] = nieuw;
+
+  const rij = document.getElementById(`ob-${oi}-${si}`);
+  const cb  = document.getElementById(`obc-${oi}-${si}`);
+
+  if(nieuw === null){
+    // Reset: leeg, niet doorgestreept
+    rij.classList.remove('done-ob');
+    cb.classList.remove('done');
+    cb.textContent = '○';
+  } else if(nieuw === maxReps){
+    // Volledig geslaagd: groen, doorgestreept
+    rij.classList.add('done-ob');
+    cb.classList.add('done');
+    cb.textContent = '✓';
+  } else {
+    // Gedeeltelijk: amber achtergrond, toont resterende reps
+    rij.classList.add('done-ob');
+    cb.classList.add('done');
+    cb.style.background = 'var(--amber)';
+    cb.style.borderColor = 'var(--amber)';
+    cb.style.color = '#000';
+    cb.textContent = nieuw;
+  }
+}
+
+function vinkSet(oi,si){
+  const oef=AT.oefeningen[oi];
+  oef.werk[si]=!oef.werk[si];
+  const k=oef.werk[si];
+  document.getElementById(`sr-${oi}-${si}`).classList.toggle('done',k);
+  const sc=document.getElementById(`sc-${oi}-${si}`);
+  sc.classList.toggle('done',k); sc.textContent=k?'✓':'';
+  if(k){
+    if(oef.werk.every(Boolean)) toast(`${oef.naam} — alle sets klaar 🎯`,'ok');
+    else startTimer(oef.type==='zw'?D.inst.rust_zw:D.inst.rust_li);
+  } else stopTimer();
+  bijwerkPBar();
+  checkKlaar();
+}
+
+// Pas gewicht aan voor één specifieke set
+function pasSetGew(oi, si, delta){
+  const stap = D.inst.gewicht_stap || 2.5;
+  const oef  = AT.oefeningen[oi];
+  if(!oef.setGew) oef.setGew = Array(oef.sets).fill(oef.gewicht);
+  const richting = delta > 0 ? stap : -stap;
+  oef.setGew[si] = Math.max(1.25, Math.round((oef.setGew[si] + richting) * 100) / 100);
+  document.getElementById(`gv-${oi}-${si}`).textContent = oef.setGew[si];
+  updateOefGewLabel(oi);
+}
+
+// Pas alle sets van één oefening aan
+function pasAlleSetGew(oi, delta){
+  const stap = D.inst.gewicht_stap || 2.5;
+  const oef  = AT.oefeningen[oi];
+  if(!oef.setGew) oef.setGew = Array(oef.sets).fill(oef.gewicht);
+  const richting = delta > 0 ? stap : -stap;
+  for(let s = 0; s < oef.sets; s++){
+    oef.setGew[s] = Math.max(1.25, Math.round((oef.setGew[s] + richting) * 100) / 100);
+    const el = document.getElementById(`gv-${oi}-${s}`);
+    if(el) el.textContent = oef.setGew[s];
+  }
+  updateOefGewLabel(oi);
+}
+
+// Pas alle sets van alle oefeningen in de training aan
+function pasHeleTraining(delta){
+  AT.oefeningen.forEach((_,oi) => pasAlleSetGew(oi, delta));
+  if(AT.extras) AT.extras.forEach((_,ei) => pasAlleExtraSetGew(ei, delta));
+  toast((delta>0?'+':'')+delta+' kg op alle oefeningen', 'neu');
+}
+
+// Pas reps aan voor één specifieke set (hoofdoefening)
+function pasSetReps(oi, si, delta){
+  const oef = AT.oefeningen[oi];
+  if(!oef.setReps) oef.setReps = Array(oef.sets).fill(oef.reps);
+  oef.setReps[si] = Math.max(1, oef.setReps[si] + delta);
+  const el = document.getElementById(`rv-${oi}-${si}`);
+  if(el) el.textContent = oef.setReps[si];
+}
+
+// Pas reps aan voor één specifieke set (extra oefening)
+function pasExtraSetReps(ei, si, delta){
+  const ext = AT.extras[ei];
+  if(!ext.setReps) ext.setReps = Array(ext.sets).fill(ext.reps);
+  ext.setReps[si] = Math.max(1, ext.setReps[si] + delta);
+  const el = document.getElementById(`erv-${ei}-${si}`);
+  if(el) el.textContent = ext.setReps[si];
+}
+
+function pasStartGewichten(delta){
+  const stap = Math.abs(delta);
+  Object.keys(D.gewichten).forEach(k => {
+    D.gewichten[k] = Math.max(1.25, Math.round((D.gewichten[k] + delta) * 100) / 100);
+  });
+  slaOp();
+  verversOpstarten();
+  toast((delta > 0 ? '+' : '') + delta + ' kg op alle lifts', 'ok');
+}
+
+function pasExtraSetGew(ei, si, delta){
+  const stap = D.inst.gewicht_stap || 2.5;
+  if(!ext.setGew) ext.setGew = Array(ext.sets).fill(ext.gewicht);
+  const richting = delta > 0 ? stap : -stap;
+  ext.setGew[si] = Math.max(1.25, Math.round((ext.setGew[si] + richting) * 100) / 100);
+  const el = document.getElementById(`egv-${ei}-${si}`);
+  if(el) el.textContent = ext.setGew[si];
+  updateExtraGewLabel(ei);
+}
+
+function pasAlleExtraSetGew(ei, delta){
+  const stap = D.inst.gewicht_stap || 2.5;
+  const ext  = AT.extras[ei];
+  if(!ext.setGew) ext.setGew = Array(ext.sets).fill(ext.gewicht);
+  const richting = delta > 0 ? stap : -stap;
+  for(let s = 0; s < ext.sets; s++){
+    ext.setGew[s] = Math.max(1.25, Math.round((ext.setGew[s] + richting) * 100) / 100);
+    const el = document.getElementById(`egv-${ei}-${s}`);
+    if(el) el.textContent = ext.setGew[s];
+  }
+  updateExtraGewLabel(ei);
+}
+
+function vinkExtraSet(ei, si){
+  const ext = AT.extras[ei];
+  ext.werk[si] = !ext.werk[si];
+  const k = ext.werk[si];
+  document.getElementById(`sr-e${ei}-${si}`).classList.toggle('done', k);
+  const sc = document.getElementById(`esc-${ei}-${si}`);
+  sc.classList.toggle('done', k); sc.textContent = k ? '✓' : '';
+  if(k){
+    const alleKlaar = ext.werk.every(Boolean);
+    if(alleKlaar) toast(`${ext.naam} — alle sets klaar 🎯`, 'ok');
+    else startTimer(D.inst.rust_li); // extra's altijd lichte rusttijd
+  } else stopTimer();
+  bijwerkPBar();
+  checkKlaar();
+}
+
+function updateExtraGewLabel(ei){
+  const ext = AT.extras[ei];
+  const el  = document.getElementById(`eoef-gew-lbl-${ei}`);
+  if(!el || !ext.setGew) return;
+  const uniek = [...new Set(ext.setGew)];
+  el.textContent = uniek.length === 1 ? uniek[0]+' kg' : uniek.join('/')+' kg';
+}
+
+// Herbereken het gemiddeld gewicht in de oefening-header
+function updateOefGewLabel(oi){
+  const oef = AT.oefeningen[oi];
+  const el  = document.getElementById(`oef-gew-lbl-${oi}`);
+  if(!el || !oef.setGew) return;
+  const uniek = [...new Set(oef.setGew)];
+  el.textContent = uniek.length === 1 ? uniek[0]+' kg' : uniek.join('/') + ' kg';
+  // Herbereken schijven op basis van het hoogste gewicht in de set
+  const maxGew = Math.max(...oef.setGew);
+  const schijvenEl = document.getElementById(`schijven-${oi}`);
+  if(schijvenEl) schijvenEl.innerHTML = renderSchijvenHTML(maxGew, oef.stangType||'recht');
+}
+
+function bijwerkPBar(){
+  if(!AT) return;
+  let tot=2, kl=(AT.wu_roei?1:0)+(AT.wu_mob?1:0);
+  AT.oefeningen.forEach(o=>{ tot+=o.sets; kl+=o.werk.filter(Boolean).length; });
+  if(AT.extras) AT.extras.forEach(e=>{ tot+=e.sets; kl+=e.werk.filter(Boolean).length; });
+  const pct=tot?Math.round(kl/tot*100):0;
+  document.getElementById('tr-pbar').style.width=pct+'%';
+  document.getElementById('tr-plbl').textContent=`${kl}/${tot}`;
+}
+
+function checkKlaar(){
+  const hoofdKlaar  = AT.oefeningen.every(o=>o.werk.every(Boolean));
+  const extraKlaar  = !AT.extras?.length || AT.extras.every(e=>e.werk.every(Boolean));
+  const ok = hoofdKlaar && extraKlaar;
+  document.getElementById('btn-afronden').disabled=!ok;
+  if(ok) toast('Alle sets klaar — training afronden!','ok');
+}
+
+function ronAf(){
+  if(!AT) return;
+  stopTimer();
+  let vol=0;
+  AT.oefeningen.forEach(o=>{
+    const setGew = o.setGew || Array(o.sets).fill(o.gewicht);
+    setGew.forEach((gew, si) => {
+      if(o.werk[si]) vol += gew * o.reps;
+    });
+  });
+  // SL5×5 progressie: gebruik het gemiddeld setgewicht als basis
+  if(D.programma==='sl5x5'){
+    AT.oefeningen.forEach(o=>{
+      if(o.werk.every(Boolean)){
+        const setGew = o.setGew || Array(o.sets).fill(o.gewicht);
+        const gemiddeld = setGew.reduce((a,b)=>a+b,0) / setGew.length;
+        const stap = o.id==='deadlift' ? 5 : 2.5;
+        D.gewichten[o.id] = Math.round((gemiddeld + stap) * 10) / 10;
+      }
+    });
+  }
+  // Sla actieve extra oefeningen op met hun werkelijke gebruikte gewicht
+  const extraLog = (AT.extras || []).map(e => {
+    const setGew = e.setGew || Array(e.sets).fill(e.gewicht);
+    const gedaan = e.werk.filter(Boolean).length;
+    if(!gedaan) return null;
+    const gemiddeld = Math.round(setGew.reduce((a,b)=>a+b,0)/setGew.length*10)/10;
+    return { id:e.id, naam:e.naam, gewicht:gemiddeld, sets:gedaan, reps:e.reps };
+  }).filter(Boolean);
+
+  D.trainingen.push({
+    id:crypto.randomUUID(), datum:AT.datum, letter:AT.letter, volume:vol,
+    oefeningen:AT.oefeningen.map(o=>{
+      const setGew  = o.setGew  || Array(o.sets).fill(o.gewicht);
+      const setReps = o.setReps || Array(o.sets).fill(o.reps);
+      const gedaanSets = o.werk.filter(Boolean).length;
+      const gemGew  = Math.round(setGew.reduce((a,b)=>a+b,0)/setGew.length*10)/10;
+      const gemReps = Math.round(setReps.slice(0,gedaanSets).reduce((a,b)=>a+b,0)/Math.max(1,gedaanSets));
+      return {id:o.id, naam:o.naam, gewicht:gemGew, sets:gedaanSets, reps:gemReps||o.reps};
+    }),
+    extra_oefeningen: extraLog,
+  });
+  slaOp(); AT=null;
+  toast('Training opgeslagen ✓','ok');
+  ga('dashboard');
+}
+
+/* ══ TIMER ══ */
+function startTimer(sec){
+  stopTimer();
+  TRest=sec; TTot=sec;
+  document.getElementById('timer-box').classList.add('on');
+  updateTimerUI();
+  TIv=setInterval(()=>{
+    TRest--;
+    updateTimerUI();
+    if(TRest<=0){ stopTimer(); speelGeluid(); toast('Rust voorbij — volgende set!','neu'); }
+  },1000);
+}
+function updateTimerUI(){
+  const m=Math.floor(TRest/60),s=TRest%60;
+  document.getElementById('t-display').textContent=m+':'+(s<10?'0':'')+s;
+  document.getElementById('t-fill').style.width=Math.round(TRest/TTot*100)+'%';
+}
+function stopTimer(){ clearInterval(TIv); TIv=null; document.getElementById('timer-box').classList.remove('on'); }
+function plusTimer(n){ TRest=Math.min(TRest+n,600); TTot=Math.max(TTot,TRest); updateTimerUI(); }
+/* ══ AUDIO ENGINE ══
+   Bel-gebaseerde melodieën: gesimuleerde klokslag via FM-synthese +
+   twee krachtige opties voor wie dat prefereert.
+   Techniek: echte bellen hebben een inharmonische boventoonstructuur.
+   We simuleren dit via frequency modulation (FM) en meerdere oscillatoren
+   op niet-octaaf verhoudingen (verhouding ≈ 2.756, 5.404 etc.)
+═══════════════════════════════════════════════════════════ */
+const MELODIEEN = {
+
+  // 1. KLOKSLAG — diepe kerkklok, één serieuze slag met lange nasleep
+  klokslag: {
+    naam: 'Klokslag',
+    omschrijving: 'Diepe kerkklok · één slag · lange nasleep',
+    speel(ctx, t) {
+      // Echte kloktoon: grondtoon + inharmonische boventonen
+      // Verhouding 1 : 2.756 : 5.404 : 8.933 (klokformule)
+      const grond = 220; // A3
+      [
+        [grond,           t, 1.8, 0.55, 'sine', 1.8],
+        [grond * 2.756,   t, 1.4, 0.30, 'sine', 1.2],
+        [grond * 5.404,   t, 0.9, 0.18, 'sine', 0.7],
+        [grond * 8.933,   t, 0.5, 0.10, 'sine', 0.4],
+        // Sub-slag: korte noise burst voor de aanslag zelf
+      ].forEach(([f,st,dur,vol,type,decay]) => speelBelToon(ctx,f,st,dur,vol,decay));
+      speelKlokAanslag(ctx, t, 0.022, 0.70);
+    }
+  },
+
+  // 2. DUBBEL — twee klokslagen kort na elkaar, klassiek gymschema-signaal
+  dubbel: {
+    naam: 'Dubbel',
+    omschrijving: 'Twee klokslagen · helder · sportschool-klassiek',
+    speel(ctx, t) {
+      const grond = 293; // D4 — iets hoger, helderder
+      const slagTijden = [t, t + 0.42];
+      slagTijden.forEach(st => {
+        [
+          [grond,         st, 1.2, 0.50, 1.2],
+          [grond * 2.756, st, 0.9, 0.25, 0.8],
+          [grond * 5.404, st, 0.5, 0.13, 0.4],
+        ].forEach(([f,s,dur,vol,decay]) => speelBelToon(ctx,f,s,dur,vol,decay));
+        speelKlokAanslag(ctx, st, 0.018, 0.55);
+      });
+    }
+  },
+
+  // 3. TIBETAANS — zachte strijkklank, lang resonerend, meditatieschaal
+  tibetaans: {
+    naam: 'Tibetaans',
+    omschrijving: 'Zachte strijkklank · lang resonerend · rustig',
+    speel(ctx, t) {
+      // Tibetaanse schaal: bijna harmonisch, langzame aanval
+      const grond = 432; // A4 licht verlaagd
+      [
+        [grond,         t, 2.5, 0.40, 2.5],
+        [grond * 2.0,   t, 2.0, 0.18, 1.8],
+        [grond * 3.0,   t, 1.5, 0.10, 1.2],
+        [grond * 0.5,   t, 2.2, 0.20, 2.0], // sub-octaaf voor diepte
+      ].forEach(([f,st,dur,vol,decay]) => speelBelToon(ctx,f,st,dur,vol,decay));
+    }
+  },
+
+  // 4. KRACHT — krachtige fanfare voor wie dat prefereert (uit oude set, verbeterd)
+  kracht: {
+    naam: 'Kracht',
+    omschrijving: 'Krachtig · oplopend · sawtooth fanfare',
+    speel(ctx, t) {
+      [
+        [196, t+0.00, 0.18, 0.55, 'sawtooth', 0.22],
+        [294, t+0.00, 0.18, 0.28, 'sawtooth', 0.22],
+        [392, t+0.22, 0.20, 0.55, 'sawtooth', 0.26],
+        [588, t+0.22, 0.20, 0.25, 'sawtooth', 0.26],
+        [784, t+0.48, 0.28, 0.60, 'sawtooth', 0.35],
+        [392, t+0.48, 0.28, 0.32, 'sine',     0.35],
+      ].forEach(([f,st,dur,vol,type,decay]) => speelToon(ctx,f,st,dur,vol,type,decay));
+    }
+  },
+
+  // 5. VICTORY — epische fanfare voor PR-momenten
+  victory: {
+    naam: 'Victory',
+    omschrijving: 'Episch · vijftoon fanfare · voor PR-momenten',
+    speel(ctx, t) {
+      [261, 329, 392, 523, 659].forEach((f, i) => {
+        const st = t + i * 0.10;
+        speelToon(ctx, f,   st, 0.45-i*0.02, 0.48, 'sawtooth', 0.50);
+        speelToon(ctx, f*2, st, 0.35-i*0.02, 0.18, 'sine',     0.40);
+      });
+      speelToon(ctx, 659, t+0.60, 0.40, 0.42, 'sawtooth', 0.45);
+      speelToon(ctx, 659, t+0.85, 0.30, 0.28, 'sawtooth', 0.35);
+    }
+  },
+};
+
+/* ── Bel-specifieke helpers ─────────────────────────────── */
+
+// speelBelToon: langzame aanval + lange exponentiële decay = bel-karakter
+function speelBelToon(ctx, freq, startTijd, duur, vol, decay){
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.knee.value = 8; comp.ratio.value = 3;
+  osc.connect(gain); gain.connect(comp); comp.connect(ctx.destination);
+  osc.type            = 'sine';
+  osc.frequency.value = freq;
+  // Bel-aanval: heel snel naar vol, dan lange staart
+  gain.gain.setValueAtTime(0, startTijd);
+  gain.gain.linearRampToValueAtTime(vol, startTijd + 0.004); // 4ms aanval
+  gain.gain.exponentialRampToValueAtTime(0.001, startTijd + decay);
+  osc.start(startTijd);
+  osc.stop(startTijd + decay + 0.1);
+}
+
+// Klokimpact: gefilterde noise voor de 'ding'-inslag
+function speelKlokAanslag(ctx, startTijd, duur, vol){
+  const bufferSize = Math.floor(ctx.sampleRate * duur);
+  const buffer     = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data       = buffer.getChannelData(0);
+  for(let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+  const src  = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const hp   = ctx.createBiquadFilter(); // highpass voor heldere aanslag
+  hp.type = 'highpass'; hp.frequency.value = 1200;
+  src.buffer = buffer;
+  src.connect(hp); hp.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(vol, startTijd);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTijd + duur);
+  src.start(startTijd); src.stop(startTijd + duur + 0.01);
+}
+
+/* ── Generieke toon helper (voor niet-bel melodieën) ─────── */
+function speelToon(ctx, freq, startTijd, duur, vol, type, decay){
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -18; comp.knee.value = 6; comp.ratio.value = 4;
+  osc.connect(gain); gain.connect(comp); comp.connect(ctx.destination);
+  osc.type            = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, startTijd);
+  gain.gain.linearRampToValueAtTime(vol, startTijd + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTijd + decay);
+  osc.start(startTijd);
+  osc.stop(startTijd + Math.max(duur, decay) + 0.05);
+}
+
+function speelNoise(ctx, startTijd, duur, vol){
+  const bufferSize = ctx.sampleRate * duur;
+  const buffer     = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data       = buffer.getChannelData(0);
+  for(let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+  const src  = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'lowpass'; filt.frequency.value = 200;
+  src.buffer = buffer;
+  src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+  gain.gain.setValueAtTime(vol, startTijd);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTijd + duur);
+  src.start(startTijd); src.stop(startTijd + duur + 0.05);
+}
+
+function speelGeluid(){
+  if(!D.inst.geluid) return;
+  const melodie = D.inst.melodie || 'readycheck';
+  if(melodie === 'readycheck'){
+    const audio = new Audio('sounds/ReadyCheck.wav');
+    audio.volume = 0.8;
+    audio.play().catch(()=> speelGeluidSynth('klokslag'));
+  } else {
+    speelGeluidSynth(melodie);
+  }
+}
+
+function speelGeluidSynth(id){
+  try{
+    const ctx     = new(window.AudioContext || window.webkitAudioContext)();
+    const melodie = MELODIEEN[id] || MELODIEEN.klokslag;
+    melodie.speel(ctx, ctx.currentTime + 0.04);
+  }catch(e){ console.warn('Audio fout:', e); }
+}
+
+function triggerPreview(id){
+  const btn = document.getElementById('prev-btn-'+id);
+  if(btn){
+    btn.textContent = '♪';
+    btn.style.color = 'var(--lift)';
+    btn.style.borderColor = 'rgba(200,255,71,.4)';
+    setTimeout(()=>{
+      if(btn){ btn.textContent='▶'; btn.style.color=''; btn.style.borderColor=''; }
+    }, 1400);
+  }
+  if(id === 'readycheck'){
+    const audio = new Audio('sounds/ReadyCheck.wav');
+    audio.volume = 0.8;
+    audio.play().catch(()=>{});
+  } else {
+    previewMelodie(id);
+  }
+}
+
+function previewMelodie(id){
+  try{
+    const ctx     = new(window.AudioContext || window.webkitAudioContext)();
+    const melodie = MELODIEEN[id];
+    if(melodie) melodie.speel(ctx, ctx.currentTime + 0.04);
+  }catch(e){}
+}
+
+/* ══ EXTRA ══ */
+function toonExtraTab(t){
+  document.getElementById('extra-A').style.display=t==='A'?'block':'none';
+  document.getElementById('extra-B').style.display=t==='B'?'block':'none';
+  document.querySelectorAll('.tabs .tab-btn').forEach((b,i)=>b.classList.toggle('on',i===(t==='A'?0:1)));
+}
+function bouwMelodieKiezer(){
+  const c = document.getElementById('melodie-kiezer');
+  if(!c) return;
+  const huidig = D.inst.melodie || 'readycheck';
+
+  // ReadyCheck.wav als eerste optie — WAV bestand
+  const wavOptie = {
+    id: 'readycheck',
+    naam: 'ReadyCheck',
+    omschrijving: 'WAV bestand · sounds/ReadyCheck.wav',
+    isWav: true,
+  };
+
+  const alleOpties = [wavOptie, ...Object.entries(MELODIEEN).map(([id,m])=>({id,...m,isWav:false}))];
+
+  c.innerHTML = alleOpties.map(m => {
+    const sel = m.id === huidig;
+    return `
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;
+         border-radius:var(--r);
+         border:1px solid ${sel ? 'rgba(200,255,71,.4)' : 'var(--border)'};
+         background:${sel ? 'var(--lift-dim)' : 'var(--bg-3)'};
+         cursor:pointer;transition:var(--tx)"
+         id="mpill-${m.id}" onclick="kiesMelodie('${m.id}')">
+      <div style="width:18px;height:18px;border-radius:50%;flex-shrink:0;
+           border:2px solid ${sel ? 'var(--lift)' : 'var(--border-2)'};
+           background:${sel ? 'var(--lift)' : 'transparent'};
+           display:flex;align-items:center;justify-content:center;font-size:9px;color:#000">
+        ${sel ? '✓' : ''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;${sel ? 'color:var(--lift)' : ''}">${m.naam}${m.isWav ? ' <span style="font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:var(--lift-dim);color:var(--lift);margin-left:4px">WAV</span>' : ''}</div>
+        <div style="font-size:11px;color:var(--muted)">${m.omschrijving}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="prev-btn-${m.id}"
+              onclick="event.stopPropagation();triggerPreview('${m.id}')"
+              style="font-size:11px;padding:5px 10px;flex-shrink:0">▶</button>
+    </div>`;
+  }).join('');
+}
+
+function kiesMelodie(id){
+  D.inst.melodie = id;
+  slaOp();
+  bouwMelodieKiezer();
+}
+
+function bouwExtra(){
+  [['A-push','eA-push'],['A-pull','eA-pull'],['B-push','eB-push'],['B-pull','eB-pull']].forEach(([key,elId])=>{
+    document.getElementById(elId).innerHTML=EXTRA[key].map(e=>`
+      <div class="extra-item">
+        <div class="ei-info">
+          <div class="ei-naam">${e.naam}</div>
+          <div class="ei-spier">${e.spier}</div>
+          <span class="ei-equip">${e.equip}</span>
+        </div>
+        <label class="sw" aria-label="${e.naam}">
+          <input type="checkbox" ${D.extra_actief.includes(e.id)?'checked':''} onchange="toggleExtra('${e.id}',this.checked)">
+          <div class="sw-t"></div><div class="sw-k"></div>
+        </label>
+      </div>`).join('');
+  });
+}
+function toggleExtra(id,aan){
+  if(aan){ if(!D.extra_actief.includes(id)) D.extra_actief.push(id); }
+  else D.extra_actief=D.extra_actief.filter(x=>x!==id);
+  slaOp();
+}
+
+/* ══ PROGRESSIE ══ */
+function toonProg(oef){
+  hProg=oef;
+  const namen={squat:'Back Squat',bench:'Bench Press',ohp:'OHP',deadlift:'Deadlift',row:'Barbell Row'};
+  const tabNamen={squat:'Squat',bench:'Bench',ohp:'OHP',deadlift:'Deadlift',row:'Row'};
+  document.querySelectorAll('.tabs .tab-btn').forEach(b=>b.classList.toggle('on',b.textContent===tabNamen[oef]));
+  document.getElementById('pg-naam').textContent=(namen[oef]||oef)+' — progressie';
+  const pts=D.trainingen.flatMap(t=>(t.oefeningen||[]).filter(o=>o.id===oef).map(o=>({datum:t.datum,g:o.gewicht})));
+  const huidig=D.gewichten[oef]||0;
+  document.getElementById('pg-huidig').textContent=huidig;
+  if(!pts.length){
+    ['pg-stijg','pg-begin','pg-max','pg-sess','pg-begin-d','pg-max-d'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='—';});
+    document.getElementById('pg-chart').innerHTML='<div class="leeg"><div class="leeg-icon">📊</div><div>Nog geen data</div></div>';
+    document.getElementById('pg-labels').innerHTML='';
+    document.getElementById('pg-pr').style.display='none';
+    bouw1RM(); return;
+  }
+  const eerste=pts[0], max=pts.reduce((a,b)=>b.g>a.g?b:a);
+  document.getElementById('pg-stijg').textContent=(huidig-eerste.g>=0?'+':'')+(huidig-eerste.g)+' kg totaal';
+  document.getElementById('pg-begin').textContent=eerste.g+' kg';
+  document.getElementById('pg-begin-d').textContent=new Date(eerste.datum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+  document.getElementById('pg-max').textContent=max.g+' kg';
+  document.getElementById('pg-max-d').textContent=new Date(max.datum).toLocaleDateString('nl-NL',{day:'numeric',month:'short'});
+  document.getElementById('pg-sess').textContent=pts.length;
+  document.getElementById('pg-pr').style.display=huidig===max.g?'inline':'none';
+  // chart
+  const recent=pts.slice(-14), maxG=Math.max(...recent.map(p=>p.g))*1.1;
+  document.getElementById('pg-chart').innerHTML=recent.map(p=>{
+    const h=Math.round(p.g/maxG*100);
+    const cls='pbar '+(p.g===max.g?'pr-col':'lift-col');
+    return `<div class="${cls}" style="height:${h}%" title="${p.g} kg"></div>`;
+  }).join('');
+  document.getElementById('pg-labels').innerHTML=recent.map(p=>
+    `<div class="pc-lbl">${new Date(p.datum).toLocaleDateString('nl-NL',{day:'numeric',month:'numeric'})}</div>`
+  ).join('');
+  bouw1RM();
+  bouwExtraProg();
+}
+function bouw1RM(){
+  const oefs=['squat','bench','ohp','deadlift','row'];
+  const n={squat:'Sq',bench:'BP',ohp:'OHP',deadlift:'DL',row:'Row'};
+  document.getElementById('rm-grid').innerHTML=oefs.map(o=>{
+    const g=D.gewichten[o],rm=Math.round(g*(1+5/30));
+    return `<div class="metric"><div class="ml">${n[o]} 1RM</div><div class="mv" style="font-size:16px">${rm}<span class="mu"> kg</span></div><div class="ms">${g} kg × 5</div></div>`;
+  }).join('');
+}
+
+function bouwExtraProg(){
+  const c = document.getElementById('extra-prog-container');
+  if(!c) return;
+
+  // Verzamel alle extra oefeningen die in trainingen voorkomen
+  // Extra oefeningen worden opgeslagen als naam-match in de trainingshistorie
+  const alleExtraIds = Object.values(EXTRA).flat().map(e => e.id);
+  const alleExtra    = Object.values(EXTRA).flat();
+
+  // Per extra oefening: zoek gewichten in geschiedenis
+  // Extra oefeningen worden niet direct per set opgeslagen, maar we kunnen
+  // uit de training.oefeningen array matchen op naam
+  const extraMetData = alleExtra.filter(e => {
+    if(!D.extra_actief.includes(e.id)) return false;
+    // Zoek naar deze oefening-naam in trainingshistorie
+    return D.trainingen.some(t =>
+      (t.extra_oefeningen || []).some(x => x.id === e.id)
+    );
+  });
+
+  if(!extraMetData.length){
+    // Toon actieve extra's zonder data als mini-kaartjes met lege chart
+    const actief = alleExtra.filter(e => D.extra_actief.includes(e.id));
+    if(!actief.length){
+      c.innerHTML = `<div class="leeg" style="padding:28px 0">
+        <div class="leeg-icon">➕</div>
+        <div style="font-size:13px;color:var(--muted)">Activeer extra oefeningen om progressie bij te houden</div>
+      </div>`;
+      return;
+    }
+
+    // Actieve extra's — nog geen data, toon als wachtende kaart
+    c.innerHTML = actief.map(e => `
+      <div class="card" style="margin-bottom:10px;opacity:.7">
+        <div class="clabel">${e.naam}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">${e.spier} · ${e.equip}</div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:40px">
+          ${[...Array(8)].map((_,i) => `<div style="flex:1;border-radius:2px 2px 0 0;background:var(--bg-4);height:${20+i*5}%"></div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:8px;font-family:var(--mono)">Nog geen data — doe een training</div>
+      </div>`).join('');
+    return;
+  }
+
+  // Render kaarten met echte data
+  c.innerHTML = extraMetData.map(e => {
+    const pts = D.trainingen.flatMap(t =>
+      (t.extra_oefeningen || [])
+        .filter(x => x.id === e.id)
+        .map(x => ({ datum: t.datum, g: x.gewicht }))
+    );
+    if(!pts.length) return '';
+    const max    = pts.reduce((a,b) => b.g > a.g ? b : a);
+    const eerste = pts[0];
+    const huidig = pts[pts.length-1].g;
+    const stijg  = huidig - eerste.g;
+    const recent = pts.slice(-10);
+    const maxG   = Math.max(...recent.map(p=>p.g)) * 1.1;
+
+    const bars = recent.map(p => {
+      const h   = Math.round(p.g / maxG * 100);
+      const isPr = p.g === max.g;
+      return `<div style="flex:1;border-radius:2px 2px 0 0;
+                background:${isPr?'var(--lift)':'rgba(200,255,71,.35)'};
+                height:${h}%;min-width:0;cursor:default"
+              title="${p.g} kg · ${new Date(p.datum).toLocaleDateString('nl-NL')}"></div>`;
+    }).join('');
+
+    const labels = recent.map(p =>
+      `<div style="flex:1;font-family:var(--mono);font-size:9px;color:var(--faint);text-align:center;overflow:hidden;white-space:nowrap">
+        ${new Date(p.datum).toLocaleDateString('nl-NL',{day:'numeric',month:'numeric'})}
+      </div>`
+    ).join('');
+
+    return `
+      <div class="card" style="margin-bottom:10px">
+        <div class="clabel">${e.naam}</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+          <span style="font-family:var(--mono);font-size:22px;font-weight:500">${huidig}</span>
+          <span style="font-size:12px;color:var(--muted)">kg huidig</span>
+          ${huidig === max.g ? '<span class="pr-badge">PR</span>' : ''}
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+          ${stijg >= 0 ? '+' : ''}${stijg} kg · ${pts.length} sessie${pts.length !== 1 ? 's' : ''}
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:60px">${bars}</div>
+        <div style="display:flex;gap:3px;margin-top:4px">${labels}</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <div class="metric" style="flex:1;min-width:80px;padding:8px 10px">
+            <div class="ml">Start</div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:500">${eerste.g} kg</div>
+          </div>
+          <div class="metric" style="flex:1;min-width:80px;padding:8px 10px">
+            <div class="ml">PR</div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:500">${max.g} kg</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ══ GESCHIEDENIS ══ */
+function verversGesch(){
+  const c=document.getElementById('gesch-lijst');
+  const t=[...D.trainingen].reverse();
+  if(!t.length){ c.innerHTML='<div class="leeg"><div class="leeg-icon">🏋</div><div>Nog geen trainingen</div></div>'; return; }
+  c.innerHTML=t.map(tr=>{
+    const d=new Date(tr.datum).toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+    const oefStr=(tr.oefeningen||[]).map(o=>`<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${o.naam} ${o.gewicht}kg</span>`).join(' · ');
+    return `<div class="card" style="margin-bottom:8px">
+      <div style="font-family:var(--head);font-size:15px;font-weight:700;line-height:1.3;margin-bottom:4px">Training ${tr.letter} — ${d}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:5px">${oefStr}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint)">VOL ${(tr.volume||0).toLocaleString('nl-NL')} kg</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ OPSTARTEN ══ */
+/* ══ RUNCORE SYNC ══ */
+function updateRunVol(v){
+  D.run_km=parseInt(v);
+  document.getElementById('run-lbl').textContent=v+' km';
+  let adv='Normaal volume · LiftCore volledig schema actief';
+  if(v>45) adv='⚠ Hoog loopvolume — alleen kernprogramma (geen accessoires)';
+  else if(v>30) adv='Verhoogd volume — accessoire oefeningen worden weggelaten';
+  document.getElementById('run-advies').textContent=adv;
+  slaOp();
+}
+
+/* ══ INSTELLINGEN ══ */
+function slaInstOp(){
+  D.programma=document.getElementById('inst-prog').value;
+  D.inst.rust_zw=parseInt(document.getElementById('inst-zw').value)||90;
+  D.inst.rust_li=parseInt(document.getElementById('inst-li').value)||90;
+  D.inst.geluid=document.getElementById('inst-geluid').checked;
+  D.inst.stang_recht=parseFloat(document.getElementById('inst-stang-recht').value)||20;
+  D.inst.stang_curl=parseFloat(document.getElementById('inst-stang-curl').value)||10;
+  // gewicht_stap en melodie worden direct opgeslagen via kiesStap() / kiesMelodie()
+  slaOp(); toast('Instellingen opgeslagen','ok');
+}
+
+function kiesStap(stap){
+  D.inst.gewicht_stap = stap;
+  slaOp();
+  // Knopstatus
+  document.getElementById('stap-125').className = stap===1.25 ? 'btn btn-lift btn-sm' : 'btn btn-ghost btn-sm';
+  document.getElementById('stap-250').className = stap===2.5  ? 'btn btn-lift btn-sm' : 'btn btn-ghost btn-sm';
+  document.getElementById('stap-huidig').textContent = stap.toString().replace('.',',') + ' kg';
+  toast('Stapgrootte: ' + stap.toString().replace('.',',') + ' kg', 'ok');
+}
+
+function vulInstUI(){
+  document.getElementById('inst-prog').value=D.programma;
+  document.getElementById('inst-zw').value=D.inst.rust_zw;
+  document.getElementById('inst-li').value=D.inst.rust_li;
+  document.getElementById('inst-geluid').checked=D.inst.geluid;
+  document.getElementById('run-slider').value=D.run_km;
+  document.getElementById('run-lbl').textContent=D.run_km+' km';
+  // Nieuwe instellingen
+  const stangRechtEl = document.getElementById('inst-stang-recht');
+  if(stangRechtEl) stangRechtEl.value = D.inst.stang_recht || 20;
+  const stangCurlEl = document.getElementById('inst-stang-curl');
+  if(stangCurlEl) stangCurlEl.value = D.inst.stang_curl || 10;
+  const stap = D.inst.gewicht_stap || 2.5;
+  const s125 = document.getElementById('stap-125');
+  const s250 = document.getElementById('stap-250');
+  if(s125) s125.className = stap===1.25 ? 'btn btn-lift btn-sm' : 'btn btn-ghost btn-sm';
+  if(s250) s250.className = stap===2.5  ? 'btn btn-lift btn-sm' : 'btn btn-ghost btn-sm';
+  const stapHuidig = document.getElementById('stap-huidig');
+  if(stapHuidig) stapHuidig.textContent = stap.toString().replace('.',',') + ' kg';
+  bouwMelodieKiezer();
+}
+
+function resetAlles(){
+  if(!confirm('Alle data wissen? Dit is onomkeerbaar.')) return;
+  localStorage.removeItem(LS);
+  D=JSON.parse(JSON.stringify(STD));
+  toast('Data gewist','neu');
+  ga('dashboard');
+}
+
+/* ══ HULP ══ */
+function volgendeLetter(){ return !D.trainingen.length?'A':D.trainingen[D.trainingen.length-1].letter==='A'?'B':'A'; }
+function isNieuwPR(id,gew){ const e=D.trainingen.flatMap(t=>t.oefeningen||[]).filter(o=>o.id===id).map(o=>o.gewicht); return !e.length||gew>Math.max(...e); }
+
+/* ══ TOAST ══ */
+function toast(msg,type='neu'){
+  const c=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className='toast '+type; el.setAttribute('role','status');
+  el.innerHTML=`<span>${type==='ok'?'✓':type==='wn'?'⚠':'·'}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); el.addEventListener('animationend',()=>el.remove(),{once:true}); },3400);
+}
+
+/* ══ PERSOONSPROFIEL ══ */
+const PP_LS = 'liftcore_persoon';
+
+const PP_STD = {
+  naam: '', geslacht: '', leeftijd: null,
+  lengte: null, gewicht: null,
+  trainingsprofiel: 'licht',
+  bijgewerkt: null,
+  sync_status: 'lokaal', // lokaal | synced | sync_mislukt
+};
+
+function laadPersoonsProfiel(){
+  try{
+    const r = localStorage.getItem(PP_LS);
+    return r ? {...JSON.parse(JSON.stringify(PP_STD)), ...JSON.parse(r)} : JSON.parse(JSON.stringify(PP_STD));
+  }catch{ return JSON.parse(JSON.stringify(PP_STD)); }
+}
+
+function verversPersoonsProfielUI(){
+  const pp = laadPersoonsProfiel();
+
+  document.getElementById('pp-naam').value      = pp.naam      || '';
+  document.getElementById('pp-geslacht').value  = pp.geslacht  || '';
+  document.getElementById('pp-leeftijd').value  = pp.leeftijd  || '';
+  document.getElementById('pp-lengte').value    = pp.lengte    || '';
+  document.getElementById('pp-gewicht').value   = pp.gewicht   || '';
+
+  // Profielkaarten
+  kiesPPProfielUI(pp.trainingsprofiel || D.profiel || 'licht');
+
+  // Gewichten preview
+  bijwerkPPGewichtenGrid();
+
+  // Welkomstbanner: toon alleen als profiel nog niet gekozen is
+  const welkom = document.getElementById('pp-welkom-banner');
+  if(welkom) welkom.style.display = !D.profiel_gekozen ? 'flex' : 'none';
+
+  // Sync status
+  const statusTekst = {lokaal:'Lokaal opgeslagen', synced:'Gesynchroniseerd', sync_mislukt:'Sync mislukt'};
+  const statusKleur = {lokaal:'var(--amber)', synced:'var(--lift)', sync_mislukt:'var(--red)'};
+  const s = pp.sync_status || 'lokaal';
+  document.getElementById('pp-sync-status').textContent = statusTekst[s] || s;
+
+  const pill = document.getElementById('pp-sync-pill');
+  pill.textContent = s;
+  pill.style.background = statusKleur[s] + '18';
+  pill.style.border = `1px solid ${statusKleur[s]}44`;
+  pill.style.color = statusKleur[s];
+
+  document.getElementById('pp-bijgewerkt').textContent = pp.bijgewerkt
+    ? new Date(pp.bijgewerkt).toLocaleString('nl-NL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})
+    : 'Nog niet opgeslagen';
+
+  document.getElementById('pp-opslaan-btn').disabled = true;
+
+  // Sync banner
+  const banner = document.getElementById('pp-sync-banner');
+  if(banner) banner.style.display = 'none';
+}
+
+let ppGekozenProfiel = 'licht';
+let ppTijdelijkDelta = 0; // bijgehouden delta t.o.v. opgeslagen profiel
+
+function kiesPPProfiel(p){
+  ppGekozenProfiel = p;
+  kiesPPProfielUI(p);
+  ppTijdelijkDelta = 0;
+  bijwerkPPGewichtenGrid();
+  markeerPPWijziging();
+}
+
+function kiesPPProfielUI(p){
+  ppGekozenProfiel = p;
+  ['licht','midden','zwaar'].forEach(n => {
+    document.getElementById('pp-pk-'+n)?.classList.toggle('sel', n === p);
+  });
+}
+
+function pasProfielGewichten(delta){
+  ppTijdelijkDelta += delta;
+  bijwerkPPGewichtenGrid();
+  markeerPPWijziging();
+}
+
+function bijwerkPPGewichtenGrid(){
+  const basis = PROFIELEN[ppGekozenProfiel] || PROFIELEN.licht;
+  const namen = {squat:'Squat',bench:'Bench Press',ohp:'OHP',deadlift:'Deadlift',row:'Barbell Row'};
+
+  // Toon preview gewichten = basis + delta, afgerond op stap
+  const stap = D.inst.gewicht_stap || 2.5;
+
+  const grid = document.getElementById('pp-gewichten-grid');
+  if(!grid) return;
+
+  grid.innerHTML = Object.entries(basis).map(([k,v]) => {
+    const gew = Math.max(1.25, Math.round((v + ppTijdelijkDelta) * 100) / 100);
+    return `<div class="metric">
+      <div class="ml">${namen[k]||k}</div>
+      <div style="font-family:var(--mono);font-size:16px;font-weight:500">${gew}<span style="font-size:11px;color:var(--muted)"> kg</span></div>
+    </div>`;
+  }).join('');
+
+  const preview = document.getElementById('pp-gew-preview');
+  if(preview){
+    const squat = Math.max(1.25, Math.round((basis.squat + ppTijdelijkDelta)*100)/100);
+    preview.textContent = squat + ' kg';
+  }
+}
+
+function markeerPPWijziging(){
+  document.getElementById('pp-opslaan-btn').disabled = false;
+}
+
+function slaPersoonsProfielOp(){
+  const basis = PROFIELEN[ppGekozenProfiel] || PROFIELEN.licht;
+
+  // Bereken gewichten met delta
+  const nieuweGewichten = {};
+  Object.entries(basis).forEach(([k,v]) => {
+    nieuweGewichten[k] = Math.max(1.25, Math.round((v + ppTijdelijkDelta)*100)/100);
+  });
+
+  const eersteKeer = !D.profiel_gekozen;
+
+  const pp = {
+    naam:             document.getElementById('pp-naam').value.trim(),
+    geslacht:         document.getElementById('pp-geslacht').value,
+    leeftijd:         parseInt(document.getElementById('pp-leeftijd').value) || null,
+    lengte:           parseInt(document.getElementById('pp-lengte').value) || null,
+    gewicht:          parseFloat(document.getElementById('pp-gewicht').value) || null,
+    trainingsprofiel: ppGekozenProfiel,
+    delta:            ppTijdelijkDelta,
+    bijgewerkt:       new Date().toISOString(),
+    sync_status:      'lokaal',
+  };
+
+  try{
+    localStorage.setItem(PP_LS, JSON.stringify(pp));
+  }catch(e){
+    toast('Opslaan mislukt — localStorage vol?', 'wn');
+    return;
+  }
+
+  // Altijd gewichten en profiel bijwerken
+  D.gewichten        = {...nieuweGewichten};
+  D.profiel          = ppGekozenProfiel;
+  D.profiel_gekozen  = true;
+  slaOp();
+
+  document.getElementById('pp-opslaan-btn').disabled = true;
+  toast(eersteKeer ? 'Profiel aangemaakt — welkom bij LiftCore! 🏋' : 'Profiel opgeslagen', 'ok');
+
+  // Probeer te syncen
+  syncPersoonsProfiel(true);
+  verversPersoonsProfielUI();
+
+  // Eerste keer: navigeer na korte pauze naar dashboard
+  if(eersteKeer){
+    setTimeout(()=>ga('dashboard'), 1200);
+  }
+}
+
+function herstelPersoonsProfiel(){
+  ppTijdelijkDelta = 0;
+  verversPersoonsProfielUI();
+  toast('Wijzigingen teruggedraaid', 'neu');
+}
+
+async function syncPersoonsProfiel(stil = false){
+  // Supabase sync — werkt alleen als supabase beschikbaar is (index.html koppeling)
+  const pp = laadPersoonsProfiel();
+  if(!pp.bijgewerkt){ toast('Eerst opslaan voordat je kunt synchroniseren', 'wn'); return; }
+
+  // Probeer Supabase via window.supabase (beschikbaar als index.html geladen heeft)
+  if(typeof window !== 'undefined' && window._supabaseClient){
+    try{
+      const { data: sessie } = await window._supabaseClient.auth.getSession();
+      if(!sessie?.session?.user){
+        if(!stil) toast('Niet ingelogd — sync niet mogelijk', 'wn');
+        return;
+      }
+      const uid = sessie.session.user.id;
+      const { error } = await window._supabaseClient
+        .from('liftcore_profielen')
+        .upsert({
+          user_id:         uid,
+          naam:            pp.naam,
+          geslacht:        pp.geslacht,
+          leeftijd:        pp.leeftijd,
+          lengte:          pp.lengte,
+          gewicht:         pp.gewicht,
+          trainingsprofiel:pp.trainingsprofiel,
+          delta:           pp.delta || 0,
+          gewichten:       D.gewichten,
+          bijgewerkt:      pp.bijgewerkt,
+        }, { onConflict: 'user_id' });
+
+      if(error) throw error;
+
+      // Update sync status
+      const bijgewerkt = {...pp, sync_status:'synced'};
+      localStorage.setItem(PP_LS, JSON.stringify(bijgewerkt));
+      if(!stil) toast('Profiel gesynchroniseerd ✓', 'ok');
+      verversPersoonsProfielUI();
+    }catch(e){
+      const mislukt = {...pp, sync_status:'sync_mislukt'};
+      localStorage.setItem(PP_LS, JSON.stringify(mislukt));
+      if(!stil) toast('Sync mislukt: ' + (e.message || 'onbekende fout'), 'wn');
+      verversPersoonsProfielUI();
+    }
+  } else {
+    if(!stil) toast('Cloud sync beschikbaar na koppeling met index.html', 'neu');
+  }
+
+  // Online-listener voor automatische sync bij herstel verbinding
+  if(!window._ppOnlineListenerAdded){
+    window._ppOnlineListenerAdded = true;
+    window.addEventListener('online', () => {
+      const p = laadPersoonsProfiel();
+      if(p.sync_status !== 'synced') syncPersoonsProfiel(true);
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  vulInstUI();
+  kiesPPProfielUI(D.profiel||'licht');
+  bouwExtra();
+
+  if(!D.profiel_gekozen){
+    // Eerste keer: direct naar Mijn profiel met welkomstbanner
+    ga('persoonsprofiel');
+    const banner = document.getElementById('pp-welkom-banner');
+    if(banner) banner.style.display = 'flex';
+  } else {
+    // Herstel het scherm waar de gebruiker was
+    const scherm = D.actief_scherm || 'dashboard';
+    ga(scherm);
+  }
+});
+
+function exporteerData(){
+  try{
+    const data = localStorage.getItem('liftcore_v3');
+    if(!data){ if(typeof toast==='function') toast('Geen data om te exporteren','wn'); return; }
+    const blob = new Blob([JSON.stringify(JSON.parse(data), null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'LiftCore_export_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    if(typeof toast==='function') toast('LiftCore data geëxporteerd ✓','ok');
+  }catch(e){
+    if(typeof toast==='function') toast('Export mislukt','wn');
+  }
+}
+</script>
+<script src="core.js"></script>
+</body>
+</html>

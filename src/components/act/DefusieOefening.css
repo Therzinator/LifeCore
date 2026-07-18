@@ -1,0 +1,40 @@
+.do-input {
+  width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-size: var(--font-size-base);
+  padding: var(--space-sm);
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  margin-bottom: var(--space-sm);
+}
+.do-input:focus { border-color: var(--accent-mid); }
+
+.do-stappen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.do-stap {
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent-mid);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.do-stap-lbl {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+
+.do-stap-tekst {
+  font-size: var(--font-size-base);
+}

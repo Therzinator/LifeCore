@@ -1,0 +1,41 @@
+.go-lijst {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 var(--space-lg);
+}
+
+.go-kaart {
+  text-align: left;
+  background: var(--bg-2);
+  border: none;
+  border-left: 3px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  transition: var(--tx);
+  width: 100%;
+}
+.go-kaart:hover { background: var(--bg-3); }
+.go-kaart.actief {
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+
+.go-num {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.go-vraag {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.go-hint {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}

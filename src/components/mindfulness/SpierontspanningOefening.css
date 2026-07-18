@@ -1,0 +1,39 @@
+.pmr-lijst {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-lg);
+}
+
+.pmr-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  transition: var(--tx);
+}
+.pmr-item.actief {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+}
+
+.pmr-nr {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--txt-faint);
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.pmr-naam {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.pmr-instructie {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}

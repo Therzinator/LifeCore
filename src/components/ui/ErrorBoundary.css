@@ -1,0 +1,19 @@
+.eb-val {
+  max-width: 420px;
+  margin: var(--space-xl) auto;
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.eb-titel {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.eb-tekst {
+  color: var(--txt-muted);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  margin-bottom: var(--space-md);
+}
