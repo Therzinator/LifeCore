@@ -5,6 +5,7 @@ import DesktopShell from './components/layout/DesktopShell.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import Toast from './components/ui/Toast.jsx';
 import UpdateBanner from './components/ui/UpdateBanner.jsx';
+import InstallBanner from './components/ui/InstallBanner.jsx';
 import SnelkeuzeScherm from './components/nav/SnelkeuzeScherm.jsx';
 import OchtendFlow from './components/ochtend/OchtendFlow.jsx';
 import WaardenPagina from './components/act/WaardenPagina.jsx';
@@ -69,6 +70,7 @@ export default function App() {
     return (
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
+        <InstallBanner />
         <InlogScherm login={auth.login} signup={auth.signup} />
       </>
     );
@@ -82,6 +84,7 @@ export default function App() {
     return (
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
+        <InstallBanner />
         <DesktopShell
           pagina={desktopPagina}
           setPagina={setPagina}

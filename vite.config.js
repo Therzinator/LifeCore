@@ -17,13 +17,19 @@ export default defineConfig({
         name: 'LifeCore',
         short_name: 'LifeCore',
         description: 'Persoonlijke welzijns- en levensmanagement-app',
-        theme_color: '#5B7A66',
-        background_color: '#FAF7F2',
+        // Match het huidige neon-dark-thema (theme.css) — de oude waarden
+        // (lichte sage-groene kleuren) hoorden bij een eerder lichte
+        // ontwerpfase en gaven een verkeerd gekleurd splashscreen bij het
+        // opstarten van de geïnstalleerde app.
+        theme_color: '#0A0A0B',
+        background_color: '#0A0A0B',
         display: 'standalone',
         start_url: '/',
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-192-maskable.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),
