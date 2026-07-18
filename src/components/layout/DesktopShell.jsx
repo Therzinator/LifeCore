@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { leesLokaal, schrijfLokaal } from '../../lib/storage/lokaal.js';
-import { MODULE_ICONEN, IconChevron, IconInstellingen } from '../ui/ModuleIconen.jsx';
+import { MODULE_ICONEN, IconChevron, IconInstellingen, IconAccount } from '../ui/ModuleIconen.jsx';
+import { MODULES, MODULE_VOLGORDE } from '../../lib/nav/modules.js';
+import AccountModal from '../ui/AccountModal.jsx';
 import './DesktopShell.css';
 
 const STATUS_LABEL = {
@@ -11,22 +13,11 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-const MODULES = [
-  { id: 'ochtend', label: 'Ochtend' },
-  { id: 'waarden', label: 'Waarden' },
-  { id: 'welzijn', label: 'Welzijn' },
-  { id: 'mindfulness', label: 'Mindfulness' },
-  { id: 'training', label: 'Training' },
-  { id: 'cardio', label: 'Cardio' },
-  { id: 'adhd', label: 'Focus' },
-  { id: 'werk', label: 'Werk' },
-  { id: 'dashboard', label: 'Dashboard' },
-];
-
 export default function DesktopShell({ pagina, setPagina, auth, onInstellingen, children }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [ingeklapt, setIngeklapt] = useState(() => leesLokaal('zijbalk_ingeklapt', false));
+  const [toonAccount, setToonAccount] = useState(false);
 
   function wisselZijbalk() {
     setIngeklapt((huidig) => {
@@ -52,6 +43,11 @@ export default function DesktopShell({ pagina, setPagina, auth, onInstellingen, 
               </button>
             </div>
           )}
+          {auth?.enabled && (
+            <button className="ds-instellingen-btn" onClick={() => setToonAccount(true)} aria-label="Account">
+              <IconAccount className="ds-instellingen-icoon" />
+            </button>
+          )}
           <button className="ds-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
             <IconInstellingen className="ds-instellingen-icoon" />
           </button>
@@ -68,24 +64,27 @@ export default function DesktopShell({ pagina, setPagina, auth, onInstellingen, 
         >
           <IconChevron className={`ds-zijbalk-toggle-icoon ${ingeklapt ? '' : 'gedraaid'}`} />
         </button>
-        {MODULES.map((mod) => {
-          const Icoon = MODULE_ICONEN[mod.id];
+        {MODULE_VOLGORDE.map((id) => {
+          const Icoon = MODULE_ICONEN[id];
+          const label = MODULES[id].label;
           return (
             <button
-              key={mod.id}
+              key={id}
               type="button"
-              className={`ds-nav-item ${pagina === mod.id ? 'actief' : ''}`}
-              onClick={() => setPagina(mod.id)}
-              title={ingeklapt ? mod.label : undefined}
+              className={`ds-nav-item ${pagina === id ? 'actief' : ''}`}
+              onClick={() => setPagina(id)}
+              title={ingeklapt ? label : undefined}
             >
               <Icoon className="ds-nav-icoon" />
-              <span className="ds-nav-label">{mod.label}</span>
+              <span className="ds-nav-label">{label}</span>
             </button>
           );
         })}
       </nav>
 
       <main className="ds-content">{children}</main>
+
+      {toonAccount && <AccountModal auth={auth} onClose={() => setToonAccount(false)} />}
     </div>
   );
 }

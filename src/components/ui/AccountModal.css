@@ -1,0 +1,22 @@
+.am-gelukt {
+  font-size: var(--font-size-sm);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--r-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.am-uitloggen {
+  width: 100%;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border: none;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--danger);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+.am-uitloggen:hover { opacity: .8; }

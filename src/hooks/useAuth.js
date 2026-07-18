@@ -43,5 +43,12 @@ export function useAuth() {
     if (sb) await sb.auth.signOut();
   }, []);
 
-  return { user, laden, ingelogd: Boolean(user), login, signup, logout, enabled: SUPABASE_ENABLED };
+  const bijwerkenAccount = useCallback(async (patch) => {
+    const sb = sbClient();
+    if (!sb) return { error: 'Supabase is niet geconfigureerd' };
+    const { error } = await sb.auth.updateUser(patch);
+    return { error: error?.message ?? null };
+  }, []);
+
+  return { user, laden, ingelogd: Boolean(user), login, signup, logout, bijwerkenAccount, enabled: SUPABASE_ENABLED };
 }

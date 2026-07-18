@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
-import { IconInstellingen } from '../ui/ModuleIconen.jsx';
+import { IconInstellingen, IconAccount } from '../ui/ModuleIconen.jsx';
+import AccountModal from '../ui/AccountModal.jsx';
 import './AppHeader.css';
 
 const STATUS_LABEL = {
@@ -12,6 +14,7 @@ const STATUS_LABEL = {
 export default function AppHeader({ auth, onInstellingen }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
+  const [toonAccount, setToonAccount] = useState(false);
 
   return (
     <header className="app-header">
@@ -28,10 +31,16 @@ export default function AppHeader({ auth, onInstellingen }) {
             </button>
           </div>
         )}
+        {auth?.enabled && (
+          <button className="app-instellingen-btn" onClick={() => setToonAccount(true)} aria-label="Account">
+            <IconAccount className="app-instellingen-icoon" />
+          </button>
+        )}
         <button className="app-instellingen-btn" onClick={onInstellingen} aria-label="Instellingen">
           <IconInstellingen className="app-instellingen-icoon" />
         </button>
       </div>
+      {toonAccount && <AccountModal auth={auth} onClose={() => setToonAccount(false)} />}
     </header>
   );
 }
