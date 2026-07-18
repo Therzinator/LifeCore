@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useWerkTaken } from '../../hooks/useWerkTaken.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
+import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useWerkInstellingen } from '../../hooks/useWerkInstellingen.js';
 import WerkTaken from './WerkTaken.jsx';
 import HuishoudTaken from './HuishoudTaken.jsx';
@@ -16,6 +17,7 @@ const TABS = [
 export default function WerkPagina({ toonToast }) {
   const werkTaken = useWerkTaken();
   const huishoudTaken = useHuishoudTaken();
+  const huishoudProjecten = useHuishoudProjecten();
   const { instellingen, bewaar, voegCategorieToe, verwijderCategorie } = useWerkInstellingen();
   const [tab, setTab] = useState('werk');
 
@@ -41,7 +43,9 @@ export default function WerkPagina({ toonToast }) {
 
       <div className="card">
         {tab === 'werk' && <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} />}
-        {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} toonToast={toonToast} />}
+        {tab === 'huishouden' && (
+          <HuishoudTaken huishoudTaken={huishoudTaken} huishoudProjecten={huishoudProjecten} toonToast={toonToast} />
+        )}
       </div>
     </div>
   );
