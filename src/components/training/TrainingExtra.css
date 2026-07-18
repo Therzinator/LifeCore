@@ -4,7 +4,8 @@
   background: var(--bg-3);
   border-radius: var(--r-sm);
   padding: 3px;
-  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
   margin-bottom: var(--space-md);
 }
 .te-tab {
@@ -17,6 +18,8 @@
   color: var(--txt-muted);
   cursor: pointer;
   font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .te-tab.on { background: var(--surface); color: var(--txt); }
 

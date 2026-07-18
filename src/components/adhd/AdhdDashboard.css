@@ -76,6 +76,7 @@
 .ad-toevoeg-rij { display: flex; gap: var(--space-xs); margin-top: var(--space-sm); }
 .ad-toevoeg-veld {
   flex: 1;
+  min-width: 0;
   background: var(--bg-2);
   border: 1px solid var(--border-2);
   border-radius: var(--r-sm);
