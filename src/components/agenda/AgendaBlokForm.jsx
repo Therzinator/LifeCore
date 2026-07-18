@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
 const TYPES = [
+  // 'kracht'/'cardio' zijn ad-hoc trainings-/cardioblokken — voor als de
+  // vaste weekdagen (LIFT_DAGEN/CARDIO_DAGEN) een keer niet uitkomen. Een
+  // blok van dit type linkt in de dagweergave direct door naar de
+  // bijbehorende module om de sessie ook echt te starten.
+  { id: 'kracht', label: 'Kracht' },
+  { id: 'cardio', label: 'Cardio' },
   { id: 'ontspanning', label: 'Ontspanning' },
   { id: 'sport', label: 'Sport / bewegen' },
   { id: 'sociaal', label: 'Sociaal' },

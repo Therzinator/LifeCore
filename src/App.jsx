@@ -24,7 +24,7 @@ import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast) {
+function renderModule(paginaId, toonToast, setPagina) {
   switch (paginaId) {
     case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
@@ -34,7 +34,7 @@ function renderModule(paginaId, toonToast) {
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
-    case 'agenda': return <AgendaPagina toonToast={toonToast} />;
+    case 'agenda': return <AgendaPagina toonToast={toonToast} onNavigeer={setPagina} />;
     case 'dashboard': return <DashboardPagina />;
     default: return null;
   }
@@ -96,7 +96,7 @@ export default function App() {
         <InstallBanner />
         <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
           <ErrorBoundary key={desktopPagina}>
-            {renderModule(desktopPagina, toonToast)}
+            {renderModule(desktopPagina, toonToast, setPagina)}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
@@ -111,7 +111,7 @@ export default function App() {
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
-          {renderModule(pagina, toonToast)}
+          {renderModule(pagina, toonToast, setPagina)}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} />

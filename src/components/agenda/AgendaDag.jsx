@@ -1,4 +1,4 @@
-import { TYPE_ICOON } from './agendaWeergave.js';
+import { TYPE_ICOON, BLOK_TYPE_MODULE } from './agendaWeergave.js';
 
 function datumLabel(datum) {
   return new Date(datum).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -10,7 +10,9 @@ const DAGTYPE_OPTIES = [
   { waarde: 'vrij', label: 'Vrije dag' },
 ];
 
-export default function AgendaDag({ datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride }) {
+export default function AgendaDag({
+  datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
+}) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
 
@@ -44,13 +46,19 @@ export default function AgendaDag({ datum, blokInstanties, signalen, onVerwijder
 
       <div className="hh-lijst">
         {dagBlokken.length === 0 && <p className="of-stap-tekst">Nog niets gepland.</p>}
-        {dagBlokken.map((b) => (
-          <div className="hh-item" key={`${b.id}-${b.datum}`}>
-            <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
-            <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
-            <button className="hh-verwijder" onClick={() => onVerwijderBlok(b.id)}>✕</button>
-          </div>
-        ))}
+        {dagBlokken.map((b) => {
+          const moduleVoorBlok = BLOK_TYPE_MODULE[b.type];
+          return (
+            <div className="hh-item" key={`${b.id}-${b.datum}`}>
+              <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+              <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
+              {moduleVoorBlok && onNavigeer && (
+                <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
+              )}
+              <button className="hh-verwijder" onClick={() => onVerwijderBlok(b.id)}>✕</button>
+            </div>
+          );
+        })}
       </div>
 
       <button className="btn btn-g btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={onNieuwBlok}>+ Blok toevoegen</button>
