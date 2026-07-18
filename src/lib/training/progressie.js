@@ -1,9 +1,7 @@
 const STAP_STANDAARD = 2.5;
-const STAP_DEADLIFT = 5;
 
-export function volgendeGewicht(huidigGewicht, oefeningId) {
-  const stap = oefeningId === 'deadlift' ? STAP_DEADLIFT : STAP_STANDAARD;
-  return huidigGewicht + stap;
+export function volgendeGewicht(huidigGewicht, increment = STAP_STANDAARD) {
+  return huidigGewicht + increment;
 }
 
 export function isNieuwePR(oefeningId, gewicht, sessies) {

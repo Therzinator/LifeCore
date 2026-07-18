@@ -164,7 +164,7 @@ export default function TrainingSessie({
       oefeningen.forEach((o) => {
         if (o.werk.every(Boolean)) {
           const gemGew = gemiddelde(o.setGew);
-          setGewicht(o.id, volgendeGewicht(Math.round(gemGew * 10) / 10, o.id));
+          setGewicht(o.id, volgendeGewicht(Math.round(gemGew * 10) / 10, o.increment));
         }
       });
     } else {

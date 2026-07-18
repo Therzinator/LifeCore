@@ -1,15 +1,34 @@
 export const SCHEMA = {
   A: [
-    { id: 'squat', naam: 'Back Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, bilspieren, hamstrings' },
-    { id: 'bench', naam: 'Bench Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Borst, triceps' },
-    { id: 'row', naam: 'Barbell Row', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Rug, rhomboïden' },
+    { id: 'squat', naam: 'Back Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, bilspieren, hamstrings', increment: 2.5 },
+    { id: 'bench', naam: 'Bench Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Borst, triceps', increment: 2.5 },
+    { id: 'row', naam: 'Barbell Row', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Rug, rhomboïden', increment: 2.5 },
   ],
   B: [
-    { id: 'squat', naam: 'Back Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, bilspieren, hamstrings' },
-    { id: 'ohp', naam: 'Overhead Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Schouders, triceps' },
-    { id: 'deadlift', naam: 'Deadlift', sets: 1, reps: 5, type: 'zw', stangType: 'recht', spier: 'Hamstrings, bilspieren, rugstrekkers' },
+    { id: 'squat', naam: 'Back Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, bilspieren, hamstrings', increment: 2.5 },
+    { id: 'ohp', naam: 'Overhead Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Schouders, triceps', increment: 2.5 },
+    { id: 'deadlift', naam: 'Deadlift', sets: 1, reps: 5, type: 'zw', stangType: 'recht', spier: 'Hamstrings, bilspieren, rugstrekkers', increment: 5 },
   ],
 };
+
+// Bibliotheek van veelgebruikte oefeningen om Training A/B mee te bewerken —
+// vergelijkbaar met het wisselen van oefeningen in de StrongLifts-app. Naast
+// deze presets kan de gebruiker ook een volledig eigen oefening invullen.
+export const OEFENINGEN_BIBLIOTHEEK = [
+  { categorie: 'Squat', id: 'squat', naam: 'Back Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, bilspieren, hamstrings', increment: 2.5 },
+  { categorie: 'Squat', id: 'front-squat', naam: 'Front Squat', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Quads, core', increment: 2.5 },
+  { categorie: 'Squat', id: 'goblet-squat', naam: 'Goblet Squat', sets: 4, reps: 10, type: 'li', stangType: 'recht', spier: 'Quads, bilspieren', increment: 2.5 },
+  { categorie: 'Borst', id: 'bench', naam: 'Bench Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Borst, triceps', increment: 2.5 },
+  { categorie: 'Borst', id: 'incline-bench', naam: 'Incline Bench Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Bovenborst, schouders', increment: 2.5 },
+  { categorie: 'Borst', id: 'close-grip-bench', naam: 'Close-Grip Bench Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Triceps, borst', increment: 2.5 },
+  { categorie: 'Rug', id: 'row', naam: 'Barbell Row', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Rug, rhomboïden', increment: 2.5 },
+  { categorie: 'Rug', id: 'pendlay-row', naam: 'Pendlay Row', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Rug, lats', increment: 2.5 },
+  { categorie: 'Schouders', id: 'ohp', naam: 'Overhead Press', sets: 5, reps: 5, type: 'li', stangType: 'recht', spier: 'Schouders, triceps', increment: 2.5 },
+  { categorie: 'Schouders', id: 'push-press', naam: 'Push Press', sets: 5, reps: 5, type: 'zw', stangType: 'recht', spier: 'Schouders, benen', increment: 2.5 },
+  { categorie: 'Deadlift', id: 'deadlift', naam: 'Deadlift', sets: 1, reps: 5, type: 'zw', stangType: 'recht', spier: 'Hamstrings, bilspieren, rugstrekkers', increment: 5 },
+  { categorie: 'Deadlift', id: 'romanian-deadlift', naam: 'Romanian Deadlift', sets: 3, reps: 8, type: 'zw', stangType: 'recht', spier: 'Hamstrings, bilspieren', increment: 2.5 },
+  { categorie: 'Deadlift', id: 'sumo-deadlift', naam: 'Sumo Deadlift', sets: 1, reps: 5, type: 'zw', stangType: 'recht', spier: 'Bilspieren, binnenkant bovenbeen', increment: 5 },
+];
 
 export const PROFIELEN = {
   licht: { squat: 30, bench: 17.5, ohp: 15, deadlift: 45, row: 20 },

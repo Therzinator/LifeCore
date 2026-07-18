@@ -1,4 +1,3 @@
-import { SCHEMA } from '../../lib/training/schema.js';
 import './TrainingDashboard.css';
 
 const DAG_LABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
@@ -9,8 +8,17 @@ function dagIndexVan(datumIso) {
   return d === 0 ? 6 : d - 1;
 }
 
-export default function TrainingDashboard({ profiel, geschiedenis, instellingen, volgendeLetter, onStart }) {
-  const oef = SCHEMA[volgendeLetter];
+function uniekeOefeningen(programma) {
+  const gezien = new Set();
+  return [...programma.A, ...programma.B].filter((o) => {
+    if (gezien.has(o.id)) return false;
+    gezien.add(o.id);
+    return true;
+  });
+}
+
+export default function TrainingDashboard({ profiel, programma, geschiedenis, instellingen, volgendeLetter, onStart }) {
+  const oef = programma[volgendeLetter];
   const nr = geschiedenis.sessies.length + 1;
   const vandaagIndex = dagIndexVan(new Date().toISOString());
   const recent = geschiedenis.sessies.slice(-7).map((s) => dagIndexVan(s.datum));
@@ -36,10 +44,10 @@ export default function TrainingDashboard({ profiel, geschiedenis, instellingen,
       </div>
 
       <div className="td-grid">
-        {['squat', 'bench', 'ohp', 'deadlift'].map((id) => (
-          <div className="metric" key={id}>
-            <div className="ml">{id}</div>
-            <div className="mv">{profiel.gewichten[id]} <span className="mu">kg</span></div>
+        {uniekeOefeningen(programma).slice(0, 6).map((o) => (
+          <div className="metric" key={o.id}>
+            <div className="ml">{o.naam}</div>
+            <div className="mv">{profiel.gewichten[o.id] ?? '—'} <span className="mu">kg</span></div>
           </div>
         ))}
       </div>

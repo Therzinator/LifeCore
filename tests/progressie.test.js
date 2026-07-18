@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { volgendeGewicht, isNieuwePR } from '../src/lib/training/progressie.js';
 
 describe('volgendeGewicht', () => {
-  it('verhoogt de meeste oefeningen met 2.5kg', () => {
-    expect(volgendeGewicht(60, 'squat')).toBe(62.5);
-    expect(volgendeGewicht(40, 'bench')).toBe(42.5);
+  it('valt terug op 2.5kg zonder opgegeven increment', () => {
+    expect(volgendeGewicht(60)).toBe(62.5);
+    expect(volgendeGewicht(40)).toBe(42.5);
   });
 
-  it('verhoogt deadlift met 5kg', () => {
-    expect(volgendeGewicht(80, 'deadlift')).toBe(85);
+  it('gebruikt het per-oefening increment (bijv. 5kg voor deadlift)', () => {
+    expect(volgendeGewicht(80, 5)).toBe(85);
+    expect(volgendeGewicht(20, 1.25)).toBe(21.25);
   });
 });
 

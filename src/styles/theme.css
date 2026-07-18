@@ -1,42 +1,42 @@
 /* ══════════════════════════════════════════════════════════════
-   theme.css — LifeCore designsysteem ("Fris & helder")
+   theme.css — LifeCore designsysteem ("Neon Dark")
    Eén centrale plek voor kleuren, typografie en ruimte-tokens.
-   Licht is de standaard; :root[data-theme] wint altijd van de
-   prefers-color-scheme-media-query (theme-toggle in de UI).
+   Donker, energiek thema geïnspireerd op de legacy LiftCore/CardioCore-
+   prototypes — geen licht/donker-wissel, dit IS het thema.
 ══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Achtergronden — helder wit, koele slate-grijzen */
-  --bg:      #FFFFFF;
-  --bg-2:    #F4F7FA;
-  --bg-3:    #E9EEF4;
-  --surface: #FFFFFF;
+  /* Achtergronden — bijna zwart, gelaagd */
+  --bg:      #0A0A0B;
+  --bg-2:    #18181C;
+  --bg-3:    #1E1E24;
+  --surface: #111113;
 
   /* Randen */
-  --border:    rgba(15,23,42,.09);
-  --border-2:  rgba(15,23,42,.16);
+  --border:    rgba(255,255,255,.08);
+  --border-2:  rgba(255,255,255,.16);
 
-  /* Eén accentkleur — teal, fris en energiek */
-  --accent:      #0D9488;
-  --accent-dim:  rgba(13,148,136,.10);
-  --accent-mid:  rgba(13,148,136,.26);
-  --accent-txt:  #FFFFFF;
+  /* Eén accentkleur — limoen-geel, fel en energiek */
+  --accent:      #C8FF47;
+  --accent-dim:  rgba(200,255,71,.12);
+  --accent-mid:  rgba(200,255,71,.30);
+  --accent-txt:  #0A0A0B;
 
   /* Semantische statuskleuren */
-  --warn:      #B45309;
-  --warn-dim:  rgba(180,83,9,.10);
-  --danger:    #DC2626;
-  --danger-dim:rgba(220,38,38,.10);
+  --warn:      #FFB547;
+  --warn-dim:  rgba(255,181,71,.14);
+  --danger:    #FF5757;
+  --danger-dim:rgba(255,87,87,.14);
 
-  /* Tekst — koel slate, hoog contrast */
-  --txt:       #0F172A;
-  --txt-muted: rgba(15,23,42,.60);
-  --txt-faint: rgba(15,23,42,.38);
+  /* Tekst — bijna wit, hoog contrast tegen het donkere canvas */
+  --txt:       #F0F0F4;
+  --txt-muted: rgba(240,240,244,.62);
+  --txt-faint: rgba(240,240,244,.38);
 
   /* Glas/overlay-tokens (modal-achtergrond e.d.) */
-  --glass-bg:     rgba(255,255,255,.90);
-  --glass-border: rgba(15,23,42,.10);
-  --scrim:        rgba(15,23,42,.40);
+  --glass-bg:     rgba(17,17,19,.92);
+  --glass-border: rgba(255,255,255,.12);
+  --scrim:        rgba(0,0,0,.65);
 
   /* Typografie — systeemfonts, geen netwerkafhankelijkheid */
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -57,7 +57,7 @@
   --space-lg: 32px;
   --space-xl: 48px;
 
-  /* Radius & transitie — iets strakker dan voorheen */
+  /* Radius & transitie */
   --r-sm: 8px;
   --r-md: 14px;
   --r-lg: 20px;
@@ -67,62 +67,6 @@
   --zijbalk-breed:     240px;
   --zijbalk-smal:      72px;
   --topbar-hoogte:     64px;
-  --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
-  --shadow-md: 0 4px 16px rgba(15,23,42,.08);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:      #0B1220;
-    --bg-2:    #101A2C;
-    --bg-3:    #16213A;
-    --surface: #151E2D;
-
-    --border:   rgba(229,237,245,.08);
-    --border-2: rgba(229,237,245,.16);
-
-    --accent:      #2DD4BF;
-    --accent-dim:  rgba(45,212,191,.14);
-    --accent-mid:  rgba(45,212,191,.30);
-    --accent-txt:  #06231F;
-
-    --warn:       #F0B462;
-    --warn-dim:   rgba(240,180,98,.14);
-    --danger:     #F0837A;
-    --danger-dim: rgba(240,131,122,.14);
-
-    --txt:       #E5EDF5;
-    --txt-muted: rgba(229,237,245,.62);
-    --txt-faint: rgba(229,237,245,.38);
-
-    --glass-bg:     rgba(11,18,32,.90);
-    --glass-border: rgba(229,237,245,.12);
-    --scrim:        rgba(0,0,0,.55);
-
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.30);
-    --shadow-md: 0 4px 16px rgba(0,0,0,.36);
-  }
-}
-
-/* Expliciete theme-toggle wint altijd van de media-query */
-:root[data-theme='light'] {
-  --bg: #FFFFFF; --bg-2: #F4F7FA; --bg-3: #E9EEF4; --surface: #FFFFFF;
-  --border: rgba(15,23,42,.09); --border-2: rgba(15,23,42,.16);
-  --accent: #0D9488; --accent-dim: rgba(13,148,136,.10); --accent-mid: rgba(13,148,136,.26); --accent-txt: #FFFFFF;
-  --warn: #B45309; --warn-dim: rgba(180,83,9,.10);
-  --danger: #DC2626; --danger-dim: rgba(220,38,38,.10);
-  --txt: #0F172A; --txt-muted: rgba(15,23,42,.60); --txt-faint: rgba(15,23,42,.38);
-  --glass-bg: rgba(255,255,255,.90); --glass-border: rgba(15,23,42,.10); --scrim: rgba(15,23,42,.40);
-  --shadow-sm: 0 1px 2px rgba(15,23,42,.06); --shadow-md: 0 4px 16px rgba(15,23,42,.08);
-}
-
-:root[data-theme='dark'] {
-  --bg: #0B1220; --bg-2: #101A2C; --bg-3: #16213A; --surface: #151E2D;
-  --border: rgba(229,237,245,.08); --border-2: rgba(229,237,245,.16);
-  --accent: #2DD4BF; --accent-dim: rgba(45,212,191,.14); --accent-mid: rgba(45,212,191,.30); --accent-txt: #06231F;
-  --warn: #F0B462; --warn-dim: rgba(240,180,98,.14);
-  --danger: #F0837A; --danger-dim: rgba(240,131,122,.14);
-  --txt: #E5EDF5; --txt-muted: rgba(229,237,245,.62); --txt-faint: rgba(229,237,245,.38);
-  --glass-bg: rgba(11,18,32,.90); --glass-border: rgba(229,237,245,.12); --scrim: rgba(0,0,0,.55);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.30); --shadow-md: 0 4px 16px rgba(0,0,0,.36);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 8px 28px rgba(0,0,0,.5), 0 0 0 1px rgba(200,255,71,.05);
 }

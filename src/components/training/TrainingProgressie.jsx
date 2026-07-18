@@ -3,16 +3,23 @@ import { alleExtraOefeningen } from '../../lib/training/schema.js';
 import { bereken1RM } from '../../lib/training/progressie.js';
 import './TrainingProgressie.css';
 
-const OEFENINGEN = ['squat', 'bench', 'ohp', 'deadlift', 'row'];
-const NAMEN = { squat: 'Back Squat', bench: 'Bench Press', ohp: 'OHP', deadlift: 'Deadlift', row: 'Barbell Row' };
-const TAB_NAMEN = { squat: 'Squat', bench: 'Bench', ohp: 'OHP', deadlift: 'Deadlift', row: 'Row' };
-
 function datumKort(iso) {
   return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'numeric' });
 }
 
-export default function TrainingProgressie({ profiel, geschiedenis, extraOefeningen }) {
-  const [oefeningId, setOefeningId] = useState('squat');
+function uniekeOefeningen(programma) {
+  const gezien = new Set();
+  return [...programma.A, ...programma.B].filter((o) => {
+    if (gezien.has(o.id)) return false;
+    gezien.add(o.id);
+    return true;
+  });
+}
+
+export default function TrainingProgressie({ profiel, programma, geschiedenis, extraOefeningen }) {
+  const oefeningen = uniekeOefeningen(programma);
+  const [oefeningId, setOefeningId] = useState(() => oefeningen[0]?.id);
+  const huidigeOef = oefeningen.find((o) => o.id === oefeningId) ?? oefeningen[0];
 
   const punten = geschiedenis.sessies.flatMap((t) =>
     (t.oefeningen || []).filter((o) => o.id === oefeningId).map((o) => ({ datum: t.datum, gewicht: o.gewicht })),
@@ -38,15 +45,15 @@ export default function TrainingProgressie({ profiel, geschiedenis, extraOefenin
       <p className="of-stap-tekst">Gewichtsontwikkeling per oefening.</p>
 
       <div className="te-tabs">
-        {OEFENINGEN.map((id) => (
-          <button key={id} className={`te-tab ${oefeningId === id ? 'on' : ''}`} onClick={() => setOefeningId(id)}>
-            {TAB_NAMEN[id]}
+        {oefeningen.map((o) => (
+          <button key={o.id} className={`te-tab ${oefeningId === o.id ? 'on' : ''}`} onClick={() => setOefeningId(o.id)}>
+            {o.naam}
           </button>
         ))}
       </div>
 
       <div className="card">
-        <div className="td-label">{NAMEN[oefeningId]} — progressie</div>
+        <div className="td-label">{huidigeOef?.naam} — progressie</div>
         <div className="tp-huidig-rij">
           <span className="tp-huidig">{huidig}</span>
           <span className="tp-huidig-lbl">kg huidig</span>
@@ -77,11 +84,11 @@ export default function TrainingProgressie({ profiel, geschiedenis, extraOefenin
       <div className="card">
         <div className="td-label">1RM schatting — Epley (gewicht × 5 reps)</div>
         <div className="td-grid">
-          {OEFENINGEN.map((id) => (
-            <div className="metric" key={id}>
-              <div className="ml">{TAB_NAMEN[id]} 1RM</div>
-              <div className="mv">{bereken1RM(profiel.gewichten[id] ?? 0, 5)} <span className="mu">kg</span></div>
-              <div className="ms">{profiel.gewichten[id]} kg × 5</div>
+          {oefeningen.map((o) => (
+            <div className="metric" key={o.id}>
+              <div className="ml">{o.naam} 1RM</div>
+              <div className="mv">{bereken1RM(profiel.gewichten[o.id] ?? 0, 5)} <span className="mu">kg</span></div>
+              <div className="ms">{profiel.gewichten[o.id] ?? 0} kg × 5</div>
             </div>
           ))}
         </div>

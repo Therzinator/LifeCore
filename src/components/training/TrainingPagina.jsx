@@ -6,7 +6,8 @@ import { useTrainingInstellingen } from '../../hooks/useTrainingInstellingen.js'
 import { useExtraOefeningen } from '../../hooks/useExtraOefeningen.js';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
-import { SCHEMA, EXTRA, PROFIELEN, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
+import { useProgramma } from '../../hooks/useProgramma.js';
+import { PROFIELEN, EXTRA, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import TrainingSessie from './TrainingSessie.jsx';
 import TrainingDashboard from './TrainingDashboard.jsx';
@@ -14,11 +15,13 @@ import TrainingExtra from './TrainingExtra.jsx';
 import TrainingProgressie from './TrainingProgressie.jsx';
 import TrainingGeschiedenis from './TrainingGeschiedenis.jsx';
 import TrainingInstellingen from './TrainingInstellingen.jsx';
+import TrainingProgramma from './TrainingProgramma.jsx';
 import PersoonsProfiel from './PersoonsProfiel.jsx';
 import './TrainingPagina.css';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'programma', label: 'Programma' },
   { id: 'extra', label: 'Extra' },
   { id: 'progressie', label: 'Progressie' },
   { id: 'geschiedenis', label: 'Geschiedenis' },
@@ -35,6 +38,7 @@ export default function TrainingPagina({ toonToast }) {
   const profiel = useTrainingProfiel();
   const geschiedenis = useTrainingGeschiedenis();
   const actieveTraining = useActieveTraining();
+  const programma = useProgramma();
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useTrainingInstellingen();
   const extraOefeningen = useExtraOefeningen();
   const persoonsProfiel = usePersoonsProfiel();
@@ -84,12 +88,12 @@ export default function TrainingPagina({ toonToast }) {
     const letter = volgendeLetterUit(geschiedenis.laatste);
     const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
 
-    const oefeningen = SCHEMA[letter].map((oef) => {
-      const gewicht = profiel.profiel.gewichten[oef.id];
+    const oefeningen = programma.programma[letter].map((oef) => {
+      const gewicht = profiel.profiel.gewichten[oef.id] ?? 20;
       const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen).length;
       return {
         id: oef.id, naam: oef.naam, sets: oef.sets, reps: oef.reps, type: oef.type,
-        stangType: oef.stangType, spier: oef.spier,
+        stangType: oef.stangType, spier: oef.spier, increment: oef.increment ?? instellingen.gewichtStap,
         gewicht,
         werk: Array(oef.sets).fill(false),
         ob: Array(opbouwLengte).fill(null),
@@ -122,6 +126,7 @@ export default function TrainingPagina({ toonToast }) {
     extraOefeningen.wisAlles();
     actieveTraining.wisTraining();
     geschiedenis.wis();
+    programma.resetStandaard();
     setTab('dashboard');
   }
 
@@ -139,15 +144,24 @@ export default function TrainingPagina({ toonToast }) {
         {tab === 'dashboard' && (
           <TrainingDashboard
             profiel={profiel.profiel}
+            programma={programma.programma}
             geschiedenis={geschiedenis}
             instellingen={instellingen}
             volgendeLetter={volgendeLetterUit(geschiedenis.laatste)}
             onStart={start}
           />
         )}
+        {tab === 'programma' && (
+          <TrainingProgramma programma={programma} profiel={profiel} instellingen={instellingen} toonToast={toonToast} />
+        )}
         {tab === 'extra' && <TrainingExtra extraOefeningen={extraOefeningen} />}
         {tab === 'progressie' && (
-          <TrainingProgressie profiel={profiel.profiel} geschiedenis={geschiedenis} extraOefeningen={extraOefeningen} />
+          <TrainingProgressie
+            profiel={profiel.profiel}
+            programma={programma.programma}
+            geschiedenis={geschiedenis}
+            extraOefeningen={extraOefeningen}
+          />
         )}
         {tab === 'geschiedenis' && <TrainingGeschiedenis sessies={geschiedenis.sessies} />}
         {tab === 'profiel' && (
