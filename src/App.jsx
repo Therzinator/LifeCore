@@ -15,6 +15,7 @@ import TrainingPagina from './components/training/TrainingPagina.jsx';
 import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import WerkPagina from './components/werk/WerkPagina.jsx';
+import AgendaPagina from './components/agenda/AgendaPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
@@ -33,6 +34,7 @@ function renderModule(paginaId, toonToast) {
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
+    case 'agenda': return <AgendaPagina toonToast={toonToast} />;
     case 'dashboard': return <DashboardPagina />;
     default: return null;
   }

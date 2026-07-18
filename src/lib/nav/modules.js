@@ -11,17 +11,18 @@ export const MODULES = {
   cardio: { label: 'Cardio', subtitel: 'Hardlopen, wandelen en roeien loggen' },
   adhd: { label: 'Focus', subtitel: 'Taken, focus-timer en dag afsluiten' },
   werk: { label: 'Werk', subtitel: 'Werktaken en huishouden met spraakinvoer' },
+  agenda: { label: 'Agenda', subtitel: 'Maand-, week- en dagoverzicht van je hele leven' },
   dashboard: { label: 'Dashboard', subtitel: 'Voortgang over alle modules heen' },
 };
 
 // Vaste, platte volgorde — gebruikt door de desktop-zijbalk, die alle
 // modules altijd in één lijst toont zonder categorie-koppen.
 export const MODULE_VOLGORDE = [
-  'ochtend', 'waarden', 'welzijn', 'mindfulness', 'training', 'cardio', 'adhd', 'werk', 'dashboard',
+  'ochtend', 'waarden', 'welzijn', 'mindfulness', 'training', 'cardio', 'adhd', 'werk', 'agenda', 'dashboard',
 ];
 
 export const MODULE_CATEGORIEEN = [
-  { id: 'dag', titel: 'Dag & focus', modules: ['ochtend', 'adhd', 'werk'] },
+  { id: 'dag', titel: 'Dag & focus', modules: ['ochtend', 'adhd', 'werk', 'agenda'] },
   { id: 'lichaam', titel: 'Lichaam', modules: ['training', 'cardio'] },
   { id: 'geest', titel: 'Rust & geest', modules: ['waarden', 'welzijn', 'mindfulness'] },
   { id: 'overzicht', titel: 'Overzicht', modules: ['dashboard'] },

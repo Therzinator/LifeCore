@@ -1,0 +1,104 @@
+.ag-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-3);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  width: fit-content;
+  margin-bottom: var(--space-md);
+}
+.ag-tab {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+.ag-tab.on { background: var(--surface); color: var(--txt); }
+
+.ag-nav-rij {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+.ag-periode-lbl { flex: 1; font-weight: 600; font-size: var(--font-size-base); }
+
+/* Maandweergave */
+.ag-maand-grid { display: flex; flex-direction: column; gap: 2px; }
+.ag-maand-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.ag-maand-koppen { margin-bottom: 4px; }
+.ag-maand-kop { text-align: center; font-size: var(--font-size-xs); color: var(--txt-muted); font-weight: 600; }
+
+.ag-maand-dag {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--txt);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 2px;
+}
+.ag-maand-dag:hover { background: var(--bg-3); }
+.ag-maand-dag.buiten { opacity: .35; }
+.ag-maand-dag.vandaag { border-color: var(--accent); background: var(--accent-dim); }
+.ag-maand-daggetal { font-size: var(--font-size-xs); font-family: var(--font-mono); }
+.ag-maand-stippen { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; min-height: 6px; }
+
+.ag-stip { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.ag-stip.lift { background: #e8833a; }
+.ag-stip.cardio { background: #4aa8e0; }
+.ag-stip.werkdag { background: var(--txt-muted); }
+.ag-stip.welzijn { background: var(--warn); }
+.ag-stip.project { background: var(--accent); }
+.ag-stip.sport { background: #e8833a; }
+.ag-stip.sociaal { background: #e05a7a; }
+.ag-stip.ontspanning { background: #4aa8e0; }
+.ag-stip.overig { background: var(--txt-muted); }
+
+/* Weekweergave */
+.ag-week-lijst { display: flex; flex-direction: column; gap: var(--space-xs); }
+.ag-week-dag {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--txt);
+  cursor: pointer;
+  font-family: inherit;
+  padding: var(--space-sm);
+}
+.ag-week-dag:hover { background: var(--bg-3); }
+.ag-week-dag.vandaag { border-color: var(--accent); }
+.ag-week-dag-kop { font-size: var(--font-size-xs); font-weight: 600; color: var(--accent); text-transform: capitalize; }
+.ag-week-dag-items { display: flex; flex-direction: column; gap: 2px; }
+.ag-week-item { font-size: var(--font-size-sm); }
+.ag-week-leeg { font-size: var(--font-size-sm); color: var(--txt-faint); }
+
+/* Dagweergave */
+.ag-signalen-rij { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+.ag-signaal-chip {
+  font-size: var(--font-size-xs);
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 3px 8px;
+}
+.ag-item-tijd { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); flex-shrink: 0; }
+
+/* Blok-formulier */
+.ag-blok-form { display: flex; flex-direction: column; gap: var(--space-sm); }
+.ag-herhaling-rij { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-size-sm); }
