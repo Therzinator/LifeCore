@@ -1,0 +1,83 @@
+.sk-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md) var(--space-xl);
+}
+
+.sk-header {
+  margin-bottom: var(--space-md);
+}
+
+.sk-titel {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.sk-subtitel {
+  font-size: var(--font-size-base);
+  color: var(--txt-muted);
+  margin-top: 4px;
+}
+
+.sk-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sk-knop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 88px;
+  padding: var(--space-md);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--txt);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.sk-knop:active { transform: scale(.98); }
+
+@media (hover: hover) and (pointer: fine) {
+  .sk-knop:hover {
+    border-color: var(--accent-mid);
+    box-shadow: var(--shadow-md);
+  }
+  .sk-knop:hover .sk-knop-titel { color: var(--accent); }
+}
+.sk-knop:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.sk-icoon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.sk-tekst {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sk-knop-titel {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  transition: var(--tx);
+}
+
+.sk-knop-subtitel {
+  font-size: var(--font-size-sm);
+  color: var(--txt-muted);
+}

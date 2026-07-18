@@ -34,18 +34,18 @@ button, input, textarea { font-family: inherit; }
   border-radius: var(--r-sm);
   cursor: pointer;
   font-size: var(--font-size-base);
-  font-weight: 500;
+  font-weight: 600;
   padding: 12px 22px;
   transition: var(--tx);
   white-space: nowrap;
 }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn-full     { width: 100%; }
-.btn-p        { background: var(--accent); color: var(--accent-txt); }
-.btn-p:hover:not(:disabled) { filter: brightness(1.06); }
-.btn-g        { background: var(--bg-2); border: 1px solid var(--border-2); color: var(--txt); }
-.btn-g:hover:not(:disabled) { background: var(--bg-3); }
-.btn-text     { background: none; color: var(--txt-muted); padding: 8px 10px; font-size: var(--font-size-sm); }
+.btn-p        { background: var(--accent); color: var(--accent-txt); box-shadow: var(--shadow-sm); }
+.btn-p:hover:not(:disabled) { filter: brightness(1.08); box-shadow: var(--shadow-md); }
+.btn-g        { background: var(--surface); border: 1px solid var(--border-2); color: var(--txt); }
+.btn-g:hover:not(:disabled) { background: var(--bg-2); border-color: var(--accent-mid); }
+.btn-text     { background: none; color: var(--txt-muted); padding: 8px 10px; font-size: var(--font-size-sm); font-weight: 500; }
 .btn-text:hover:not(:disabled) { color: var(--txt); }
 .btn-sm       { padding: 8px 12px; font-size: var(--font-size-sm); }
 
@@ -56,4 +56,5 @@ button, input, textarea { font-family: inherit; }
   border-radius: var(--r-md);
   padding: var(--space-md);
   margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-sm);
 }

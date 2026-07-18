@@ -1,3 +1,4 @@
+import { MODULE_ICONEN, IconSnelkeuze } from '../ui/ModuleIconen.jsx';
 import './BottomNav.css';
 
 const TABS = [
@@ -11,15 +12,27 @@ const TABS = [
 export default function BottomNav({ pagina, setPagina }) {
   return (
     <nav className="bn-wrap">
-      {TABS.map((tab) => (
-        <button
-          key={tab.id}
-          className={`bn-tab ${pagina === tab.id ? 'on' : ''}`}
-          onClick={() => setPagina(tab.id)}
-        >
-          {tab.label}
-        </button>
-      ))}
+      <button
+        className={`bn-tab bn-tab-snelkeuze ${pagina === 'snelkeuze' ? 'on' : ''}`}
+        onClick={() => setPagina('snelkeuze')}
+        aria-label="Snelkeuze"
+      >
+        <IconSnelkeuze className="bn-icoon" />
+        Start
+      </button>
+      {TABS.map((tab) => {
+        const Icoon = MODULE_ICONEN[tab.id];
+        return (
+          <button
+            key={tab.id}
+            className={`bn-tab ${pagina === tab.id ? 'on' : ''}`}
+            onClick={() => setPagina(tab.id)}
+          >
+            <Icoon className="bn-icoon" />
+            {tab.label}
+          </button>
+        );
+      })}
     </nav>
   );
 }

@@ -3,12 +3,17 @@
   bottom: 0;
   display: flex;
   border-top: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .bn-tab {
   flex: 1;
-  padding: var(--space-sm) var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--space-xs) 2px;
   text-align: center;
   background: none;
   border: none;
@@ -19,6 +24,11 @@
   white-space: nowrap;
 }
 
+.bn-icoon {
+  width: 20px;
+  height: 20px;
+}
+
 .bn-tab.on {
   color: var(--accent);
   font-weight: 600;
@@ -26,3 +36,7 @@
 
 .bn-tab:hover { color: var(--txt); }
 .bn-tab.on:hover { color: var(--accent); }
+
+.bn-tab-snelkeuze {
+  border-right: 1px solid var(--border);
+}

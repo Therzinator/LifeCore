@@ -1,42 +1,42 @@
 /* ══════════════════════════════════════════════════════════════
-   theme.css — LifeCore designsysteem
+   theme.css — LifeCore designsysteem ("Fris & helder")
    Eén centrale plek voor kleuren, typografie en ruimte-tokens.
    Licht is de standaard; :root[data-theme] wint altijd van de
    prefers-color-scheme-media-query (theme-toggle in de UI).
 ══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Achtergronden — warm, zacht, geen kille grijstinten */
-  --bg:      #FAF7F2;
-  --bg-2:    #F2EDE4;
-  --bg-3:    #EAE3D6;
+  /* Achtergronden — helder wit, koele slate-grijzen */
+  --bg:      #FFFFFF;
+  --bg-2:    #F4F7FA;
+  --bg-3:    #E9EEF4;
   --surface: #FFFFFF;
 
   /* Randen */
-  --border:    rgba(43,38,32,.10);
-  --border-2:  rgba(43,38,32,.18);
+  --border:    rgba(15,23,42,.09);
+  --border-2:  rgba(15,23,42,.16);
 
-  /* Eén accentkleur — kalm mosgroen, geen alarmerende felle tinten */
-  --accent:      #5B7A66;
-  --accent-dim:  rgba(91,122,102,.12);
-  --accent-mid:  rgba(91,122,102,.28);
+  /* Eén accentkleur — teal, fris en energiek */
+  --accent:      #0D9488;
+  --accent-dim:  rgba(13,148,136,.10);
+  --accent-mid:  rgba(13,148,136,.26);
   --accent-txt:  #FFFFFF;
 
-  /* Semantische statuskleuren — zacht, niet fel */
-  --warn:      #B5794A;
-  --warn-dim:  rgba(181,121,74,.12);
-  --danger:    #B3564A;
-  --danger-dim:rgba(179,86,74,.12);
+  /* Semantische statuskleuren */
+  --warn:      #B45309;
+  --warn-dim:  rgba(180,83,9,.10);
+  --danger:    #DC2626;
+  --danger-dim:rgba(220,38,38,.10);
 
-  /* Tekst */
-  --txt:       #2B2620;
-  --txt-muted: rgba(43,38,32,.62);
-  --txt-faint: rgba(43,38,32,.38);
+  /* Tekst — koel slate, hoog contrast */
+  --txt:       #0F172A;
+  --txt-muted: rgba(15,23,42,.60);
+  --txt-faint: rgba(15,23,42,.38);
 
   /* Glas/overlay-tokens (modal-achtergrond e.d.) */
-  --glass-bg:     rgba(250,247,242,.88);
-  --glass-border: rgba(43,38,32,.12);
-  --scrim:        rgba(30,26,20,.35);
+  --glass-bg:     rgba(255,255,255,.90);
+  --glass-border: rgba(15,23,42,.10);
+  --scrim:        rgba(15,23,42,.40);
 
   /* Typografie — systeemfonts, geen netwerkafhankelijkheid */
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -57,60 +57,72 @@
   --space-lg: 32px;
   --space-xl: 48px;
 
-  /* Radius & transitie */
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 24px;
+  /* Radius & transitie — iets strakker dan voorheen */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
   --tx:   all .2s cubic-bezier(.4,0,.2,1);
+
+  /* Desktop-layout-tokens (zijbalk/topbar) */
+  --zijbalk-breed:     240px;
+  --zijbalk-smal:      72px;
+  --topbar-hoogte:     64px;
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
+  --shadow-md: 0 4px 16px rgba(15,23,42,.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:      #1A1815;
-    --bg-2:    #211E19;
-    --bg-3:    #2A261F;
-    --surface: #232019;
+    --bg:      #0B1220;
+    --bg-2:    #101A2C;
+    --bg-3:    #16213A;
+    --surface: #151E2D;
 
-    --border:   rgba(240,235,226,.08);
-    --border-2: rgba(240,235,226,.16);
+    --border:   rgba(229,237,245,.08);
+    --border-2: rgba(229,237,245,.16);
 
-    --accent:      #8FB39C;
-    --accent-dim:  rgba(143,179,156,.14);
-    --accent-mid:  rgba(143,179,156,.30);
-    --accent-txt:  #14201A;
+    --accent:      #2DD4BF;
+    --accent-dim:  rgba(45,212,191,.14);
+    --accent-mid:  rgba(45,212,191,.30);
+    --accent-txt:  #06231F;
 
-    --warn:       #D7A06B;
-    --warn-dim:   rgba(215,160,107,.14);
-    --danger:     #D08276;
-    --danger-dim: rgba(208,130,118,.14);
+    --warn:       #F0B462;
+    --warn-dim:   rgba(240,180,98,.14);
+    --danger:     #F0837A;
+    --danger-dim: rgba(240,131,122,.14);
 
-    --txt:       #F0EBE2;
-    --txt-muted: rgba(240,235,226,.62);
-    --txt-faint: rgba(240,235,226,.38);
+    --txt:       #E5EDF5;
+    --txt-muted: rgba(229,237,245,.62);
+    --txt-faint: rgba(229,237,245,.38);
 
-    --glass-bg:     rgba(26,24,21,.88);
-    --glass-border: rgba(240,235,226,.12);
-    --scrim:        rgba(0,0,0,.5);
+    --glass-bg:     rgba(11,18,32,.90);
+    --glass-border: rgba(229,237,245,.12);
+    --scrim:        rgba(0,0,0,.55);
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.30);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.36);
   }
 }
 
 /* Expliciete theme-toggle wint altijd van de media-query */
 :root[data-theme='light'] {
-  --bg: #FAF7F2; --bg-2: #F2EDE4; --bg-3: #EAE3D6; --surface: #FFFFFF;
-  --border: rgba(43,38,32,.10); --border-2: rgba(43,38,32,.18);
-  --accent: #5B7A66; --accent-dim: rgba(91,122,102,.12); --accent-mid: rgba(91,122,102,.28); --accent-txt: #FFFFFF;
-  --warn: #B5794A; --warn-dim: rgba(181,121,74,.12);
-  --danger: #B3564A; --danger-dim: rgba(179,86,74,.12);
-  --txt: #2B2620; --txt-muted: rgba(43,38,32,.62); --txt-faint: rgba(43,38,32,.38);
-  --glass-bg: rgba(250,247,242,.88); --glass-border: rgba(43,38,32,.12); --scrim: rgba(30,26,20,.35);
+  --bg: #FFFFFF; --bg-2: #F4F7FA; --bg-3: #E9EEF4; --surface: #FFFFFF;
+  --border: rgba(15,23,42,.09); --border-2: rgba(15,23,42,.16);
+  --accent: #0D9488; --accent-dim: rgba(13,148,136,.10); --accent-mid: rgba(13,148,136,.26); --accent-txt: #FFFFFF;
+  --warn: #B45309; --warn-dim: rgba(180,83,9,.10);
+  --danger: #DC2626; --danger-dim: rgba(220,38,38,.10);
+  --txt: #0F172A; --txt-muted: rgba(15,23,42,.60); --txt-faint: rgba(15,23,42,.38);
+  --glass-bg: rgba(255,255,255,.90); --glass-border: rgba(15,23,42,.10); --scrim: rgba(15,23,42,.40);
+  --shadow-sm: 0 1px 2px rgba(15,23,42,.06); --shadow-md: 0 4px 16px rgba(15,23,42,.08);
 }
 
 :root[data-theme='dark'] {
-  --bg: #1A1815; --bg-2: #211E19; --bg-3: #2A261F; --surface: #232019;
-  --border: rgba(240,235,226,.08); --border-2: rgba(240,235,226,.16);
-  --accent: #8FB39C; --accent-dim: rgba(143,179,156,.14); --accent-mid: rgba(143,179,156,.30); --accent-txt: #14201A;
-  --warn: #D7A06B; --warn-dim: rgba(215,160,107,.14);
-  --danger: #D08276; --danger-dim: rgba(208,130,118,.14);
-  --txt: #F0EBE2; --txt-muted: rgba(240,235,226,.62); --txt-faint: rgba(240,235,226,.38);
-  --glass-bg: rgba(26,24,21,.88); --glass-border: rgba(240,235,226,.12); --scrim: rgba(0,0,0,.5);
+  --bg: #0B1220; --bg-2: #101A2C; --bg-3: #16213A; --surface: #151E2D;
+  --border: rgba(229,237,245,.08); --border-2: rgba(229,237,245,.16);
+  --accent: #2DD4BF; --accent-dim: rgba(45,212,191,.14); --accent-mid: rgba(45,212,191,.30); --accent-txt: #06231F;
+  --warn: #F0B462; --warn-dim: rgba(240,180,98,.14);
+  --danger: #F0837A; --danger-dim: rgba(240,131,122,.14);
+  --txt: #E5EDF5; --txt-muted: rgba(229,237,245,.62); --txt-faint: rgba(229,237,245,.38);
+  --glass-bg: rgba(11,18,32,.90); --glass-border: rgba(229,237,245,.12); --scrim: rgba(0,0,0,.55);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.30); --shadow-md: 0 4px 16px rgba(0,0,0,.36);
 }
