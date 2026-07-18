@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
+      // We registreren de service worker zelf via virtual:pwa-register/react
+      // (useAppUpdate-hook) zodat we een update-banner kunnen tonen — de
+      // standaard geïnjecteerde registerSW.js doet dat niet en laat een
+      // nieuwe versie stil in de 'waiting'-status hangen.
+      injectRegister: false,
       workbox: { clientsClaim: true },
       manifest: {
         name: 'LifeCore',

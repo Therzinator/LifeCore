@@ -4,6 +4,7 @@ import BottomNav from './components/layout/BottomNav.jsx';
 import DesktopShell from './components/layout/DesktopShell.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import Toast from './components/ui/Toast.jsx';
+import UpdateBanner from './components/ui/UpdateBanner.jsx';
 import SnelkeuzeScherm from './components/nav/SnelkeuzeScherm.jsx';
 import OchtendFlow from './components/ochtend/OchtendFlow.jsx';
 import WaardenPagina from './components/act/WaardenPagina.jsx';
@@ -19,6 +20,7 @@ import InlogScherm from './components/auth/InlogScherm.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
+import { useAppUpdate } from './hooks/useAppUpdate.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
 // Modules die hun eigen 'Instellingen'-tab/paneel hebben — voor deze modules
@@ -48,6 +50,7 @@ export default function App() {
   const { toasts, toonToast } = useToast();
   const auth = useAuth();
   const isDesktop = useIsDesktop();
+  const appUpdate = useAppUpdate();
 
   function setPagina(nieuwePagina) {
     setPaginaState(nieuwePagina);
@@ -63,7 +66,12 @@ export default function App() {
   }
 
   if (auth.enabled && !auth.laden && !auth.ingelogd) {
-    return <InlogScherm login={auth.login} signup={auth.signup} />;
+    return (
+      <>
+        <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
+        <InlogScherm login={auth.login} signup={auth.signup} />
+      </>
+    );
   }
 
   if (isDesktop) {
@@ -73,6 +81,7 @@ export default function App() {
     const desktopPagina = pagina === 'snelkeuze' ? 'ochtend' : pagina;
     return (
       <>
+        <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <DesktopShell
           pagina={desktopPagina}
           setPagina={setPagina}
@@ -90,6 +99,7 @@ export default function App() {
 
   return (
     <>
+      <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
       <AppHeader auth={auth} onInstellingen={() => naarInstellingen(pagina)} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
