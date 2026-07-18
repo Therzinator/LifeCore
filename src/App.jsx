@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppHeader from './components/layout/AppHeader.jsx';
 import BottomNav from './components/layout/BottomNav.jsx';
 import DesktopShell from './components/layout/DesktopShell.jsx';
@@ -56,7 +56,30 @@ export default function App() {
   function setPagina(nieuwePagina) {
     setPaginaState(nieuwePagina);
     schrijfLokaal('actieve_pagina', nieuwePagina);
+    // Snelkeuze is de 'wortel' — daarnaartoe navigeren vervangt de huidige
+    // history-entry (voorkomt dat je meerdere keren terug moet om 'm te
+    // passeren); elke module krijgt een eigen entry erbovenop, zodat de
+    // mobiele terugknop/-gebaar daarvandaan altijd terug naar snelkeuze
+    // gaat in plaats van de hele PWA te sluiten (er was voorheen maar één
+    // history-entry ooit, dus 'terug' had nergens heen te gaan).
+    if (nieuwePagina === 'snelkeuze') {
+      window.history.replaceState({ pagina: nieuwePagina }, '');
+    } else {
+      window.history.pushState({ pagina: nieuwePagina }, '');
+    }
   }
+
+  useEffect(() => {
+    window.history.replaceState({ pagina }, '');
+    function opPopState(e) {
+      const doel = e.state?.pagina ?? 'snelkeuze';
+      setPaginaState(doel);
+      schrijfLokaal('actieve_pagina', doel);
+    }
+    window.addEventListener('popstate', opPopState);
+    return () => window.removeEventListener('popstate', opPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: zet de initiële entry één keer, latere wijzigingen lopen via setPagina.
+  }, []);
 
   function naarInstellingen(actievePagina) {
     if (MODULES_MET_EIGEN_INSTELLINGEN.has(actievePagina)) {

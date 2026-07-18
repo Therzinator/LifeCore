@@ -1,19 +1,23 @@
-import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// Build-identifier voor de versie-weergave onder het instellingen-tandwiel.
-// package.json's versienummer wordt in dit project nooit bijgewerkt, dus
-// daar kun je niet aan zien of een nieuwe deploy live staat — de commit-
-// hash verandert wél bij elke deploy. VERCEL_GIT_COMMIT_SHA is beschikbaar
-// tijdens elke Vercel-build; lokaal valt dit terug op git zelf.
+// Logisch, oplopend versienummer voor de weergave onder het instellingen-
+// tandwiel (v1.00 -> v1.01 -> ...) — leesbaar en te volgen, in tegenstelling
+// tot een git-commit-hash of Vercel-deploy-ID. Bewust GEEN afgeleide van
+// git-commit-aantal: Vercel's build-omgeving doet soms een shallow clone,
+// waardoor `git rev-list --count` onbetrouwbaar zou zijn. src/version.json
+// wordt bij elke betekenisvolle wijziging handmatig met 1 opgehoogd
+// (onderdeel van de commit, zoals het bijwerken van een CHANGELOG).
 function haalBuildVersie() {
-  if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+  const pad = fileURLToPath(new URL('./src/version.json', import.meta.url));
   try {
-    return execSync('git rev-parse --short HEAD').toString().trim();
+    const { build } = JSON.parse(readFileSync(pad, 'utf8'));
+    return `v1.${String(build).padStart(2, '0')}`;
   } catch {
-    return 'dev';
+    return 'v1.00';
   }
 }
 
