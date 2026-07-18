@@ -1,0 +1,13 @@
+.ob-categorie { margin-top: var(--space-md); }
+.ob-categorie:first-child { margin-top: 0; }
+
+.ob-categorie-titel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--txt-faint);
+  margin-bottom: var(--space-xs);
+}
+
+.ob-categorie .oe-toggle { margin-bottom: var(--space-xs); }

@@ -1,12 +1,6 @@
+import { liftcoreBibliotheekLijst } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './TrainingDashboard.css';
-
-const DAG_LABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
-const LIFT_DAGEN = [0, 2, 4]; // ma, wo, vr
-
-function dagIndexVan(datumIso) {
-  const d = new Date(datumIso).getDay();
-  return d === 0 ? 6 : d - 1;
-}
 
 function uniekeOefeningen(programma) {
   const gezien = new Set();
@@ -20,8 +14,6 @@ function uniekeOefeningen(programma) {
 export default function TrainingDashboard({ profiel, programma, geschiedenis, instellingen, volgendeLetter, onStart }) {
   const oef = programma[volgendeLetter];
   const nr = geschiedenis.sessies.length + 1;
-  const vandaagIndex = dagIndexVan(new Date().toISOString());
-  const recent = geschiedenis.sessies.slice(-7).map((s) => dagIndexVan(s.datum));
 
   const uur = new Date().getHours();
   const groet = uur < 12 ? 'Goedemorgen' : uur < 18 ? 'Goedemiddag' : 'Goedenavond';
@@ -34,6 +26,7 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
       <p className="of-stap-tekst">
         Volgende: Training {volgendeLetter} — {oef.map((o) => o.naam).join(', ')}
       </p>
+      <OefeningenBibliotheek oefeningen={liftcoreBibliotheekLijst()} titel="StrongLifts-basis — bibliotheek" />
 
       <div className="card td-volgende">
         <div className="td-label">Volgende training</div>
@@ -50,27 +43,6 @@ export default function TrainingDashboard({ profiel, programma, geschiedenis, in
             <div className="mv">{profiel.gewichten[o.id] ?? '—'} <span className="mu">kg</span></div>
           </div>
         ))}
-      </div>
-
-      <div className="card">
-        <div className="td-label">Weekschema</div>
-        <div className="td-week-grid">
-          {DAG_LABELS.map((label, i) => {
-            const isLift = LIFT_DAGEN.includes(i);
-            const klaar = recent.includes(i);
-            const vandaag = i === vandaagIndex;
-            let cls = 'td-dag-dot';
-            let icoon = '—';
-            if (isLift) { cls += klaar ? ' klaar' : ' lift'; icoon = klaar ? '✓' : '🏋'; }
-            if (vandaag) cls += ' vandaag';
-            return (
-              <div className="td-dag" key={label}>
-                <div className="td-dag-lbl">{label}</div>
-                <div className={cls}>{icoon}</div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       <div className="td-grid">

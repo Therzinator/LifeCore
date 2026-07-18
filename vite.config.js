@@ -47,6 +47,17 @@ export default defineConfig({
               expiration: { maxEntries: 10, maxAgeSeconds: 180 * 24 * 60 * 60 },
             },
           },
+          {
+            // Oefening-afbeeldingen (Free Exercise DB) — na de eerste keer
+            // bekijken ook offline beschikbaar, i.p.v. elke keer opnieuw op te
+            // halen van GitHub.
+            urlPattern: ({ url }) => url.hostname === 'raw.githubusercontent.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'lifecore-oefening-afbeeldingen',
+              expiration: { maxEntries: 100, maxAgeSeconds: 180 * 24 * 60 * 60 },
+            },
+          },
         ],
       },
       manifest: {

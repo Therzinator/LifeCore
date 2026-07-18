@@ -1,0 +1,19 @@
+.oe-afbeelding {
+  width: 100%;
+  max-width: 100%;
+  border-radius: var(--r-md);
+  margin-bottom: var(--space-md);
+  background: var(--bg-2);
+}
+
+.oe-uitleg {
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--txt);
+  margin-bottom: var(--space-sm);
+}
+
+.oe-equipment {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+}

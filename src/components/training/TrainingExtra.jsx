@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { EXTRA } from '../../lib/training/schema.js';
+import { SPANNING_OEFENINGEN } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import OefeningPopup from '../ui/OefeningPopup.jsx';
 import './TrainingExtra.css';
 
 const GROEPEN = {
@@ -41,6 +43,17 @@ export default function TrainingExtra({ extraOefeningen }) {
           ))}
         </div>
       ))}
+
+      <div className="card">
+        <div className="td-label">Ochtend-mobiliteit</div>
+        <p className="ti-hint">
+          Dezelfde spanning-verlichtende oefeningen als in de ochtendroutine — geen sets/reps om bij te
+          houden, gewoon ter inspiratie of om tussen trainingen door te doen.
+        </p>
+        {SPANNING_OEFENINGEN.map((oef) => (
+          <OefeningPopup key={oef.id} oefening={oef} />
+        ))}
+      </div>
     </div>
   );
 }

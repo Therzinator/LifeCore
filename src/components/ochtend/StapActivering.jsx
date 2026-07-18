@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { REK_OEFENINGEN, energieHint } from '../../lib/ochtend/activering.js';
+import { SPANNING_OEFENINGEN, spanningOefeningKernSet } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
+import OefeningPopup from '../ui/OefeningPopup.jsx';
+import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './StapActivering.css';
 
 export default function StapActivering({ dagdata, volgende, vorige, overslaan, geluidFragment }) {
@@ -33,8 +36,13 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
   return (
     <div>
       <div className="of-stap-titel">Ochtend activering</div>
-      <p className="of-stap-tekst">Rek en strek, dan plank & push-ups. Sla over wat niet past.</p>
-      <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+      <p className="of-stap-tekst">
+        Rek en strek, spanning verlichten (nek/schouders/borst), dan plank &amp; push-ups. Sla over wat niet past.
+      </p>
+      <div className="sa-kop-acties">
+        <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+        <OefeningenBibliotheek oefeningen={SPANNING_OEFENINGEN} titel="Spanning verlichten — bibliotheek" />
+      </div>
 
       {hint && <div className="sa-hint">{hint}</div>}
 
@@ -58,6 +66,16 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
             );
           })}
         </div>
+      </div>
+
+      <div className="card">
+        <div className="sa-kop">
+          <span>Spanning verlichten</span>
+          <span className="sa-kop-hint">nek, schouders, borst</span>
+        </div>
+        {spanningOefeningKernSet().map((oef) => (
+          <OefeningPopup key={oef.id} oefening={oef} />
+        ))}
       </div>
 
       <div className="card">
