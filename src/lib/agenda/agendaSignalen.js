@@ -36,11 +36,27 @@ export function trainingCardioSignalen(bereikStart, bereikEind) {
 }
 
 // werkdagen komt uit useWerkInstellingen: ISO-weekdagnummers 1(ma)-7(zo).
-export function werkdagSignalen(bereikStart, bereikEind, werkdagen) {
-  if (!werkdagen?.length) return [];
+// overrides (useDagTypeOverrides) wint per specifieke datum van het vaste
+// wekelijkse patroon — voor de uitzondering (een zaterdag die toch werkdag
+// is, of een doordeweekse dag die vrij is) zonder het hele patroon te
+// hoeven aanpassen.
+export function werkdagSignalen(bereikStart, bereikEind, werkdagen, overrides = {}) {
+  const patroon = werkdagen ?? [];
   return alleDatumsInBereik(bereikStart, bereikEind)
-    .filter((datum) => werkdagen.includes(dagIndexVan(datum) + 1))
-    .map((datum) => ({ id: `werk_${datum}`, bron: 'werk', datum, tekst: 'Werkdag', type: 'werkdag' }));
+    .map((datum) => {
+      const override = overrides[datum];
+      if (override === 'vrij') {
+        return { id: `vrij_${datum}`, bron: 'werk', datum, tekst: 'Vrije dag (handmatig ingesteld)', type: 'vrij' };
+      }
+      const isWerkdag = override === 'werkdag' || (!override && patroon.includes(dagIndexVan(datum) + 1));
+      if (!isWerkdag) return null;
+      return {
+        id: `werk_${datum}`, bron: 'werk', datum,
+        tekst: override === 'werkdag' ? 'Werkdag (handmatig ingesteld)' : 'Werkdag',
+        type: 'werkdag',
+      };
+    })
+    .filter(Boolean);
 }
 
 export function welzijnSignaal(laatsteCheckDatum, cadansDagen) {

@@ -22,6 +22,27 @@ describe('werkdagSignalen', () => {
   it('geeft niets terug zonder ingestelde werkdagen', () => {
     expect(werkdagSignalen('2026-07-13', '2026-07-19', [])).toEqual([]);
   });
+
+  it('een vrije-dag-override onderdrukt een werkdag uit het vaste patroon', () => {
+    // 2026-07-13 is een maandag, normaal een werkdag met patroon [1..5].
+    const signalen = werkdagSignalen('2026-07-13', '2026-07-13', [1, 2, 3, 4, 5], { '2026-07-13': 'vrij' });
+    expect(signalen).toHaveLength(1);
+    expect(signalen[0].type).toBe('vrij');
+  });
+
+  it('een werkdag-override voegt een werkdag toe buiten het vaste patroon', () => {
+    // 2026-07-18 is een zaterdag, normaal geen werkdag met patroon [1..5].
+    const signalen = werkdagSignalen('2026-07-18', '2026-07-18', [1, 2, 3, 4, 5], { '2026-07-18': 'werkdag' });
+    expect(signalen).toHaveLength(1);
+    expect(signalen[0].type).toBe('werkdag');
+    expect(signalen[0].tekst).toContain('handmatig');
+  });
+
+  it('valt terug op het vaste patroon zonder override voor die datum', () => {
+    const signalen = werkdagSignalen('2026-07-13', '2026-07-13', [1, 2, 3, 4, 5], { '2026-07-14': 'vrij' });
+    expect(signalen).toHaveLength(1);
+    expect(signalen[0].type).toBe('werkdag');
+  });
 });
 
 describe('welzijnSignaal', () => {

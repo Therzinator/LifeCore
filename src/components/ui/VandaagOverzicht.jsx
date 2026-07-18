@@ -1,5 +1,6 @@
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
+import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
 import { TYPE_ICOON } from '../agenda/agendaWeergave.js';
 import { datumKey } from '../../utils/datum.js';
@@ -12,7 +13,8 @@ import './VandaagOverzicht.css';
 export default function VandaagOverzicht({ onOpenAgenda }) {
   const vandaag = datumKey();
   const blokken = useAgendaBlokken();
-  const { signalen } = useAgendaSignalen(vandaag, vandaag);
+  const { overrides: dagTypeOverrides } = useDagTypeOverrides();
+  const { signalen } = useAgendaSignalen(vandaag, vandaag, dagTypeOverrides);
   const blokInstanties = instantiesInBereik(blokken.blokken, vandaag, vandaag);
 
   const items = [

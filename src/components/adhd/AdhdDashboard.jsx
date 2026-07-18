@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useDagdata } from '../../hooks/useDagdata.js';
+import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { dagLimiet, minutenTotStopmoment, middagAdvies } from '../../lib/adhd/dagLimiet.js';
+import { datumKey } from '../../utils/datum.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdDashboard.css';
@@ -14,9 +16,11 @@ const MIDDAG_OPTIES = [
 
 export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, focusMoetVerlagen = false }) {
   const dagdata = useDagdata();
+  const { overrides: dagTypeOverrides } = useDagTypeOverrides();
   const [nieuweTaak, setNieuweTaak] = useState('');
   const [toonUitleg, setToonUitleg] = useState(null);
 
+  const vandaagOverride = dagTypeOverrides[datumKey()] ?? null;
   const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
   const effectieveEnergie = (adhdDag.dag.middagEnergie === 'laag' || focusMoetVerlagen) ? 'laag' : ochtendEnergie;
   const limiet = dagLimiet(effectieveEnergie, instellingen.werkurenPerDag);
@@ -44,6 +48,13 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
       <p className="of-stap-tekst">Klein en haalbaar — pas het aantal taken aan op je energie.</p>
       <button className="ad-link" onClick={() => setToonUitleg('adhdCoaching')}>Waarom werkt dit?</button>
 
+      {vandaagOverride && (
+        <div className="ad-banner">
+          {vandaagOverride === 'vrij'
+            ? '🌴 Vandaag staat in de Agenda genoteerd als vrije dag.'
+            : '💼 Vandaag staat in de Agenda genoteerd als werkdag (buiten je vaste patroon).'}
+        </div>
+      )}
       {stopmomentNadert && (
         <div className="ad-banner warn">⏰ Stopmoment nadert ({instellingen.eindtijd}) — rond je huidige taak af, start niets nieuws.</div>
       )}

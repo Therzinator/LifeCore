@@ -9,7 +9,13 @@ import {
 // Dunne hook, zelfde opzet als useKruisSignalen: leest de bron-hooks van
 // andere modules uit en voedt ze aan de pure signaal-functies. Geeft één
 // platte, met datum gesorteerde lijst terug voor een gegeven bereik.
-export function useAgendaSignalen(bereikStart, bereikEind) {
+//
+// dagTypeOverrides wordt als parameter meegegeven i.p.v. hier zelf
+// useDagTypeOverrides() aan te roepen — AgendaPagina heeft zelf ook een
+// instantie nodig (om overrides te kunnen zetten), en twee losse hook-
+// instanties van dezelfde useState-gebaseerde hook synchroniseren niet met
+// elkaar: de schrijvende instantie zou hier niet in gereflecteerd worden.
+export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}) {
   const huishoudProjecten = useHuishoudProjecten();
   const { instellingen: welzijnInstellingen } = useWelzijnInstellingen();
   const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
@@ -17,7 +23,7 @@ export function useAgendaSignalen(bereikStart, bereikEind) {
 
   const signalen = [
     ...trainingCardioSignalen(bereikStart, bereikEind),
-    ...werkdagSignalen(bereikStart, bereikEind, werkInstellingen.werkdagen),
+    ...werkdagSignalen(bereikStart, bereikEind, werkInstellingen.werkdagen, dagTypeOverrides),
     ...huishoudProjectSignalen(huishoudProjecten.projecten, bereikStart, bereikEind),
     welzijnSignaal(welzijnGeschiedenis.laatste?.datum, welzijnInstellingen.cadansDagen),
   ].filter((s) => s && s.datum >= bereikStart && s.datum <= bereikEind)

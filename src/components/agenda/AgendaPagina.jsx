@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
+import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
 import { maandagVan, datumKey } from '../../utils/datum.js';
@@ -45,8 +46,9 @@ export default function AgendaPagina({ toonToast }) {
   const [toonForm, setToonForm] = useState(false);
 
   const blokken = useAgendaBlokken();
+  const { overrides: dagTypeOverrides, zetOverride: zetDagTypeOverride } = useDagTypeOverrides();
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
-  const { signalen } = useAgendaSignalen(bereikStart, bereikEind);
+  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
 
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
@@ -111,6 +113,8 @@ export default function AgendaPagina({ toonToast }) {
             signalen={signalen}
             onVerwijderBlok={blokken.verwijder}
             onNieuwBlok={() => setToonForm(true)}
+            dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
+            onZetDagTypeOverride={zetDagTypeOverride}
           />
         )}
       </div>

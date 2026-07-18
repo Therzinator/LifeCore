@@ -4,8 +4,21 @@ const TYPES = [
   { id: 'ontspanning', label: 'Ontspanning' },
   { id: 'sport', label: 'Sport / bewegen' },
   { id: 'sociaal', label: 'Sociaal' },
+  // Los van 'sport'/'overig' — eigen bedrijf in ontwerpfase (nog geen omzet)
+  // telt bewust niet mee als regulier werk.
+  { id: 'eigenbedrijf', label: 'Eigen bedrijf' },
   { id: 'overig', label: 'Overig' },
 ];
+
+// Verplaatst een 'HH:MM'-tijd met deltaMinuten, met wrap-around binnen een
+// etmaal (bv. 23:30 + 60min -> 00:30).
+function pasTijdAan(tijd, deltaMinuten) {
+  const [uur, minuut] = tijd.split(':').map(Number);
+  const totaal = (((uur * 60 + minuut + deltaMinuten) % (24 * 60)) + 24 * 60) % (24 * 60);
+  const nieuwUur = String(Math.floor(totaal / 60)).padStart(2, '0');
+  const nieuwMinuut = String(totaal % 60).padStart(2, '0');
+  return `${nieuwUur}:${nieuwMinuut}`;
+}
 
 export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }) {
   const [titel, setTitel] = useState('');
@@ -50,11 +63,19 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
       <div className="ti-rij">
         <div className="ti-veld-grp">
           <label className="ti-lbl" htmlFor="ag-start">Starttijd</label>
-          <input id="ag-start" type="time" className="ti-veld" value={starttijd} onChange={(e) => setStarttijd(e.target.value)} />
+          <div className="ag-tijd-ctrl">
+            <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, -60))} aria-label="Starttijd een uur eerder">−1u</button>
+            <input id="ag-start" type="time" className="ti-veld" value={starttijd} onChange={(e) => setStarttijd(e.target.value)} />
+            <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, 60))} aria-label="Starttijd een uur later">+1u</button>
+          </div>
         </div>
         <div className="ti-veld-grp">
           <label className="ti-lbl" htmlFor="ag-eind">Eindtijd</label>
-          <input id="ag-eind" type="time" className="ti-veld" value={eindtijd} onChange={(e) => setEindtijd(e.target.value)} />
+          <div className="ag-tijd-ctrl">
+            <button type="button" className="btn btn-g btn-sm" onClick={() => setEindtijd((t) => pasTijdAan(t, -60))} aria-label="Eindtijd een uur eerder">−1u</button>
+            <input id="ag-eind" type="time" className="ti-veld" value={eindtijd} onChange={(e) => setEindtijd(e.target.value)} />
+            <button type="button" className="btn btn-g btn-sm" onClick={() => setEindtijd((t) => pasTijdAan(t, 60))} aria-label="Eindtijd een uur later">+1u</button>
+          </div>
         </div>
       </div>
 

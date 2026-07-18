@@ -4,13 +4,35 @@ function datumLabel(datum) {
   return new Date(datum).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
-export default function AgendaDag({ datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok }) {
+const DAGTYPE_OPTIES = [
+  { waarde: null, label: 'Standaard' },
+  { waarde: 'werkdag', label: 'Werkdag' },
+  { waarde: 'vrij', label: 'Vrije dag' },
+];
+
+export default function AgendaDag({ datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride }) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
 
   return (
     <div>
       <div className="td-label" style={{ textTransform: 'capitalize' }}>{datumLabel(datum)}</div>
+
+      <div className="ti-veld-grp" style={{ marginBottom: 'var(--space-sm)' }}>
+        <label className="ti-lbl">Werkdag of vrije dag</label>
+        <div className="ti-rij">
+          {DAGTYPE_OPTIES.map((optie) => (
+            <button
+              key={optie.label}
+              type="button"
+              className={`btn btn-sm ${(dagTypeOverride ?? null) === optie.waarde ? 'btn-p' : 'btn-g'}`}
+              style={{ flex: 1 }}
+              onClick={() => onZetDagTypeOverride(datum, optie.waarde)}
+            >{optie.label}</button>
+          ))}
+        </div>
+        <p className="ti-hint">Overschrijft alleen deze dag — het wekelijkse werkdagen-patroon (Werk-instellingen) blijft ongewijzigd.</p>
+      </div>
 
       {dagSignalen.length > 0 && (
         <div className="ag-signalen-rij">
