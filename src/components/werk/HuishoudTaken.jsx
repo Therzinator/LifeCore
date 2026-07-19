@@ -10,6 +10,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
   const [invoer, setInvoer] = useState('');
   const [frequentie, setFrequentie] = useState('week');
   const [intervalDagen, setIntervalDagen] = useState(10);
+  const [geschatteUren, setGeschatteUren] = useState(0.5);
 
   const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
   const aangepasteTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'aangepast');
@@ -26,7 +27,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
     if (teksten.length === 0) { toonToast('Geen taken gevonden in de tekst', 'wn'); return; }
-    huishoudTaken.voegMeerdereToe(teksten, frequentie, intervalDagen);
+    huishoudTaken.voegMeerdereToe(teksten, frequentie, intervalDagen, geschatteUren);
     setInvoer('');
     toonToast(`${teksten.length} klus/klussen toegevoegd`, 'ok');
   }
@@ -78,6 +79,19 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
             />
           </div>
         )}
+        <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
+          <label className="ti-lbl" htmlFor="ht-uren">Geschatte tijd (uren)</label>
+          <input
+            id="ht-uren"
+            type="number"
+            className="ti-veld"
+            min="0.25"
+            step="0.25"
+            value={geschatteUren}
+            onChange={(e) => setGeschatteUren(parseFloat(e.target.value) || 0.5)}
+          />
+          <p className="ti-hint">Gebruikt door de Agenda om een passend tijdvak voor te stellen.</p>
+        </div>
         <button className="btn btn-p btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={takenToevoegen}>
           Klussen toevoegen
         </button>
@@ -125,6 +139,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
+                <span className="hhp-uren-val">{t.geschatteUren}u</span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
@@ -149,6 +164,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
+                <span className="hhp-uren-val">{t.geschatteUren}u</span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
@@ -179,6 +195,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {t.tekst}
                   <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
                 </span>
+                <span className="hhp-uren-val">{t.geschatteUren}u</span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}

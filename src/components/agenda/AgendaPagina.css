@@ -103,6 +103,9 @@
 }
 .ag-item-tijd { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); flex-shrink: 0; }
 .ag-suggesties { margin-bottom: var(--space-sm); }
+.ag-suggesties-wrap { margin-bottom: var(--space-sm); }
+.ag-suggesties-wrap .bd-inklap-knop { margin-bottom: var(--space-xs); }
+.ag-suggesties-wrap .ag-suggesties:last-child { margin-bottom: 0; }
 
 /* Blok-formulier */
 .ag-blok-form { display: flex; flex-direction: column; gap: var(--space-sm); }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { instantiesInBereik, pasTijdAan, heeftOverlap } from './agendaBlokken.js';
+import { instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd } from './agendaBlokken.js';
 
 describe('pasTijdAan', () => {
   it('telt minuten op binnen een etmaal', () => {
@@ -82,5 +82,29 @@ describe('heeftOverlap', () => {
       { id: 'b', titel: 'Partnertijd', datum: '2026-07-01', starttijd: '20:00', eindtijd: '21:00', herhaling: 'wekelijks' },
     ];
     expect(heeftOverlap(herhalend, { datum: '2026-07-22', starttijd: '20:30', eindtijd: '21:30' })).toBe(true);
+  });
+});
+
+describe('volgendeVrijeTijd', () => {
+  it('geeft de gewenste tijd terug als die vrij is', () => {
+    expect(volgendeVrijeTijd([], '2026-07-15', '10:00', 30)).toBe('10:00');
+  });
+
+  it('schuift door naar de eerstvolgende vrije tijd bij een bezette gewenste tijd', () => {
+    const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-15', starttijd: '10:00', eindtijd: '10:30', herhaling: null }];
+    expect(volgendeVrijeTijd(blokken, '2026-07-15', '10:00', 30)).toBe('10:30');
+  });
+
+  it('blijft doorschuiven langs meerdere aaneengesloten bezette blokken', () => {
+    const blokken = [
+      { id: 'a', titel: 'Een', datum: '2026-07-15', starttijd: '10:00', eindtijd: '10:30', herhaling: null },
+      { id: 'b', titel: 'Twee', datum: '2026-07-15', starttijd: '10:30', eindtijd: '11:00', herhaling: null },
+    ];
+    expect(volgendeVrijeTijd(blokken, '2026-07-15', '10:00', 30)).toBe('11:00');
+  });
+
+  it('houdt geen rekening met blokken op een andere datum', () => {
+    const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-16', starttijd: '10:00', eindtijd: '10:30', herhaling: null }];
+    expect(volgendeVrijeTijd(blokken, '2026-07-15', '10:00', 30)).toBe('10:00');
   });
 });

@@ -66,3 +66,23 @@ export function heeftOverlap(blokken, kandidaat, negeerId = null) {
   const instanties = instantiesInBereik(blokken, kandidaat.datum, kandidaat.datum);
   return instanties.some((b) => b.id !== negeerId && tijdenOverlappen(kandidaat.starttijd, kandidaat.eindtijd, b.starttijd, b.eindtijd));
 }
+
+// Zoekt vanaf de gewenste starttijd het eerstvolgende vrije tijdvak van
+// duurMinuten op die datum, in stappen van stapMinuten. Gebruikt door de
+// suggestie-'+ Toevoegen'-knoppen (Kluslijst/huishouden/mediteren/hond) —
+// die hadden allemaal dezelfde vaste standaardtijd (bv. 10:00), wat na de
+// invoering van heeftOverlap-validatie betekende dat de tweede suggestie op
+// dezelfde dag altijd geweigerd werd. Schuift nu automatisch door naar de
+// eerstvolgende vrije tijd i.p.v. te blokkeren. Loopt (met wrap-around via
+// pasTijdAan) maximaal één volle dag rond als vangnet — geeft dan de
+// oorspronkelijke gewenste tijd terug (zou in de praktijk nooit voorkomen).
+export function volgendeVrijeTijd(blokken, datum, gewensteStarttijd, duurMinuten, stapMinuten = 15) {
+  let starttijd = gewensteStarttijd;
+  const maxPogingen = Math.ceil((24 * 60) / stapMinuten);
+  for (let i = 0; i < maxPogingen; i += 1) {
+    const eindtijd = pasTijdAan(starttijd, duurMinuten);
+    if (!heeftOverlap(blokken, { datum, starttijd, eindtijd })) return starttijd;
+    starttijd = pasTijdAan(starttijd, stapMinuten);
+  }
+  return gewensteStarttijd;
+}

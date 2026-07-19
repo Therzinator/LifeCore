@@ -6,7 +6,9 @@ import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
 import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { isGeblokkeerd, alleItemsVanProject } from '../../lib/werk/projectVerdeling.js';
-import { instantiesInBereik, pasTijdAan, heeftOverlap } from '../../lib/agenda/agendaBlokken.js';
+import {
+  instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd,
+} from '../../lib/agenda/agendaBlokken.js';
 import { takenVoorDag } from '../../lib/werk/huishoudWeekschema.js';
 import { huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
@@ -117,18 +119,19 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
       .filter((t) => !huishoudTaken.log[t.id]?.[huidigePeriode] && !isAlToegevoegd(t.id))
     : [];
 
+  // Suggesties hebben allemaal dezelfde 'gewenste' standaardtijd (10:00) —
+  // volgendeVrijeTijd schuift automatisch door naar het eerstvolgende vrije
+  // tijdvak i.p.v. de tweede/derde suggestie op dezelfde dag te blokkeren
+  // (zie agendaBlokken.js). De gebruiker past de exacte tijd zo nodig
+  // handmatig aan via het ✏️-bewerken-icoon.
   function voegKlusjeAlsBlokToe(klusje) {
-    const starttijd = '10:00';
-    const eindtijd = pasTijdAan(starttijd, klusje.geschatteUren * 60);
-    const nieuwBlok = {
+    const duur = klusje.geschatteUren * 60;
+    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', duur);
+    const eindtijd = pasTijdAan(starttijd, duur);
+    blokken.voegToe({
       titel: `${klusje.projectNaam}: ${klusje.tekst}`, type: 'klusjes', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: klusje.id,
-    };
-    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
-      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
-      return;
-    }
-    blokken.voegToe(nieuwBlok);
-    toonToast(`"${klusje.tekst}" toegevoegd aan de Agenda`, 'ok');
+    });
+    toonToast(`"${klusje.tekst}" toegevoegd aan de Agenda om ${starttijd}`, 'ok');
   }
 
   // Lift/cardio-suggestie als blok inplannen op de gekozen tijd (ochtend/
@@ -150,21 +153,17 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
     toonToast(`${signaal.tekst} ingepland om ${starttijd}`, 'ok');
   }
 
-  // Huishoudtaak-suggestie als blok inplannen — 30 min standaardduur (geen
-  // eigen duur-schatting per taak zoals bij Kluslijst-klusjes), start
-  // standaard om 10:00, net als de Kluslijst-suggestie.
+  // Huishoudtaak-suggestie als blok inplannen — duur uit de taak zelf
+  // (geschatteUren, zie huishoud_taken-migratie 0017), start standaard om
+  // 10:00, schuift automatisch door bij een bezette tijd (zie hierboven).
   function voegHuishoudTaakAlsBlokToe(taak) {
-    const starttijd = '10:00';
-    const eindtijd = pasTijdAan(starttijd, 30);
-    const nieuwBlok = {
+    const duur = (taak.geschatteUren ?? 0.5) * 60;
+    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', duur);
+    const eindtijd = pasTijdAan(starttijd, duur);
+    blokken.voegToe({
       titel: taak.tekst, type: 'huishouden', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: taak.id,
-    };
-    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
-      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
-      return;
-    }
-    blokken.voegToe(nieuwBlok);
-    toonToast(`"${taak.tekst}" toegevoegd aan de Agenda`, 'ok');
+    });
+    toonToast(`"${taak.tekst}" toegevoegd aan de Agenda om ${starttijd}`, 'ok');
   }
 
   // Dagelijkse mediteer-suggestie — geen wekelijks schema of project nodig
@@ -176,17 +175,37 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const toonMeditatieSuggestie = !isAlToegevoegd(meditatieBronId);
 
   function voegMeditatieAlsBlokToe() {
-    const starttijd = '10:00';
+    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', 10);
     const eindtijd = pasTijdAan(starttijd, 10);
-    const nieuwBlok = {
+    blokken.voegToe({
       titel: 'Mediteren', type: 'ontspanning', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: meditatieBronId,
-    };
-    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
-      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
-      return;
-    }
-    blokken.voegToe(nieuwBlok);
-    toonToast('Mediteren toegevoegd aan de Agenda', 'ok');
+    });
+    toonToast(`Mediteren toegevoegd aan de Agenda om ${starttijd}`, 'ok');
+  }
+
+  // Hond-suggesties, gezondheid & buiten zijn — op een cardio-dag is er al
+  // een wandel-/hardloopmoment gepland (zie voegTrainingAlsBlokToe hierboven),
+  // dus dan is de suggestie alleen een korte tip, geen eigen blok. Op een
+  // niet-cardio-dag stelt de Agenda twee vaste hond-uitlaatmomenten voor
+  // (namiddag + na het avondeten) — losse, elk apart toe te voegen suggesties,
+  // zelfde bronId-per-datum-patroon als de mediteer-suggestie hierboven.
+  const isCardioDag = signalen.some((s) => s.datum === referentieDatum && s.type === 'cardio');
+  const HOND_MOMENTEN = [
+    { tijd: '16:00', tekst: 'Hond uitlaten (namiddag)' },
+    { tijd: '19:30', tekst: 'Hond uitlaten (na het avondeten)' },
+  ];
+  const openHondMomenten = isCardioDag
+    ? []
+    : HOND_MOMENTEN.filter((m) => !isAlToegevoegd(`hond_${m.tijd}_${referentieDatum}`));
+
+  function voegHondWandelingAlsBlokToe(moment) {
+    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, moment.tijd, 30);
+    const eindtijd = pasTijdAan(starttijd, 30);
+    blokken.voegToe({
+      titel: moment.tekst, type: 'buiten', datum: referentieDatum, starttijd, eindtijd, herhaling: null,
+      bronId: `hond_${moment.tijd}_${referentieDatum}`,
+    });
+    toonToast(`"${moment.tekst}" toegevoegd aan de Agenda om ${starttijd}`, 'ok');
   }
 
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
@@ -284,6 +303,9 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             onVoegHuishoudTaakToe={voegHuishoudTaakAlsBlokToe}
             toonMeditatieSuggestie={toonMeditatieSuggestie}
             onVoegMeditatieToe={voegMeditatieAlsBlokToe}
+            isCardioDag={isCardioDag}
+            openHondMomenten={openHondMomenten}
+            onVoegHondWandelingToe={voegHondWandelingAlsBlokToe}
           />
         )}
       </div>

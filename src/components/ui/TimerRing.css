@@ -1,4 +1,5 @@
 .tr-buiten {
+  position: relative;
   width: 200px;
   height: 200px;
   border-radius: 50%;
@@ -7,6 +8,22 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto var(--space-lg);
+}
+.tr-buiten.met-voortgang {
+  border: none;
+  background: conic-gradient(var(--accent) var(--tr-voortgang, 0%), var(--border-2) 0);
+  transition: background 1s linear;
+}
+/* Dunne, effen rand tussen de voortgangs-taart en het binnenste (bewegende)
+   cirkeltje, zodat de vulling als een RING oogt i.p.v. als een taartpunt
+   die tot achter tr-cirkel doorloopt. position:absolute haalt 'm uit de
+   flex-flow, anders telt hij mee als flex-item naast tr-cirkel. */
+.tr-buiten.met-voortgang::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--bg);
 }
 
 .tr-cirkel {

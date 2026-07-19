@@ -47,17 +47,18 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     return () => { actief = false; stopAbonnement(); };
   }, [huishoudenId]);
 
-  const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null) => {
+  const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null, geschatteUren = 0.5) => {
     if (huishoudenId) {
       voegTakenToeGedeeld(teksten.map((tekst) => ({
         huishouden_id: huishoudenId, tekst, frequentie, interval_dagen: frequentie === 'aangepast' ? intervalDagen : null,
+        geschatte_uren: geschatteUren,
       })));
       return;
     }
 
     setRecordState((huidig) => {
       const nieuwe = teksten.map((tekst) => ({
-        id: nieuweId(), tekst, frequentie, intervalDagen: frequentie === 'aangepast' ? intervalDagen : null,
+        id: nieuweId(), tekst, frequentie, intervalDagen: frequentie === 'aangepast' ? intervalDagen : null, geschatteUren,
       }));
       const bijgewerkt = nieuwRecord({ ...huidig, taken: [...(huidig.taken ?? []), ...nieuwe] });
       schrijfLokaal('huishoud_taken', bijgewerkt);

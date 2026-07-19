@@ -9,6 +9,7 @@ const TYPES = [
   { id: 'kracht', label: 'Kracht' },
   { id: 'cardio', label: 'Cardio' },
   { id: 'ontspanning', label: 'Ontspanning' },
+  { id: 'buiten', label: 'Buiten' },
   { id: 'klusjes', label: 'Klusjes' },
   { id: 'huishouden', label: 'Huishouden' },
   { id: 'werk', label: 'Werk' },

@@ -69,6 +69,7 @@ export default function TrainingSessie({
   const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
   const [detailId, setDetailId] = useState(null);
   const detailOefening = detailId ? oefeningMetAfbeeldingPerId(detailId) : null;
+  const [toonMobiliteit, setToonMobiliteit] = useState(false);
 
   const hoofdKlaar = oefeningen.every((o) => o.werk.every(Boolean));
   const extraKlaar = !extras.length || extras.every((e) => e.werk.every(Boolean));
@@ -209,11 +210,17 @@ export default function TrainingSessie({
             <div className="ts-warmup-detail">Heupen · schouders · wervelkolom · enkels</div>
           </span>
         </button>
-        <div className="ts-mobiliteit-lijst">
-          {MOBILITEIT_OEFENINGEN.map((oef) => (
-            <OefeningPopup key={oef.id} oefening={oef} />
-          ))}
-        </div>
+        <button type="button" className="bd-inklap-knop" onClick={() => setToonMobiliteit((v) => !v)}>
+          <span className="ts-warmup-detail" style={{ marginLeft: 34 }}>Oefeningen &amp; uitleg</span>
+          <span aria-hidden="true">{toonMobiliteit ? '▲' : '▼'}</span>
+        </button>
+        {toonMobiliteit && (
+          <div className="ts-mobiliteit-lijst">
+            {MOBILITEIT_OEFENINGEN.map((oef) => (
+              <OefeningPopup key={oef.id} oefening={oef} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="ts-hele-training">

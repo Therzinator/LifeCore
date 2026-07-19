@@ -2,7 +2,10 @@ import { sbClient, uniekKanaalId } from './client.js';
 
 // Db-rij -> hetzelfde platte object dat de lokale blob-modus gebruikte.
 export function rijNaarTaak(rij) {
-  return { id: rij.id, tekst: rij.tekst, frequentie: rij.frequentie, intervalDagen: rij.interval_dagen };
+  return {
+    id: rij.id, tekst: rij.tekst, frequentie: rij.frequentie, intervalDagen: rij.interval_dagen,
+    geschatteUren: rij.geschatte_uren ?? 0.5,
+  };
 }
 
 // Logregels (één rij per afgevinkte periode) -> dezelfde geneste

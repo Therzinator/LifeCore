@@ -20,6 +20,7 @@ function schaalVoorFase(fase) {
 export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [duurMinuten, setDuurMinuten] = useState(5);
   const [gestart, setGestart] = useState(false);
+  const [gepauzeerd, setGepauzeerd] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
@@ -32,16 +33,17 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const totaleSeconden = duurMinuten * 60;
   const klaar = gestart && elapsed >= totaleSeconden;
   const resterendTotaal = Math.max(totaleSeconden - elapsed, 0);
+  const voortgangPct = (elapsed / totaleSeconden) * 100;
 
   useMeditatieAudioSpeler(meditatieAudioRef, {
-    actief: gestart && !klaar, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal,
+    actief: gestart && !klaar && !gepauzeerd, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal,
   });
 
   useEffect(() => {
-    if (!gestart || klaar) return undefined;
+    if (!gestart || klaar || gepauzeerd) return undefined;
     intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(intervalRef.current);
-  }, [gestart, klaar]);
+  }, [gestart, klaar, gepauzeerd]);
 
   useEffect(() => {
     if (!klaar || geluidGespeeldRef.current) return;
@@ -105,9 +107,17 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
 
       {gestart && !klaar && fase && (
         <>
-          <div className="am-resterend">Nog {Math.ceil(resterendTotaal / 60)} min</div>
-          <TimerRing schaal={schaalVoorFase(fase)} label={FASE_LABEL[fase.naam]} waarde={null} />
+          <div className="am-resterend">{gepauzeerd ? 'Gepauzeerd' : `Nog ${Math.ceil(resterendTotaal / 60)} min`}</div>
+          <TimerRing
+            schaal={schaalVoorFase(fase)}
+            label={gepauzeerd ? 'Pauze' : FASE_LABEL[fase.naam]}
+            waarde={null}
+            voortgangPct={voortgangPct}
+          />
           <div className="of-acties">
+            <button className="btn btn-g" onClick={() => setGepauzeerd((v) => !v)}>
+              {gepauzeerd ? '▶ Hervatten' : '⏸ Pauzeren'}
+            </button>
             <button className="btn btn-g btn-full" onClick={onKlaar}>Stoppen</button>
           </div>
         </>

@@ -19,6 +19,7 @@ function schaalVoorFase(fase) {
 
 export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan }) {
   const [gestart, setGestart] = useState(false);
+  const [gepauzeerd, setGepauzeerd] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
@@ -28,12 +29,12 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
   const spraak = useSpraakVoorlezer();
 
   useEffect(() => {
-    if (!gestart) return undefined;
+    if (!gestart || gepauzeerd) return undefined;
     intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(intervalRef.current);
-  }, [gestart]);
+  }, [gestart, gepauzeerd]);
 
-  useMeditatieAudioSpeler(meditatieAudioRef, { actief: gestart, audioAan, pad: OCHTEND_ADEMHALING_AUDIO_PAD });
+  useMeditatieAudioSpeler(meditatieAudioRef, { actief: gestart && !gepauzeerd, audioAan, pad: OCHTEND_ADEMHALING_AUDIO_PAD });
 
   const fase = faseOpTijdstip(elapsed);
 
@@ -75,10 +76,10 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
       <audio ref={meditatieAudioRef} preload="none" />
 
       <div className="ad-ring-wrap">
-        {gestart && <div className="ad-cyclus">Cyclus {fase.cyclusIndex + 1}</div>}
+        {gestart && <div className="ad-cyclus">{gepauzeerd ? 'Gepauzeerd' : `Cyclus ${fase.cyclusIndex + 1}`}</div>}
         <TimerRing
           schaal={gestart ? schaalVoorFase(fase) : 0.6}
-          label={gestart ? FASE_LABEL[fase.naam] : 'Klaar?'}
+          label={gestart ? (gepauzeerd ? 'Pauze' : FASE_LABEL[fase.naam]) : 'Klaar?'}
           waarde={gestart ? fase.resterend + 1 : null}
         />
       </div>
@@ -87,6 +88,7 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
         {!gestart && <button className="btn btn-text" onClick={vorige}>Terug</button>}
         {!gestart && <button className="btn btn-text" onClick={overslaan}>Overslaan</button>}
         {!gestart && <button className="btn btn-p btn-full" onClick={() => setGestart(true)}>Start</button>}
+        {gestart && <button className="btn btn-g" onClick={() => setGepauzeerd((v) => !v)}>{gepauzeerd ? '▶ Hervatten' : '⏸ Pauzeren'}</button>}
         {gestart && <button className="btn btn-p btn-full" onClick={klaar}>Klaar</button>}
       </div>
 
