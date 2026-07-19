@@ -78,8 +78,15 @@ export async function synchroniseerAlles(userId) {
       continue;
     }
 
+    // Vergelijk tegen het bewerktijdstip DAT IN DE DATA ZELF zit
+    // (bijgewerkt_op), niet tegen remote.updated_at (de rij-schrijftijd van
+    // Supabase). Die laatste wordt bij elke push opnieuw op 'nu' gezet, dus
+    // is na een push altijd later dan het (oudere) lokale bewerktijdstip —
+    // wat de eerstvolgende sync ten onrechte liet denken dat de cloud
+    // nieuwer was, wat weer een pull + herlaad triggerde: een oneindige
+    // sync/herlaad-lus (zie useSync.js).
     const lokaleTijd = lokaleData.bijgewerkt_op ?? 0;
-    const remoteTijd = new Date(remote.updated_at).getTime();
+    const remoteTijd = remote.data?.bijgewerkt_op ?? 0;
 
     if (lokaleTijd >= remoteTijd) {
       gelukt = (await pushSleutel(userId, sleutel, lokaleData)) && gelukt;
