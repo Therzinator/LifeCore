@@ -4,6 +4,7 @@ import { projectMaandOverzicht, maandLabel, dagenTotDeadline, isGeblokkeerd } fr
 import { vandaagKey } from '../../utils/datum.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import WerkvoorbereidingLijst from './WerkvoorbereidingLijst.jsx';
+import FotosLijst from './FotosLijst.jsx';
 import './HuishoudProjecten.css';
 
 function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
@@ -174,6 +175,7 @@ function ProjectKaart({
   project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
   onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
   onZetVereiste, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
+  onVoegFoto, onVerwijderFoto, userId, toonToast,
 }) {
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
   const [toonWerkvoorbereiding, setToonWerkvoorbereiding] = useState(false);
@@ -306,6 +308,15 @@ function ProjectKaart({
                         onZetUren={onZetStapUren}
                         onVerwijderen={onVerwijderStap}
                       />
+                      <FotosLijst
+                        userId={userId}
+                        projectId={project.id}
+                        klusjeId={item.id}
+                        paden={item.fotos ?? []}
+                        onVoegToe={onVoegFoto}
+                        onVerwijder={onVerwijderFoto}
+                        toonToast={toonToast}
+                      />
                     </div>
                   )}
                 </div>
@@ -318,7 +329,7 @@ function ProjectKaart({
   );
 }
 
-export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
+export default function HuishoudProjecten({ projecten, werkTaken, toonToast, userId }) {
   const [toonForm, setToonForm] = useState(false);
 
   function toevoegen(naam, aantalMaanden, klusjes, deadline) {
@@ -359,6 +370,10 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
           onVoegWerkvoorbereidingToe={projecten.voegWerkvoorbereidingToe}
           onToggleWerkvoorbereiding={projecten.toggleWerkvoorbereiding}
           onVerwijderWerkvoorbereiding={projecten.verwijderWerkvoorbereiding}
+          onVoegFoto={projecten.voegFotoToe}
+          onVerwijderFoto={projecten.verwijderFotoVanKlusje}
+          userId={userId}
+          toonToast={toonToast}
         />
       ))}
 

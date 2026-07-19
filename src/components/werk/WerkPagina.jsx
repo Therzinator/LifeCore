@@ -23,7 +23,7 @@ const TABS = [
   { id: 'boodschappen', label: 'Boodschappen' },
 ];
 
-export default function WerkPagina({ toonToast }) {
+export default function WerkPagina({ toonToast, userId }) {
   const werkTaken = useWerkTaken();
   const huishoudTaken = useHuishoudTaken();
   const huishoudProjecten = useHuishoudProjecten();
@@ -59,7 +59,7 @@ export default function WerkPagina({ toonToast }) {
         )}
         {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} weekschema={weekschema} toonToast={toonToast} />}
         {tab === 'kluslijst' && (
-          <HuishoudProjecten projecten={huishoudProjecten} werkTaken={werkTaken} toonToast={toonToast} />
+          <HuishoudProjecten projecten={huishoudProjecten} werkTaken={werkTaken} toonToast={toonToast} userId={userId} />
         )}
         {tab === 'ontspullen' && <Ontspullen ontspullen={ontspullen} toonToast={toonToast} />}
         {tab === 'boodschappen' && <Boodschappen boodschappen={boodschappen} toonToast={toonToast} />}

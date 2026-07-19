@@ -53,7 +53,8 @@ export function useHuishoudProjecten() {
   const voegProjectToe = useCallback((naam, aantalMaanden, klusjeTeksten, deadline = null) => {
     setRecordState((huidig) => {
       const klusjes = klusjeTeksten.map((tekst) => ({
-        id: nieuweId('kl'), tekst, geschatteUren: 1, afgerond: false, afgerondOp: null, subklusjes: [], vereistKlusjeId: null,
+        id: nieuweId('kl'), tekst, geschatteUren: 1, afgerond: false, afgerondOp: null, subklusjes: [],
+        vereistKlusjeId: null, fotos: [],
       }));
       const nieuw = herverdeel({
         id: nieuweId('proj'), naam, aantalMaanden, startMaand: huidigeMaandKey(), deadline,
@@ -177,6 +178,32 @@ export function useHuishoudProjecten() {
     });
   }, []);
 
+  // Foto's per klusje — alleen het Storage-pad wordt bewaard (zie
+  // lib/supabase/klusjeFotos.js), niet een kant-en-klare URL: de bucket is
+  // privé, dus elke weergave haalt een verse signed URL op i.p.v. een
+  // langdurig geldige link te bewaren.
+  const voegFotoToe = useCallback((projectId, klusjeId, pad) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({
+        ...k, fotos: [...(k.fotos ?? []), pad],
+      }));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  const verwijderFotoVanKlusje = useCallback((projectId, klusjeId, pad) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({
+        ...k, fotos: (k.fotos ?? []).filter((f) => f !== pad),
+      }));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const verwijderProject = useCallback((projectId) => {
     setRecordState((huidig) => {
       const bijgewerkt = nieuwRecord({ projecten: huidig.projecten.filter((p) => p.id !== projectId) });
@@ -263,5 +290,7 @@ export function useHuishoudProjecten() {
     voegWerkvoorbereidingToe,
     toggleWerkvoorbereiding,
     verwijderWerkvoorbereiding,
+    voegFotoToe,
+    verwijderFotoVanKlusje,
   };
 }

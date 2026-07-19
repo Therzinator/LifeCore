@@ -1,0 +1,53 @@
+.fotos-lijst { margin-top: var(--space-sm); }
+
+.fotos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.foto-thumb-wrap { position: relative; width: 72px; height: 72px; }
+
+.foto-thumb-btn { border: none; background: none; padding: 0; cursor: zoom-in; width: 100%; height: 100%; }
+
+.foto-thumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  display: block;
+}
+
+.foto-thumb-laden { background: var(--bg-3); }
+
+.foto-verwijder {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  color: var(--txt-faint);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.foto-verwijder:hover { color: var(--danger); }
+
+.foto-toevoegen-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-family: inherit;
+}
+.foto-toevoegen-btn:hover { background: var(--bg-3); }

@@ -28,7 +28,7 @@ import { useModuleVoorkeuren } from './hooks/useModuleVoorkeuren.js';
 import { MODULES, MODULE_CATEGORIEEN } from './lib/nav/modules.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum) {
+function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum, userId) {
   switch (paginaId) {
     case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
@@ -37,7 +37,7 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
-    case 'werk': return <WerkPagina toonToast={toonToast} />;
+    case 'werk': return <WerkPagina toonToast={toonToast} userId={userId} />;
     case 'agenda':
       return (
         <AgendaPagina
@@ -148,7 +148,7 @@ export default function App() {
           <ErrorBoundary key={pagina}>
             {pagina === 'snelkeuze'
               ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />
-              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
+              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id)}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
