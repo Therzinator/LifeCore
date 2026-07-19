@@ -59,6 +59,22 @@ export function werkdagSignalen(bereikStart, bereikEind, werkdagen, overrides = 
     .filter(Boolean);
 }
 
+// Vaste, terugkerende Klusjes-dag (ingesteld bij Werk-instellingen) — zelfde
+// patroon als werkdagSignalen: het vaste patroon geldt tenzij een specifieke
+// datum een override heeft (via AgendaDag, gedeelde overrides-store). Een
+// dag zonder ingestelde klusjesDag levert nooit een signaal op, behalve als
+// die specifieke dag handmatig op 'klusjesdag' is gezet.
+export function klusjesDagSignalen(bereikStart, bereikEind, klusjesDag, overrides = {}) {
+  return alleDatumsInBereik(bereikStart, bereikEind)
+    .map((datum) => {
+      const override = overrides[datum];
+      const isKlusjesDag = override === 'klusjesdag' || (!override && klusjesDag && dagIndexVan(datum) + 1 === klusjesDag);
+      if (!isKlusjesDag) return null;
+      return { id: `klusjesdag_${datum}`, bron: 'huishouden', datum, tekst: 'Klusjes-dag', type: 'klusjesdag' };
+    })
+    .filter(Boolean);
+}
+
 export function welzijnSignaal(laatsteCheckDatum, cadansDagen) {
   const volgende = volgendeCheckDatum(laatsteCheckDatum, cadansDagen);
   if (!volgende) return null;

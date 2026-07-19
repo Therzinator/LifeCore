@@ -8,13 +8,16 @@ const DAGTYPE_OPTIES = [
   { waarde: null, label: 'Standaard' },
   { waarde: 'werkdag', label: 'Werkdag' },
   { waarde: 'vrij', label: 'Vrije dag' },
+  { waarde: 'klusjesdag', label: 'Klusjes-dag' },
 ];
 
 export default function AgendaDag({
   datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
+  openKlusjes = [], onVoegKlusjeToe,
 }) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
+  const isKlusjesDag = dagSignalen.some((s) => s.type === 'klusjesdag');
 
   return (
     <div>
@@ -41,6 +44,22 @@ export default function AgendaDag({
           {dagSignalen.map((s) => (
             <span key={s.id} className="ag-signaal-chip">{TYPE_ICOON[s.type] ?? '•'} {s.tekst}</span>
           ))}
+        </div>
+      )}
+
+      {isKlusjesDag && openKlusjes.length > 0 && (
+        <div className="ag-suggesties">
+          <div className="ti-lbl">Suggesties uit Kluslijst</div>
+          <p className="ti-hint">Grotere klusjes staan bovenaan — ideaal om vandaag een flinke stap te zetten.</p>
+          <div className="hh-lijst">
+            {openKlusjes.map((k) => (
+              <div className="hh-item" key={k.id}>
+                <span className="hh-tekst">{k.projectNaam}: {k.tekst}</span>
+                <span className="hhp-uren-val">{k.geschatteUren}u</span>
+                <button className="btn btn-g btn-sm" onClick={() => onVoegKlusjeToe(k)}>+ Toevoegen</button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

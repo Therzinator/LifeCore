@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { instantiesInBereik } from './agendaBlokken.js';
+import { instantiesInBereik, pasTijdAan } from './agendaBlokken.js';
+
+describe('pasTijdAan', () => {
+  it('telt minuten op binnen een etmaal', () => {
+    expect(pasTijdAan('18:00', 60)).toBe('19:00');
+    expect(pasTijdAan('18:15', 30)).toBe('18:45');
+  });
+
+  it('wrapt rond middernacht bij optellen', () => {
+    expect(pasTijdAan('23:30', 60)).toBe('00:30');
+  });
+
+  it('wrapt rond middernacht bij aftrekken', () => {
+    expect(pasTijdAan('00:15', -30)).toBe('23:45');
+  });
+});
 
 describe('instantiesInBereik', () => {
   it('geeft een eenmalig blok terug binnen bereik', () => {

@@ -3,7 +3,7 @@ import { useWelzijnInstellingen } from './useWelzijnInstellingen.js';
 import { useVragenlijstGeschiedenis } from './useVragenlijstGeschiedenis.js';
 import { useWerkInstellingen } from './useWerkInstellingen.js';
 import {
-  trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen,
+  trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
 } from '../lib/agenda/agendaSignalen.js';
 
 // Dunne hook, zelfde opzet als useKruisSignalen: leest de bron-hooks van
@@ -24,6 +24,7 @@ export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}
   const signalen = [
     ...trainingCardioSignalen(bereikStart, bereikEind),
     ...werkdagSignalen(bereikStart, bereikEind, werkInstellingen.werkdagen, dagTypeOverrides),
+    ...klusjesDagSignalen(bereikStart, bereikEind, werkInstellingen.klusjesDag, dagTypeOverrides),
     ...huishoudProjectSignalen(huishoudProjecten.projecten, bereikStart, bereikEind),
     welzijnSignaal(welzijnGeschiedenis.laatste?.datum, welzijnInstellingen.cadansDagen),
   ].filter((s) => s && s.datum >= bereikStart && s.datum <= bereikEind)

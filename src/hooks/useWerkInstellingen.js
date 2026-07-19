@@ -6,6 +6,9 @@ const STANDAARD = {
   werkdagen: [1, 2, 3, 4, 5],
   categorieen: ['Algemeen'],
   oldambtModus: false,
+  // ISO-weekdagnummer (1=ma..7=zo) voor de vaste, terugkerende Klusjes-dag
+  // (zie AgendaDag/agendaSignalen) — null = nog niet ingesteld.
+  klusjesDag: null,
 };
 
 function standaardRecord() {

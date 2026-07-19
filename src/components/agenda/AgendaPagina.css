@@ -61,7 +61,9 @@
 .ag-stip.werkdag { background: var(--txt-muted); }
 .ag-stip.welzijn { background: var(--warn); }
 .ag-stip.project { background: var(--accent); }
-.ag-stip.sport { background: #e8833a; }
+.ag-stip.klusjes { background: var(--accent); }
+.ag-stip.klusjesdag { background: var(--accent); }
+.ag-stip.werk { background: var(--txt-muted); }
 .ag-stip.sociaal { background: #e05a7a; }
 .ag-stip.ontspanning { background: #4aa8e0; }
 .ag-stip.eigenbedrijf { background: #5cb85c; }
@@ -100,6 +102,7 @@
   padding: 3px 8px;
 }
 .ag-item-tijd { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); flex-shrink: 0; }
+.ag-suggesties { margin-bottom: var(--space-sm); }
 
 /* Blok-formulier */
 .ag-blok-form { display: flex; flex-direction: column; gap: var(--space-sm); }

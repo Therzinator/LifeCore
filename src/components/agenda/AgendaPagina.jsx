@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
-import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
+import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { instantiesInBereik, pasTijdAan } from '../../lib/agenda/agendaBlokken.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
 import { maandagVan, datumKey } from '../../utils/datum.js';
 import AgendaMaand from './AgendaMaand.jsx';
@@ -55,6 +56,26 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
   const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
+
+  // Alleen-lezen tweede instantie — zelfde precedent als de dubbele
+  // useDagTypeOverrides-instantie (zie useAgendaSignalen.js): deze pagina
+  // heeft de open-klusjeslijst nodig voor de Klusjes-dag-suggesties, los van
+  // wat useAgendaSignalen zelf al intern gebruikt voor huishoudProjectSignalen.
+  const huishoudProjecten = useHuishoudProjecten();
+  const openKlusjes = huishoudProjecten.projecten
+    .flatMap((p) => p.klusjes
+      .filter((k) => !k.afgerond)
+      .map((k) => ({ id: k.id, projectNaam: p.naam, tekst: k.tekst, geschatteUren: k.geschatteUren ?? 1 })))
+    .sort((a, b) => b.geschatteUren - a.geschatteUren);
+
+  function voegKlusjeAlsBlokToe(klusje) {
+    const starttijd = '10:00';
+    const eindtijd = pasTijdAan(starttijd, klusje.geschatteUren * 60);
+    blokken.voegToe({
+      titel: `${klusje.projectNaam}: ${klusje.tekst}`, type: 'klusjes', datum: referentieDatum, starttijd, eindtijd, herhaling: null,
+    });
+    toonToast(`"${klusje.tekst}" toegevoegd aan de Agenda`, 'ok');
+  }
 
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
 
@@ -121,6 +142,8 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
             onZetDagTypeOverride={zetDagTypeOverride}
             onNavigeer={onNavigeer}
+            openKlusjes={openKlusjes}
+            onVoegKlusjeToe={voegKlusjeAlsBlokToe}
           />
         )}
       </div>

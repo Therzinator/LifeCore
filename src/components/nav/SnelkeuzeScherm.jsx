@@ -1,6 +1,7 @@
 import { MODULE_ICONEN } from '../ui/ModuleIconen.jsx';
 import WeekOverzicht from '../ui/WeekOverzicht.jsx';
 import VandaagOverzicht from '../ui/VandaagOverzicht.jsx';
+import HuishoudVandaagOverzicht from '../ui/HuishoudVandaagOverzicht.jsx';
 import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
 import './SnelkeuzeScherm.css';
 
@@ -14,6 +15,7 @@ export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag }) {
 
       <VandaagOverzicht onOpenAgenda={() => onKies('agenda')} />
       <WeekOverzicht onKiesDag={onKiesAgendaDag} />
+      <HuishoudVandaagOverzicht onOpenWerk={() => onKies('werk')} />
 
       {MODULE_CATEGORIEEN.map((categorie) => (
         <div className="sk-categorie" key={categorie.id}>

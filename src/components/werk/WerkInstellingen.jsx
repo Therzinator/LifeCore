@@ -48,6 +48,23 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
             >{d.label}</button>
           ))}
         </div>
+
+        <label className="ti-lbl" style={{ marginTop: 'var(--space-sm)' }}>Klusjes-dag</label>
+        <div className="ti-rij">
+          {DAGEN.map((d) => (
+            <button
+              key={d.nr}
+              type="button"
+              className={`btn btn-sm ${instellingen.klusjesDag === d.nr ? 'btn-p' : 'btn-g'}`}
+              style={{ flex: 1 }}
+              onClick={() => bewaar({ klusjesDag: instellingen.klusjesDag === d.nr ? null : d.nr })}
+            >{d.label}</button>
+          ))}
+        </div>
+        <p className="ti-hint">
+          Vaste, terugkerende dag voor grotere Kluslijst-klusjes (2-3u) — de Agenda toont die dag als Klusjes-dag
+          met suggesties, met de mogelijkheid een specifieke week af te wijken via de dagweergave.
+        </p>
       </div>
 
       <div className="card">

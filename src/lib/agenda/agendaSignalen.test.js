@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen } from './agendaSignalen.js';
+import {
+  trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
+} from './agendaSignalen.js';
 
 describe('trainingCardioSignalen', () => {
   it('markeert liftdagen (ma/wo/vr) en cardiodagen (di/do/za) binnen het bereik', () => {
@@ -42,6 +44,32 @@ describe('werkdagSignalen', () => {
     const signalen = werkdagSignalen('2026-07-13', '2026-07-13', [1, 2, 3, 4, 5], { '2026-07-14': 'vrij' });
     expect(signalen).toHaveLength(1);
     expect(signalen[0].type).toBe('werkdag');
+  });
+});
+
+describe('klusjesDagSignalen', () => {
+  it('markeert alleen de ingestelde weekdag', () => {
+    // 2026-07-13 is een maandag (ISO-weekdag 1).
+    const signalen = klusjesDagSignalen('2026-07-13', '2026-07-19', 1);
+    expect(signalen).toHaveLength(1);
+    expect(signalen[0].datum).toBe('2026-07-13');
+    expect(signalen[0].type).toBe('klusjesdag');
+  });
+
+  it('geeft niets terug zonder ingestelde klusjesDag', () => {
+    expect(klusjesDagSignalen('2026-07-13', '2026-07-19', null)).toEqual([]);
+  });
+
+  it('een klusjesdag-override voegt een dag toe buiten het vaste patroon', () => {
+    // 2026-07-18 is een zaterdag, geen match met klusjesDag=1 (maandag).
+    const signalen = klusjesDagSignalen('2026-07-18', '2026-07-18', 1, { '2026-07-18': 'klusjesdag' });
+    expect(signalen).toHaveLength(1);
+    expect(signalen[0].type).toBe('klusjesdag');
+  });
+
+  it('een andere override (bv. vrij) onderdrukt het vaste klusjesdag-patroon', () => {
+    const signalen = klusjesDagSignalen('2026-07-13', '2026-07-13', 1, { '2026-07-13': 'vrij' });
+    expect(signalen).toEqual([]);
   });
 });
 

@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { percentageAfgerond, huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './HuishoudTaken.css';
 
-export default function HuishoudTaken({ huishoudTaken, toonToast }) {
+const DAGLABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+
+export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) {
   const [invoer, setInvoer] = useState('');
   const [frequentie, setFrequentie] = useState('week');
+
+  const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
+
+  useEffect(() => {
+    weekschema.zorgVoorWeekschema(wekelijkseTaken);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount checken/bootstrappen; latere taak-toevoegingen hoeven geen nieuwe generatie te triggeren (zie useHuishoudWeekschema).
+  }, []);
 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
@@ -53,6 +62,34 @@ export default function HuishoudTaken({ huishoudTaken, toonToast }) {
           Klussen toevoegen
         </button>
       </div>
+
+      {weekschema.huidigSchema && wekelijkseTaken.length > 0 && (
+        <div className="card">
+          <div className="td-label">Deze week</div>
+          <p className="ti-hint">Automatisch verdeeld over de dagen — pas per klus aan als een dag niet uitkomt.</p>
+          {weekschema.volgendSchema && (
+            <p className="pim-gelukt">Weekschema voor volgende week is al klaar — ook aan te passen.</p>
+          )}
+          <div className="hh-lijst">
+            {wekelijkseTaken.map((t) => (
+              <div className="hhw-item" key={t.id}>
+                <span className="hh-tekst">{t.tekst}</span>
+                <div className="ti-rij">
+                  {DAGLABELS.map((label, i) => (
+                    <button
+                      key={label}
+                      type="button"
+                      className={`btn btn-sm ${weekschema.huidigSchema.toewijzing[t.id] === i ? 'btn-p' : 'btn-g'}`}
+                      style={{ flex: 1 }}
+                      onClick={() => weekschema.zetDag(weekschema.huidigSchema.weekMaandag, t.id, i)}
+                    >{label}</button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="td-label">Wekelijkse klussen</div>

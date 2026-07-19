@@ -1,30 +1,22 @@
 import { useState } from 'react';
+import { pasTijdAan } from '../../lib/agenda/agendaBlokken.js';
 
 const TYPES = [
   // 'kracht'/'cardio' zijn ad-hoc trainings-/cardioblokken — voor als de
-  // vaste weekdagen (LIFT_DAGEN/CARDIO_DAGEN) een keer niet uitkomen. Een
-  // blok van dit type linkt in de dagweergave direct door naar de
-  // bijbehorende module om de sessie ook echt te starten.
+  // vaste weekdagen (LIFT_DAGEN/CARDIO_DAGEN) een keer niet uitkomen. 'werk'/
+  // 'klusjes' linken analoog door naar de Werk-module. Een blok van zo'n
+  // type linkt in de dagweergave direct door naar de bijbehorende module.
   { id: 'kracht', label: 'Kracht' },
   { id: 'cardio', label: 'Cardio' },
   { id: 'ontspanning', label: 'Ontspanning' },
-  { id: 'sport', label: 'Sport / bewegen' },
+  { id: 'klusjes', label: 'Klusjes' },
+  { id: 'werk', label: 'Werk' },
   { id: 'sociaal', label: 'Sociaal' },
-  // Los van 'sport'/'overig' — eigen bedrijf in ontwerpfase (nog geen omzet)
-  // telt bewust niet mee als regulier werk.
+  // Eigen bedrijf in ontwerpfase (nog geen omzet) telt bewust niet mee als
+  // regulier 'werk'.
   { id: 'eigenbedrijf', label: 'Eigen bedrijf' },
   { id: 'overig', label: 'Overig' },
 ];
-
-// Verplaatst een 'HH:MM'-tijd met deltaMinuten, met wrap-around binnen een
-// etmaal (bv. 23:30 + 60min -> 00:30).
-function pasTijdAan(tijd, deltaMinuten) {
-  const [uur, minuut] = tijd.split(':').map(Number);
-  const totaal = (((uur * 60 + minuut + deltaMinuten) % (24 * 60)) + 24 * 60) % (24 * 60);
-  const nieuwUur = String(Math.floor(totaal / 60)).padStart(2, '0');
-  const nieuwMinuut = String(totaal % 60).padStart(2, '0');
-  return `${nieuwUur}:${nieuwMinuut}`;
-}
 
 // Verwacht 'HH:MM'. Bij een leeg/onvolledig getypt tussenresultaat (bv. tijdens
 // het typen in de native picker) niets aanpassen — pas op een geldige waarde.
@@ -83,7 +75,19 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
           <div className="ag-tijd-ctrl">
             <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, -60))} aria-label="Starttijd een uur eerder">−1u</button>
             <input id="ag-start" type="time" className="ti-veld" value={starttijd} onChange={(e) => wijzigStarttijd(e.target.value)} />
-            <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, 60))} aria-label="Starttijd een uur later">+1u</button>
+            <button
+              type="button"
+              className="btn btn-g btn-sm"
+              onClick={() => setStarttijd((t) => {
+                const nieuw = pasTijdAan(t, 60);
+                // Voorkomt een 0-minuten-blok: als de starttijd de eindtijd
+                // inhaalt, schuift de eindtijd automatisch een uur mee —
+                // alleen bij exacte gelijkheid, niet standaard bij elke klik.
+                if (nieuw === eindtijd) setEindtijd((e) => pasTijdAan(e, 60));
+                return nieuw;
+              })}
+              aria-label="Starttijd een uur later"
+            >+1u</button>
           </div>
         </div>
         <div className="ti-veld-grp">

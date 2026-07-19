@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useWerkTaken } from '../../hooks/useWerkTaken.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { useWerkInstellingen } from '../../hooks/useWerkInstellingen.js';
 import WerkTaken from './WerkTaken.jsx';
 import HuishoudTaken from './HuishoudTaken.jsx';
@@ -20,6 +21,7 @@ export default function WerkPagina({ toonToast }) {
   const werkTaken = useWerkTaken();
   const huishoudTaken = useHuishoudTaken();
   const huishoudProjecten = useHuishoudProjecten();
+  const weekschema = useHuishoudWeekschema();
   const { instellingen, bewaar, voegCategorieToe, verwijderCategorie } = useWerkInstellingen();
   const [tab, setTab] = useState('werk');
 
@@ -47,7 +49,7 @@ export default function WerkPagina({ toonToast }) {
         {tab === 'werk' && (
           <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} huishoudProjecten={huishoudProjecten} />
         )}
-        {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} toonToast={toonToast} />}
+        {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} weekschema={weekschema} toonToast={toonToast} />}
         {tab === 'kluslijst' && (
           <HuishoudProjecten projecten={huishoudProjecten} werkTaken={werkTaken} toonToast={toonToast} />
         )}

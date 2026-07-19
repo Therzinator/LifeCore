@@ -35,3 +35,12 @@
   padding: 0 4px;
 }
 .hh-verwijder:hover { color: var(--danger); }
+
+.hhw-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.hhw-item:last-child { border-bottom: none; }

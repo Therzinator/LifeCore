@@ -56,6 +56,12 @@ export default function App() {
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
 
+  // Zonder dit blijft de scrollpositie van de vorige module hangen (er is
+  // geen geneste scroll-container, .app-main/.ds-content scrollen niet
+  // zelf — window is de scroller), waardoor een net-geopende module soms
+  // halverwege gescrold binnenkomt i.p.v. bovenaan.
+  useEffect(() => { window.scrollTo(0, 0); }, [pagina]);
+
   function naarAgendaDag(datum) {
     setAgendaInitieleDatum(datum);
     setPagina('agenda');
