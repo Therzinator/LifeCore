@@ -1,25 +1,26 @@
 import { useEffect, useRef } from 'react';
 import { audioUrl } from '../lib/supabase/mindfulness.js';
 
-// Studio-fade-out-duur: hoelang vóór het einde van de gekozen sessieduur het
-// volume geleidelijk naar 0 loopt, i.p.v. de audio abrupt af te kappen zodra
-// de timer op 0 staat. Zo kan één doorlopend (geloopt) bestand toch bij elke
-// gekozen duur (3/5/10 min) netjes 'passend' aflopen.
-const FADE_MS = 10000;
-const FADE_STAP_MS = 100;
+// Studio-fade-out-venster: hoeveel seconden vóór het einde van de gekozen
+// sessieduur het volume geleidelijk naar 0 loopt.
+const FADE_SECONDEN = 10;
+// Elke seconden-tik van de sessietimer (zie resterendSeconden) rampt het
+// volume binnen RAMP_MS naar het nieuwe doel — ruim korter dan de 1s tussen
+// tikken, zodat het altijd 'bij' is vóór de volgende tik komt.
+const RAMP_MS = 900;
+const RAMP_STAP_MS = 50;
 
-function fadeUitEnStop(el) {
-  const stappen = FADE_MS / FADE_STAP_MS;
+function rampVolumeNaar(el, doelVolume, timerRef) {
+  clearInterval(timerRef.current);
   const startVolume = el.volume;
+  const stappen = RAMP_MS / RAMP_STAP_MS;
   let stap = 0;
-  return setInterval(() => {
+  timerRef.current = setInterval(() => {
     stap += 1;
-    el.volume = Math.max(0, startVolume * (1 - stap / stappen));
-    if (stap >= stappen) {
-      el.pause();
-      el.volume = 1;
-    }
-  }, FADE_STAP_MS);
+    const t = Math.min(1, stap / stappen);
+    el.volume = startVolume + (doelVolume - startVolume) * t;
+    if (t >= 1) clearInterval(timerRef.current);
+  }, RAMP_STAP_MS);
 }
 
 // Speelt/pauzeert een doorlopende meditatie-audiotrack op basis van
@@ -28,50 +29,65 @@ function fadeUitEnStop(el) {
 // oefening loopt ÉN de gebruiker 'm heeft aangezet, en stopt zodra een van
 // beide niet meer waar is. Het bestand loopt (loop=true) zodat het ook een
 // langere sessie (10 min) kan vullen ook al is het bronbestand korter.
+//
 // resterendSeconden (optioneel, alleen AdemMeditatie geeft 'm door — die
-// heeft een vaste gekozen duur, StapAdemhaling niet) triggert een studio-
-// fade-out (zie FADE_MS) vlak vóór het natuurlijke einde van de sessie.
+// heeft een vaste gekozen duur, StapAdemhaling niet) bepaalt elke seconde
+// het DOEL-volume rechtstreeks (1.0 tot FADE_SECONDEN vóór het einde,
+// lineair aflopend naar 0.0 één tik vóór het natuurlijke einde). Bewust
+// GEEN los 10-seconden-aftel-timertje meer: dat liep als eigen klok naast
+// de sessietimer, en kwam door normale JS-scheduling-jitter bijna nooit
+// exact op hetzelfde moment uit als het moment waarop de sessie 'klaar'
+// wordt en actief hieronder naar false klapt — met een hoorbaar abrupt
+// afkapmoment tot gevolg zodra dat gebeurde vóórdat de fade voltooid was.
+// Door het doel-volume rechtstreeks uit dezelfde resterendSeconden-klok af
+// te leiden die ook 'klaar' bepaalt, staat het volume altijd al op 0 vóórdat
+// de harde stop (hieronder, bij actief=false) code komt aanraken.
+//
+// sessieId (optioneel): verhoog 'm bij een ECHTE nieuwe start (niet bij
+// hervatten na pauze) — resetten van currentTime/volume gebeurt alleen dan,
+// zodat pauzeren/hervatten tijdens de laatste 10s het opgebouwde fade-effect
+// niet terugzet naar vol volume.
+//
 // Ontbreekt het bestand (nog niet geüpload) of is Supabase niet
 // geconfigureerd, dan geeft audioUrl() null terug en blijft de oefening
 // gewoon stil werken — nooit een harde vereiste.
-export function useMeditatieAudioSpeler(audioRef, { actief, audioAan, pad, resterendSeconden = null }) {
-  const fadeTimerRef = useRef(null);
-  const fadeGestartRef = useRef(false);
+export function useMeditatieAudioSpeler(audioRef, {
+  actief, audioAan, pad, resterendSeconden = null, sessieId = 0,
+}) {
+  const rampTimerRef = useRef(null);
+  const laatsteSessieRef = useRef(null);
 
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return undefined;
+    clearInterval(rampTimerRef.current);
 
     if (actief && audioAan && pad) {
       const url = audioUrl(pad);
-      if (url && el.src !== url) {
+      const verseSessie = laatsteSessieRef.current !== sessieId;
+      if (url && (el.src !== url || verseSessie)) {
         el.src = url;
         el.currentTime = 0;
         el.loop = true;
+        el.volume = 1;
       }
-      clearInterval(fadeTimerRef.current);
-      el.volume = 1;
-      fadeGestartRef.current = false;
+      laatsteSessieRef.current = sessieId;
       if (url) el.play().catch(() => {});
     } else {
-      clearInterval(fadeTimerRef.current);
       el.pause();
-      el.volume = 1;
-      fadeGestartRef.current = false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij start/stop/aan-uit-wisselen, niet bij elke seconde-tick van de oefening zelf.
-  }, [actief, audioAan, pad]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij start/stop/aan-uit-wisselen of een echt nieuwe sessie, niet bij elke seconde-tick van de oefening zelf.
+  }, [actief, audioAan, pad, sessieId]);
 
   useEffect(() => {
     const el = audioRef.current;
-    if (!el || !actief || !audioAan || resterendSeconden == null) return;
-    if (fadeGestartRef.current || el.paused) return;
-    if (resterendSeconden * 1000 <= FADE_MS) {
-      fadeGestartRef.current = true;
-      fadeTimerRef.current = fadeUitEnStop(el);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen checken bij elke seconde-tick van resterendSeconden, niet bij actief/audioAan zelf (die worden al door het effect hierboven afgehandeld).
+    if (!el || !actief || !audioAan || resterendSeconden == null || el.paused) return;
+    const doelVolume = resterendSeconden >= FADE_SECONDEN
+      ? 1
+      : Math.max(0, (resterendSeconden - 1) / (FADE_SECONDEN - 1));
+    rampVolumeNaar(el, doelVolume, rampTimerRef);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij elke seconde-tick van resterendSeconden reageren.
   }, [resterendSeconden]);
 
-  useEffect(() => () => clearInterval(fadeTimerRef.current), []);
+  useEffect(() => () => clearInterval(rampTimerRef.current), []);
 }

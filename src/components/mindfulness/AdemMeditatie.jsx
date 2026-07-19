@@ -21,6 +21,7 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [duurMinuten, setDuurMinuten] = useState(5);
   const [gestart, setGestart] = useState(false);
   const [gepauzeerd, setGepauzeerd] = useState(false);
+  const [sessieId, setSessieId] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
@@ -36,7 +37,7 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const voortgangPct = (elapsed / totaleSeconden) * 100;
 
   useMeditatieAudioSpeler(meditatieAudioRef, {
-    actief: gestart && !klaar && !gepauzeerd, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal,
+    actief: gestart && !klaar && !gepauzeerd, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal, sessieId,
   });
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
           </button>
           <div className="of-acties">
             <button className="btn btn-text" onClick={onKlaar}>Terug</button>
-            <button className="btn btn-p btn-full" onClick={() => setGestart(true)}>Start</button>
+            <button className="btn btn-p btn-full" onClick={() => { setSessieId((n) => n + 1); setGestart(true); }}>Start</button>
           </div>
         </>
       )}
