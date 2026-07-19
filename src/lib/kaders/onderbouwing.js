@@ -39,6 +39,24 @@ const ONDERBOUWING = {
       'niet om prestatie, maar om richting: je hoeft een waarde nooit "voltooid" te hebben.',
     bron: 'Hayes, Strosahl & Wilson (2012), Acceptance and Commitment Therapy: The Process and Practice of Mindful Change.',
   },
+  waardenkompasACT: {
+    titel: 'Waarom het Bull\'s-Eye waardenkompas werkt',
+    tekst:
+      'Het Bull\'s-Eye-instrument (Lundgren et al.) vraagt je expliciet te markeren hoe dicht je huidige ' +
+      'gedrag bij je waarden staat, per levensdomein — niet als score om te "halen", maar als foto van dit ' +
+      'moment. Periodiek herhalen maakt zichtbaar waar beweging zit, ook als die klein is. De trend die je ' +
+      'hier ziet is dus geen beoordeling, maar een signaal: welk domein vraagt misschien weer wat aandacht.',
+    bron: 'Lundgren, Luoma, Dahl, Strosahl & Melin (2012), The Bull\'s-Eye Values Survey: A Psychometric Evaluation.',
+  },
+  toegewijdeActieACT: {
+    titel: 'Waarom toegewijde actie (committed action) werkt',
+    tekst:
+      'Waarden verhelderen zonder er gedrag aan te koppelen blijft abstract. "Committed action" is het ' +
+      'proces binnen ACT dat waarden vertaalt naar concrete, tijdgebonden stappen — hoe klein ook. Bewust ' +
+      'zonder schuldframing: een gemiste actie is data, geen falen, en het plannen van de volgende stap ' +
+      'werkt beter dan stilstaan bij de vorige die niet lukte.',
+    bron: 'Hayes, Strosahl & Wilson (2012), Acceptance and Commitment Therapy — het "committed action"-proces.',
+  },
   defusieACT: {
     titel: 'Waarom cognitieve defusie werkt',
     tekst:

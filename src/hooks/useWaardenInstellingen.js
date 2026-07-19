@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
+import { KOMPAS_CADANS_STANDAARD } from '../lib/act/kompas.js';
 
 const STANDAARD = {
   toonWelzijnSuggesties: true,
+  kompasCadansDagen: KOMPAS_CADANS_STANDAARD,
 };
 
 function standaardRecord() {

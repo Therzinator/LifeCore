@@ -1,0 +1,33 @@
+.tap-lijst { display: flex; flex-direction: column; }
+
+.tap-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.tap-item:last-child { border-bottom: none; }
+
+.tap-check {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-2);
+  background: none;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+}
+.tap-check:hover { background: var(--accent-dim); }
+.tap-check.gedaan { background: var(--accent-dim); border-color: var(--accent); }
+
+.tap-tekst { flex: 1; font-size: var(--font-size-sm); }
+.tap-tekst.gedaan { opacity: .6; }
+.tap-domein { color: var(--txt-muted); font-size: var(--font-size-xs); }
+
+.tap-datum {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  flex-shrink: 0;
+}

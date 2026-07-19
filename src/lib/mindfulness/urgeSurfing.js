@@ -20,6 +20,9 @@ export const URGE_STAPPEN = [
     fase: 'Adem',
     instructie: 'Adem langzaam in — 4 tellen. Uit — 6 tellen. Drie keer.',
     detail: 'Langzamer uitademen dan inademen activeert het parasympathische zenuwstelsel. Je lichaam kalmeert vanzelf.',
+    // Extra ruimte in hands-free-modus om de 3 ademcycli daadwerkelijk te
+    // doen, i.p.v. meteen door te schakelen na het uitspreken van de tekst.
+    wachtNaMs: 20000,
   },
   {
     fase: 'Kies bewust',

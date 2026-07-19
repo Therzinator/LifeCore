@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { defusieStappen } from '../../lib/act/defusie.js';
+import { defusieStappen, DEFUSIE_TECHNIEKEN } from '../../lib/act/defusie.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './DefusieOefening.css';
 
 export default function DefusieOefening() {
   const [gedachte, setGedachte] = useState('');
+  const [techniek, setTechniek] = useState(DEFUSIE_TECHNIEKEN[0].id);
   const [stappen, setStappen] = useState([]);
   const [stapIndex, setStapIndex] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
 
   function begin() {
-    const berekend = defusieStappen(gedachte);
+    const berekend = defusieStappen(gedachte, techniek);
     if (berekend.length === 0) return;
     setStappen(berekend);
     setStapIndex(0);
@@ -35,6 +36,18 @@ export default function DefusieOefening() {
 
       {stappen.length === 0 && (
         <>
+          <div className="do-techniek-rij">
+            {DEFUSIE_TECHNIEKEN.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`btn btn-sm ${techniek === t.id ? 'btn-p' : 'btn-g'}`}
+                onClick={() => setTechniek(t.id)}
+              >{t.label}</button>
+            ))}
+          </div>
+          <p className="ti-hint">{DEFUSIE_TECHNIEKEN.find((t) => t.id === techniek)?.omschrijving}</p>
+
           <div className="sk-inline-rij">
             <textarea
               className="do-input"
@@ -60,6 +73,10 @@ export default function DefusieOefening() {
               </div>
             ))}
           </div>
+
+          <p className="do-onrust-notitie">
+            Voelt dit onrustiger in plaats van rustiger? Dat gebeurt bij sommige mensen — stop er dan gerust mee.
+          </p>
 
           <div className="of-acties">
             {stapIndex < stappen.length - 1 && (

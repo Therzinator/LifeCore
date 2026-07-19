@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/mindfulness/meditatie.js';
 import { speelFragment } from '../../lib/geluid/fragmenten.js';
+import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
+import HandsFreeKnop from '../ui/HandsFreeKnop.jsx';
 import './AdemMeditatie.css';
 
 const FASE_LABEL = { inademen: 'Adem in', uitademen: 'Adem uit' };
@@ -18,8 +20,10 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [gestart, setGestart] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
+  const [handsFree, setHandsFree] = useState(false);
   const intervalRef = useRef(null);
   const geluidGespeeldRef = useRef(false);
+  const spraak = useSpraakVoorlezer();
 
   const totaleSeconden = duurMinuten * 60;
   const klaar = gestart && elapsed >= totaleSeconden;
@@ -39,12 +43,27 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const fase = gestart && !klaar ? faseOpTijdstip(elapsed) : null;
   const resterendTotaal = Math.max(totaleSeconden - elapsed, 0);
 
+  useEffect(() => {
+    if (!handsFree || !fase) return;
+    spraak.spreek(FASE_LABEL[fase.naam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij een fase-overgang uitspreken, niet bij elke seconde-tick.
+  }, [handsFree, fase?.naam]);
+
+  useEffect(() => {
+    if (!handsFree || !klaar) return;
+    spraak.spreek('Fijn gedaan.');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handsFree, klaar]);
+
   return (
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Ademmeditatie</div>
       <p className="of-stap-tekst">Rustig ademen, geen prestatie. Stop wanneer je wilt.</p>
 
-      <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+      <div className="sk-inline-rij">
+        <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+        <HandsFreeKnop actief={handsFree} onToggle={() => setHandsFree((v) => !v)} beschikbaar={spraak.beschikbaar} />
+      </div>
 
       {!gestart && (
         <>

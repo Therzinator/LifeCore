@@ -1,0 +1,19 @@
+.kp-trend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin: var(--space-sm) 0;
+}
+
+.kp-trend-item { font-size: var(--font-size-xs); color: var(--txt-muted); }
+.kp-trend-lbl { color: var(--txt-faint); }
+.kp-trend-dichterbij { color: var(--accent); }
+.kp-trend-verder { color: var(--warn); }
+
+.kp-status {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}

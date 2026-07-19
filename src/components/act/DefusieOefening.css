@@ -1,3 +1,16 @@
+.do-techniek-rij {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0 4px;
+}
+
+.do-onrust-notitie {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+  margin-top: var(--space-sm);
+}
+
 .do-input {
   width: 100%;
   background: var(--bg-2);

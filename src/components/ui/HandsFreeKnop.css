@@ -1,0 +1,15 @@
+.hf-knop {
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  padding: 4px 10px;
+}
+.hf-knop:hover { background: var(--bg-3); }
+.hf-knop.actief {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+}

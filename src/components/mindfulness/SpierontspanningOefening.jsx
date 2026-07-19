@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { PMR_SPIEREN, faseOpTijdstip } from '../../lib/mindfulness/pmr.js';
+import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
+import HandsFreeKnop from '../ui/HandsFreeKnop.jsx';
 import './SpierontspanningOefening.css';
 
 const FASE_LABEL = { span: 'Span aan', los: 'Laat los' };
@@ -10,7 +12,9 @@ export default function SpierontspanningOefening({ onKlaar }) {
   const [gestart, setGestart] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
+  const [handsFree, setHandsFree] = useState(false);
   const intervalRef = useRef(null);
+  const spraak = useSpraakVoorlezer();
 
   useEffect(() => {
     if (!gestart) return undefined;
@@ -27,6 +31,19 @@ export default function SpierontspanningOefening({ onKlaar }) {
   const fase = gestart ? faseOpTijdstip(elapsed) : null;
   const klaarMetOefening = gestart && fase === null;
 
+  useEffect(() => {
+    if (!handsFree || !fase) return;
+    const tekst = fase.fase === 'span' ? `${fase.spier.naam}. ${fase.spier.instructie}` : 'Laat los.';
+    spraak.spreek(tekst);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij een fase-overgang uitspreken, niet bij elke seconde-tick.
+  }, [handsFree, fase?.spierIndex, fase?.fase]);
+
+  useEffect(() => {
+    if (!handsFree || !klaarMetOefening) return;
+    spraak.spreek('Goed gedaan.');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handsFree, klaarMetOefening]);
+
   return (
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Spierontspanning</div>
@@ -34,7 +51,10 @@ export default function SpierontspanningOefening({ onKlaar }) {
         Span elke spiergroep 5 seconden aan — dan 10 seconden volledig loslaten. Voel het verschil.
       </p>
 
-      <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+      <div className="sk-inline-rij">
+        <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
+        <HandsFreeKnop actief={handsFree} onToggle={() => setHandsFree((v) => !v)} beschikbaar={spraak.beschikbaar} />
+      </div>
 
       {!gestart && (
         <div className="of-acties">

@@ -1,0 +1,24 @@
+.bet-svg {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.bet-ring { fill: none; stroke: var(--border-2); stroke-width: 0.5; }
+.bet-as { stroke: var(--border-2); stroke-width: 0.5; }
+
+.bet-label {
+  font-size: 5px;
+  fill: var(--txt-faint);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+.bet-dot {
+  fill: var(--accent);
+  stroke: var(--surface);
+  stroke-width: 1;
+}
