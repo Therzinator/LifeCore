@@ -81,10 +81,14 @@ export default function Boodschappen({ boodschappen, toonToast }) {
               {laatstGekocht.map((i) => (
                 <div className="hh-item" key={i.id}>
                   <span className="hh-tekst">
-                    {i.tekst}
+                    <BewerkbareTekst waarde={i.tekst} onWijzig={(t) => boodschappen.hernoemItem(i.id, t)} label="Naam" />
                     <span className="hhp-werk-badge"> · {relatieveTijd(i.laatstGekochtOp)}</span>
                   </span>
                   <button className="btn btn-g btn-sm" onClick={() => boodschappen.heractiveren(i.id)}>+ Weer op lijst</button>
+                  <button
+                    className="hh-verwijder"
+                    onClick={() => { if (window.confirm(`"${i.tekst}" definitief verwijderen (ook uit laatst gekocht)?`)) boodschappen.verwijder(i.id); }}
+                  >✕</button>
                 </div>
               ))}
             </div>
