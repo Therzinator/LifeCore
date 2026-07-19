@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { relatieveTijd } from '../../utils/datum.js';
+import { detecteerFavorieten } from '../../lib/werk/boodschappenLeren.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
 import './HuishoudTaken.css';
@@ -8,40 +9,77 @@ import './Boodschappen.css';
 
 export default function Boodschappen({ boodschappen, toonToast }) {
   const [invoer, setInvoer] = useState('');
-  const [frequentie, setFrequentie] = useState('week');
   const [toonLaatstGekocht, setToonLaatstGekocht] = useState(false);
 
   const actief = boodschappen.items.filter((i) => i.opLijst);
   const laatstGekocht = boodschappen.items
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
     .sort((a, b) => new Date(b.laatstGekochtOp) - new Date(a.laatstGekochtOp));
+  const favorieten = detecteerFavorieten(boodschappen.beurten);
 
   function toevoegen() {
     const teksten = parseSpraakTekst(invoer);
     if (teksten.length === 0) { toonToast('Geen boodschappen gevonden in de tekst', 'wn'); return; }
-    teksten.forEach((tekst) => boodschappen.voegToe(tekst, frequentie));
+    teksten.forEach((tekst) => boodschappen.voegToe(tekst, 'week'));
     setInvoer('');
     toonToast(`${teksten.length} item(s) toegevoegd`, 'ok');
+  }
+
+  // Favoriet toevoegen hergebruikt een bestaand item (actief laten staan, of
+  // terughalen uit 'laatst gekocht') i.p.v. altijd een nieuw item aan te
+  // maken — anders zou hetzelfde product als dubbel op de lijst belanden.
+  function voegFavorietToe(tekst) {
+    const bestaand = boodschappen.items.find((i) => i.tekst.trim().toLowerCase() === tekst.trim().toLowerCase());
+    if (bestaand?.opLijst) {
+      toonToast(`"${tekst}" staat al op de lijst`, 'neu');
+      return;
+    }
+    if (bestaand) boodschappen.heractiveren(bestaand.id);
+    else boodschappen.voegToe(tekst, 'week');
+    toonToast(`"${tekst}" toegevoegd aan de lijst`, 'ok');
   }
 
   return (
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Boodschappen</div>
       <p className="of-stap-tekst">
-        Wekelijkse en maandelijkse boodschappen — eenmaal ingevoerd blijft een item onthouden, ook nadat je
-        het hebt gekocht.
+        Eenmaal ingevoerd blijft een item onthouden, ook nadat je het hebt gekocht — de app leert zelf welke
+        producten je wekelijks of maandelijks koopt (zie Favorieten hieronder).
       </p>
 
       <div className="card">
         <SpraakInvoer waarde={invoer} onWaarde={setInvoer} placeholder="bijv. melk, brood, wc-papier..." />
-        <div className="hh-freq-rij">
-          <button className={`btn btn-sm ${frequentie === 'week' ? 'btn-p' : 'btn-g'}`} onClick={() => setFrequentie('week')}>Wekelijks</button>
-          <button className={`btn btn-sm ${frequentie === 'maand' ? 'btn-p' : 'btn-g'}`} onClick={() => setFrequentie('maand')}>Maandelijks</button>
-        </div>
         <button className="btn btn-p btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={toevoegen}>
           Toevoegen
         </button>
       </div>
+
+      {(favorieten.wekelijks.length > 0 || favorieten.maandelijks.length > 0) && (
+        <div className="card">
+          <div className="td-label">Favorieten (zelflerend)</div>
+          <p className="ti-hint">Op basis van je koopgeschiedenis — één tik voegt het toe aan de lijst.</p>
+          {favorieten.wekelijks.length > 0 && (
+            <>
+              <label className="ti-lbl">Wekelijks</label>
+              <div className="hh-freq-rij" style={{ flexWrap: 'wrap', marginBottom: 'var(--space-sm)' }}>
+                {favorieten.wekelijks.map((f) => (
+                  <button key={f.tekst} type="button" className="btn btn-g btn-sm" onClick={() => voegFavorietToe(f.tekst)}>+ {f.tekst}</button>
+                ))}
+              </div>
+            </>
+          )}
+          {favorieten.maandelijks.length > 0 && (
+            <>
+              <label className="ti-lbl">Maandelijks</label>
+              <div className="hh-freq-rij" style={{ flexWrap: 'wrap' }}>
+                {favorieten.maandelijks.map((f) => (
+                  <button key={f.tekst} type="button" className="btn btn-g btn-sm" onClick={() => voegFavorietToe(f.tekst)}>+ {f.tekst}</button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="card">
         <div className="td-label">Boodschappenlijst ({actief.length})</div>
@@ -52,7 +90,6 @@ export default function Boodschappen({ boodschappen, toonToast }) {
               <button className="hh-check" onClick={() => boodschappen.toggleGekocht(i.id)} aria-label="Markeer als gekocht" title="Gekocht" />
               <span className="hh-tekst">
                 <BewerkbareTekst waarde={i.tekst} onWijzig={(t) => boodschappen.hernoemItem(i.id, t)} label="Naam" />
-                <span className="hhp-werk-badge"> · {i.frequentie === 'week' ? 'wekelijks' : 'maandelijks'}</span>
               </span>
               <div className="bd-aantal-ctrl">
                 <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(i.id, i.aantal - 1)}>−</button>
