@@ -12,13 +12,17 @@ const DAGTYPE_OPTIES = [
 ];
 
 export default function AgendaDag({
-  datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
+  datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
   openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
+  openHuishoudTaken = [], onVoegHuishoudTaakToe,
 }) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
   const isKlusjesDag = dagSignalen.some((s) => s.type === 'klusjesdag');
-  const trainingSignaal = dagSignalen.find((s) => s.type === 'lift' || s.type === 'cardio');
+  // Al ingepland (bronId, zie AgendaPagina) -> niet nog een keer voorstellen
+  // op dezelfde dag.
+  const trainingSignaal = dagSignalen
+    .find((s) => (s.type === 'lift' || s.type === 'cardio') && !dagBlokken.some((b) => b.bronId === s.id));
 
   return (
     <div>
@@ -82,6 +86,21 @@ export default function AgendaDag({
         </div>
       )}
 
+      {openHuishoudTaken.length > 0 && (
+        <div className="ag-suggesties">
+          <div className="ti-lbl">Huishouden vandaag</div>
+          <p className="ti-hint">Uit het weekschema — plan een moment in of vink &apos;m af bij Thuis → Huishouden.</p>
+          <div className="hh-lijst">
+            {openHuishoudTaken.map((t) => (
+              <div className="hh-item" key={t.id}>
+                <span className="hh-tekst">🧹 {t.tekst}</span>
+                <button className="btn btn-g btn-sm" onClick={() => onVoegHuishoudTaakToe(t)}>+ Toevoegen</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="hh-lijst">
         {dagBlokken.length === 0 && <p className="of-stap-tekst">Nog niets gepland.</p>}
         {dagBlokken.map((b) => {
@@ -92,6 +111,9 @@ export default function AgendaDag({
               <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
               {moduleVoorBlok && onNavigeer && (
                 <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
+              )}
+              {onBewerkBlok && (
+                <button className="btn btn-g btn-sm" onClick={() => onBewerkBlok(b)} aria-label="Blok bewerken">✏️</button>
               )}
               <button className="hh-verwijder" onClick={() => onVerwijderBlok(b.id)}>✕</button>
             </div>

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/ochtend/ademhaling.js';
+import { OCHTEND_ADEMHALING_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
 import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
+import { useMeditatieAudioSpeler } from '../../hooks/useMeditatieAudioSpeler.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
 import HandsFreeKnop from '../ui/HandsFreeKnop.jsx';
@@ -20,7 +22,9 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
+  const [audioAan, setAudioAan] = useState(false);
   const intervalRef = useRef(null);
+  const meditatieAudioRef = useRef(null);
   const spraak = useSpraakVoorlezer();
 
   useEffect(() => {
@@ -28,6 +32,8 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
     intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(intervalRef.current);
   }, [gestart]);
+
+  useMeditatieAudioSpeler(meditatieAudioRef, { actief: gestart, audioAan, pad: OCHTEND_ADEMHALING_AUDIO_PAD });
 
   const fase = faseOpTijdstip(elapsed);
 
@@ -55,6 +61,18 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan })
         </button>
         <HandsFreeKnop actief={handsFree} onToggle={() => setHandsFree((v) => !v)} beschikbaar={spraak.beschikbaar} />
       </div>
+
+      {!gestart && (
+        <button
+          type="button"
+          className={`btn btn-sm ${audioAan ? 'btn-p' : 'btn-g'}`}
+          style={{ marginBottom: 'var(--space-sm)' }}
+          onClick={() => setAudioAan((v) => !v)}
+        >
+          {audioAan ? '🔊 Meditatie-audio aan' : '🔇 Meditatie-audio uit'}
+        </button>
+      )}
+      <audio ref={meditatieAudioRef} preload="none" />
 
       <div className="ad-ring-wrap">
         {gestart && <div className="ad-cyclus">Cyclus {fase.cyclusIndex + 1}</div>}

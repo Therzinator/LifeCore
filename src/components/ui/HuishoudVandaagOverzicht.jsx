@@ -18,9 +18,13 @@ export default function HuishoudVandaagOverzicht({ onOpenThuis, huishoudenId }) 
   const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
 
   useEffect(() => {
+    // Pas draaien zodra de echte taken + schemas geladen zijn — anders ziet
+    // dit de nog-lege initiële state en upsert het een lege toewijzing over
+    // een al bestaand schema heen (zie useHuishoudWeekschema.geladen).
+    if (!huishoudTaken.geladen || !weekschema.geladen) return;
     weekschema.zorgVoorWeekschema(wekelijkseTaken);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount bootstrappen/verversen, zie useHuishoudWeekschema.
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij het geladen worden bootstrappen/verversen, zie useHuishoudWeekschema.
+  }, [huishoudTaken.geladen, weekschema.geladen]);
 
   const huidigeWeek = huidigePeriodeKey('week');
   const takenVandaag = weekschema.huidigSchema

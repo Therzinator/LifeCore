@@ -46,3 +46,23 @@ export function instantiesInBereik(blokken, bereikStart, bereikEind) {
     .flatMap((blok) => instantieDatumsVoorBlok(blok, bereikStart, bereikEind).map((datum) => ({ ...blok, datum })))
     .sort((a, b) => (a.datum + a.starttijd).localeCompare(b.datum + b.starttijd));
 }
+
+// Standaard interval-overlap-check op 'HH:MM'-strings — die vergelijken
+// lexicografisch net zo correct als numeriek zolang ze altijd 2 cijfers
+// hebben (zoals overal in dit project). [startA,eindA) overlapt met
+// [startB,eindB) zodra startA vóór eindB ligt EN startB vóór eindA — het
+// standaard-interval-overlap-criterium, geen zelfverzonnen heuristiek.
+function tijdenOverlappen(startA, eindA, startB, eindB) {
+  return startA < eindB && startB < eindA;
+}
+
+// Controleert of een kandidaat-blok (datum/starttijd/eindtijd) overlapt met
+// een al bestaande blok-INSTANTIE op diezelfde datum — herhalende blokken
+// worden dus ook meegenomen (via instantiesInBereik, die een wekelijkse
+// herhaling al naar concrete datums vertaalt). negeerId sluit het blok zelf
+// uit (nodig bij het bewerken van een bestaand blok — anders vlagt het
+// zichzelf als conflict).
+export function heeftOverlap(blokken, kandidaat, negeerId = null) {
+  const instanties = instantiesInBereik(blokken, kandidaat.datum, kandidaat.datum);
+  return instanties.some((b) => b.id !== negeerId && tijdenOverlappen(kandidaat.starttijd, kandidaat.eindtijd, b.starttijd, b.eindtijd));
+}

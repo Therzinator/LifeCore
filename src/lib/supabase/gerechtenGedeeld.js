@@ -4,6 +4,7 @@ export function rijNaarGerecht(rij) {
   return {
     id: rij.id,
     naam: rij.naam,
+    bereiding: rij.bereiding ?? '',
     ingredienten: rij.ingredienten ?? [],
     optioneel: rij.optioneel ?? [],
     kruiden: rij.kruiden ?? [],
@@ -37,6 +38,7 @@ export async function maakGerecht(huishoudenId, userId, gerecht) {
       huishouden_id: huishoudenId,
       aangemaakt_door: userId,
       naam: gerecht.naam,
+      bereiding: gerecht.bereiding ?? '',
       ingredienten: gerecht.ingredienten ?? [],
       optioneel: gerecht.optioneel ?? [],
       kruiden: gerecht.kruiden ?? [],

@@ -25,6 +25,10 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
   const [record, setRecordState] = useState(() => (
     huishoudenId ? leegRecord() : leesLokaal('huishoud_taken', leegRecord())
   ));
+  // Lokaal (huishoudenId === null) is de state synchroon uit localStorage
+  // gelezen, dus meteen 'geladen'. Gedeeld moet wachten op de eerste
+  // Supabase-fetch — zie geladen hieronder waarom dat cruciaal is.
+  const [geladen, setGeladen] = useState(!huishoudenId);
 
   useEffect(() => {
     if (!huishoudenId) return undefined;
@@ -33,7 +37,10 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     async function laad() {
       const taken = await haalTaken(huishoudenId);
       const log = await haalLog(taken.map((t) => t.id));
-      if (actief) setRecordState(nieuwRecord({ taken: taken.map(rijNaarTaak), log: logRijenNaarMap(log) }));
+      if (actief) {
+        setRecordState(nieuwRecord({ taken: taken.map(rijNaarTaak), log: logRijenNaarMap(log) }));
+        setGeladen(true);
+      }
     }
     laad();
     const stopAbonnement = abonneerOpTaken(huishoudenId, laad);
@@ -90,5 +97,5 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
-  return { taken: record.taken ?? [], log: record.log ?? {}, voegMeerdereToe, toggleDezePeriode, verwijder };
+  return { taken: record.taken ?? [], log: record.log ?? {}, geladen, voegMeerdereToe, toggleDezePeriode, verwijder };
 }

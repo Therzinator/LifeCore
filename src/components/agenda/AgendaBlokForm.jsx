@@ -10,6 +10,7 @@ const TYPES = [
   { id: 'cardio', label: 'Cardio' },
   { id: 'ontspanning', label: 'Ontspanning' },
   { id: 'klusjes', label: 'Klusjes' },
+  { id: 'huishouden', label: 'Huishouden' },
   { id: 'werk', label: 'Werk' },
   { id: 'sociaal', label: 'Sociaal' },
   // Eigen bedrijf in ontwerpfase (nog geen omzet) telt bewust niet mee als
@@ -24,13 +25,20 @@ function isVolledigeTijd(tijd) {
   return /^\d{2}:\d{2}$/.test(tijd ?? '');
 }
 
-export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }) {
-  const [titel, setTitel] = useState('');
-  const [type, setType] = useState('ontspanning');
-  const [datum, setDatum] = useState(initieleDatum);
-  const [starttijd, setStarttijd] = useState('18:00');
-  const [eindtijd, setEindtijd] = useState('19:00');
-  const [herhaling, setHerhaling] = useState(false);
+// bewerkBlok (optioneel): het bestaande blok bij het aanpassen van een
+// tijdvak — vult alle velden voor i.p.v. de vaste standaardwaarden.
+// valideer (optioneel): (kandidaatBlok) => foutmelding | null, aangeroepen
+// vóór onOpslaan; bij een foutmelding wordt die inline getoond en NIET
+// opgeslagen — voorkomt dubbele/overlappende tijdvakken (zie
+// heeftOverlap in agendaBlokken.js).
+export default function AgendaBlokForm({ initieleDatum, bewerkBlok, valideer, onOpslaan, onAnnuleren }) {
+  const [titel, setTitel] = useState(bewerkBlok?.titel ?? '');
+  const [type, setType] = useState(bewerkBlok?.type ?? 'ontspanning');
+  const [datum, setDatum] = useState(bewerkBlok?.datum ?? initieleDatum);
+  const [starttijd, setStarttijd] = useState(bewerkBlok?.starttijd ?? '18:00');
+  const [eindtijd, setEindtijd] = useState(bewerkBlok?.eindtijd ?? '19:00');
+  const [herhaling, setHerhaling] = useState(Boolean(bewerkBlok?.herhaling));
+  const [fout, setFout] = useState(null);
 
   function wijzigStarttijd(nieuweStarttijd) {
     setStarttijd(nieuweStarttijd);
@@ -40,7 +48,11 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
   function submit(e) {
     e.preventDefault();
     if (!titel.trim()) return;
-    onOpslaan({ titel: titel.trim(), type, datum, starttijd, eindtijd, herhaling: herhaling ? 'wekelijks' : null });
+    const blok = { titel: titel.trim(), type, datum, starttijd, eindtijd, herhaling: herhaling ? 'wekelijks' : null };
+    const foutmelding = valideer?.(blok) ?? null;
+    if (foutmelding) { setFout(foutmelding); return; }
+    setFout(null);
+    onOpslaan(blok);
   }
 
   return (
@@ -105,9 +117,11 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
         <span>Herhaalt wekelijks</span>
       </label>
 
+      {fout && <p className="is-fout">{fout}</p>}
+
       <div className="of-acties">
         <button type="button" className="btn btn-text" onClick={onAnnuleren}>Annuleren</button>
-        <button type="submit" className="btn btn-p btn-full">Opslaan</button>
+        <button type="submit" className="btn btn-p btn-full">{bewerkBlok ? 'Wijzigen' : 'Opslaan'}</button>
       </div>
     </form>
   );

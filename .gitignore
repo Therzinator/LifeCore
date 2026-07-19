@@ -4,3 +4,9 @@ dist
 
 .vercel
 .env*
+
+# Bronbestanden voor Supabase Storage (mindfulness-audio bucket) — te groot
+# voor git, horen niet in de PWA-precache. Zie src/lib/geluid/meditatieAudio.js.
+public/SFX/Meditation_3min.wav
+public/SFX/Meditation_5min.wav
+public/SFX/Meditation_10min.wav

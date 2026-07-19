@@ -27,6 +27,10 @@ export function useHuishoudWeekschema(huishoudenId = null) {
   const [record, setRecordState] = useState(() => (
     huishoudenId ? leegRecord() : leesLokaal('huishoud_weekschema', leegRecord())
   ));
+  // Zie useHuishoudTaken.geladen — dezelfde reden: zorgVoorWeekschema mag pas
+  // draaien nadat de echte schemas geladen zijn, anders upsert 'ie een lege
+  // toewijzing over een al bestaand schema heen (zie zorgVoorWeekschema).
+  const [geladen, setGeladen] = useState(!huishoudenId);
 
   useEffect(() => {
     if (!huishoudenId) return undefined;
@@ -34,7 +38,10 @@ export function useHuishoudWeekschema(huishoudenId = null) {
     let actief = true;
     async function laad() {
       const rijen = await haalWeekschemas(huishoudenId);
-      if (actief) setRecordState(nieuwRecord({ schemas: rijen.map(rijNaarWeekschema) }));
+      if (actief) {
+        setRecordState(nieuwRecord({ schemas: rijen.map(rijNaarWeekschema) }));
+        setGeladen(true);
+      }
     }
     laad();
     const stopAbonnement = abonneerOpWeekschema(huishoudenId, laad);
@@ -124,5 +131,5 @@ export function useHuishoudWeekschema(huishoudenId = null) {
   const huidigSchema = schemas.find((s) => s.weekMaandag === maandagVan(vandaag)) ?? null;
   const volgendSchema = schemas.find((s) => s.weekMaandag === volgendeMaandag(vandaag)) ?? null;
 
-  return { huidigSchema, volgendSchema, zorgVoorWeekschema, zetDag };
+  return { huidigSchema, volgendSchema, geladen, zorgVoorWeekschema, zetDag };
 }

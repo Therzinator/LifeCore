@@ -1,10 +1,10 @@
 // Centrale lijst van selecteerbare geluidsfragmenten voor timers (rusttimer,
-// focusblok, ademhalingsoefening, ochtendroutine). Nu allemaal synthetische
-// Web Audio-tonen — er zijn nog geen audiobestanden in het project.
+// focusblok, ademhalingsoefening, ochtendroutine). Combineert synthetische
+// Web Audio-tonen met echte, meegeleverde geluidsbestanden (public/SFX/).
 //
-// Om later een eigen mp3/wav toe te voegen: zet het bestand in public/sounds/
+// Om later een eigen mp3/wav toe te voegen: zet het bestand in public/SFX/
 // en voeg hier een entry toe met een `bestand`-property, bv.
-//   { id: 'eigenGeluid', naam: 'Mijn geluid', bestand: '/sounds/eigenGeluid.mp3' }
+//   { id: 'eigenGeluid', naam: 'Mijn geluid', bestand: '/SFX/eigenGeluid.mp3' }
 // speelFragment() speelt dat bestand dan automatisch af i.p.v. de synthese —
 // verder is geen codewijziging nodig.
 
@@ -17,6 +17,11 @@ export const GELUIDSFRAGMENTEN = [
   { id: 'oplopend', naam: 'Oplopend riedeltje' },
   { id: 'digitaal', naam: 'Digitale piep' },
   { id: 'enkeleklok', naam: 'Enkele klok' },
+  { id: 'ring1', naam: 'Ring 1', bestand: '/SFX/Ring1.wav' },
+  { id: 'ring2', naam: 'Ring 2', bestand: '/SFX/Ring2.wav' },
+  { id: 'ring3', naam: 'Ring 3', bestand: '/SFX/Ring3.wav' },
+  { id: 'ring4', naam: 'Ring 4', bestand: '/SFX/Ring4.wav' },
+  { id: 'powerup', naam: 'Power-up', bestand: '/SFX/PowerUp.wav' },
 ];
 
 function speelToon(ctx, freq, start, duur, type = 'sine', piek = 0.3) {

@@ -3,10 +3,14 @@ import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
+import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { isGeblokkeerd, alleItemsVanProject } from '../../lib/werk/projectVerdeling.js';
-import { instantiesInBereik, pasTijdAan } from '../../lib/agenda/agendaBlokken.js';
+import { instantiesInBereik, pasTijdAan, heeftOverlap } from '../../lib/agenda/agendaBlokken.js';
+import { takenVoorDag } from '../../lib/werk/huishoudWeekschema.js';
+import { huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
-import { maandagVan, datumKey } from '../../utils/datum.js';
+import { maandagVan, dagIndexVan, datumKey } from '../../utils/datum.js';
 import AgendaMaand from './AgendaMaand.jsx';
 import AgendaWeek from './AgendaWeek.jsx';
 import AgendaDag from './AgendaDag.jsx';
@@ -46,6 +50,7 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const [weergave, setWeergave] = useState(() => (initieleDatum ? 'dag' : 'maand'));
   const [referentieDatum, setReferentieDatum] = useState(() => initieleDatum ?? vandaagIso());
   const [toonForm, setToonForm] = useState(false);
+  const [bewerkBlok, setBewerkBlok] = useState(null);
 
   useEffect(() => {
     if (initieleDatum) onInitieleDatumGeconsumeerd?.();
@@ -64,6 +69,13 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   // hetzelfde huishouden en crashten de hele pagina (zie kluslijstGedeeld.js).
   const huishoudProjecten = useHuishoudProjecten(huishoudenId);
   const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten);
+
+  // Een suggestie die al als blok is toegevoegd (bronId, zie hieronder) mag
+  // niet nog een keer voorgesteld worden — pas als dat blok weer verwijderd
+  // wordt, verschijnt de suggestie opnieuw (het blok verdwijnt dan uit
+  // blokken.blokken, dus de filter hieronder laat 'm vanzelf weer los).
+  const isAlToegevoegd = (bronId) => blokken.blokken.some((b) => b.bronId === bronId);
+
   const openKlusjes = huishoudProjecten.projecten
     .flatMap((p) => {
       // De vereiste van een klusje kan tegenwoordig ook een STAP van een
@@ -74,17 +86,48 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
         // Een klusje met een nog-openstaande vereiste (taakvolgorde, zie
         // isGeblokkeerd) is niet 'op te pakken' — de app moet geen suggestie
         // doen die in de praktijk nog niet uitgevoerd kan worden.
-        .filter((k) => !k.afgerond && !isGeblokkeerd(k, alleItems))
+        .filter((k) => !k.afgerond && !isGeblokkeerd(k, alleItems) && !isAlToegevoegd(k.id))
         .map((k) => ({ id: k.id, projectNaam: p.naam, tekst: k.tekst, geschatteUren: k.geschatteUren ?? 1 }));
     })
     .sort((a, b) => b.geschatteUren - a.geschatteUren);
 
+  // Huishoudtaken-suggestie voor de bekeken dag — zelfde 'welke wekelijkse
+  // taak staat vandaag gepland'-berekening als HuishoudVandaagOverzicht.jsx
+  // op het startscherm, maar dan voor een willekeurige dag i.p.v. alleen
+  // vandaag, en met een 'voeg toe als blok'-actie in plaats van alleen tonen.
+  const huishoudTaken = useHuishoudTaken(huishoudenId);
+  const weekschema = useHuishoudWeekschema(huishoudenId);
+  const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
+
+  useEffect(() => {
+    // Pas draaien zodra de echte taken + schemas geladen zijn — anders ziet
+    // dit de nog-lege initiële state en upsert het een lege toewijzing over
+    // een al bestaand schema heen (zie useHuishoudWeekschema.geladen).
+    if (!huishoudTaken.geladen || !weekschema.geladen) return;
+    weekschema.zorgVoorWeekschema(wekelijkseTaken);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij het geladen worden bootstrappen/verversen, zie useHuishoudWeekschema.
+  }, [huishoudTaken.geladen, weekschema.geladen]);
+
+  const referentieMaandag = maandagVan(referentieDatum);
+  const schemaVoorReferentieDag = [weekschema.huidigSchema, weekschema.volgendSchema]
+    .find((s) => s?.weekMaandag === referentieMaandag);
+  const huidigePeriode = huidigePeriodeKey('week');
+  const openHuishoudTaken = schemaVoorReferentieDag
+    ? takenVoorDag(wekelijkseTaken, schemaVoorReferentieDag.toewijzing, dagIndexVan(referentieDatum))
+      .filter((t) => !huishoudTaken.log[t.id]?.[huidigePeriode] && !isAlToegevoegd(t.id))
+    : [];
+
   function voegKlusjeAlsBlokToe(klusje) {
     const starttijd = '10:00';
     const eindtijd = pasTijdAan(starttijd, klusje.geschatteUren * 60);
-    blokken.voegToe({
-      titel: `${klusje.projectNaam}: ${klusje.tekst}`, type: 'klusjes', datum: referentieDatum, starttijd, eindtijd, herhaling: null,
-    });
+    const nieuwBlok = {
+      titel: `${klusje.projectNaam}: ${klusje.tekst}`, type: 'klusjes', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: klusje.id,
+    };
+    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
+      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
+      return;
+    }
+    blokken.voegToe(nieuwBlok);
     toonToast(`"${klusje.tekst}" toegevoegd aan de Agenda`, 'ok');
   }
 
@@ -95,11 +138,33 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   function voegTrainingAlsBlokToe(signaal, starttijd) {
     const isLift = signaal.type === 'lift';
     const eindtijd = pasTijdAan(starttijd, isLift ? 60 : 45);
-    blokken.voegToe({
+    const nieuwBlok = {
       titel: isLift ? 'Training (lift)' : 'Cardio', type: isLift ? 'kracht' : 'cardio',
-      datum: signaal.datum, starttijd, eindtijd, herhaling: null,
-    });
+      datum: signaal.datum, starttijd, eindtijd, herhaling: null, bronId: signaal.id,
+    };
+    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
+      toonToast(`${starttijd}–${eindtijd} is al bezet — kies een ander tijdstip.`, 'wn');
+      return;
+    }
+    blokken.voegToe(nieuwBlok);
     toonToast(`${signaal.tekst} ingepland om ${starttijd}`, 'ok');
+  }
+
+  // Huishoudtaak-suggestie als blok inplannen — 30 min standaardduur (geen
+  // eigen duur-schatting per taak zoals bij Kluslijst-klusjes), start
+  // standaard om 10:00, net als de Kluslijst-suggestie.
+  function voegHuishoudTaakAlsBlokToe(taak) {
+    const starttijd = '10:00';
+    const eindtijd = pasTijdAan(starttijd, 30);
+    const nieuwBlok = {
+      titel: taak.tekst, type: 'huishouden', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: taak.id,
+    };
+    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
+      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
+      return;
+    }
+    blokken.voegToe(nieuwBlok);
+    toonToast(`"${taak.tekst}" toegevoegd aan de Agenda`, 'ok');
   }
 
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
@@ -117,10 +182,32 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
     setWeergave('dag');
   }
 
-  function nieuwBlokOpslaan(blok) {
-    blokken.voegToe(blok);
+  function nieuwBlokFormOpenen() {
+    setBewerkBlok(null);
+    setToonForm(true);
+  }
+
+  function bewerkBlokFormOpenen(blok) {
+    setBewerkBlok(blok);
+    setToonForm(true);
+  }
+
+  function blokOpslaan(blok) {
+    if (bewerkBlok) blokken.bewerk(bewerkBlok.id, blok);
+    else blokken.voegToe(blok);
     setToonForm(false);
-    toonToast('Blok toegevoegd', 'ok');
+    setBewerkBlok(null);
+    toonToast(bewerkBlok ? 'Blok gewijzigd' : 'Blok toegevoegd', 'ok');
+  }
+
+  // Voorkomt dubbele/overlappende tijdvakken (zie heeftOverlap) — negeert
+  // het eigen blok bij het bewerken, anders zou het altijd tegen zichzelf
+  // aanlopen.
+  function valideerBlok(kandidaat) {
+    if (heeftOverlap(blokken.blokken, kandidaat, bewerkBlok?.id ?? null)) {
+      return 'Dit tijdvak overlapt met een al gepland blok. Kies een andere tijd.';
+    }
+    return null;
   }
 
   const periodeLabel = weergave === 'maand'
@@ -163,24 +250,33 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             blokInstanties={blokInstanties}
             signalen={signalen}
             onVerwijderBlok={blokken.verwijder}
-            onNieuwBlok={() => setToonForm(true)}
+            onBewerkBlok={bewerkBlokFormOpenen}
+            onNieuwBlok={nieuwBlokFormOpenen}
             dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
             onZetDagTypeOverride={zetDagTypeOverride}
             onNavigeer={onNavigeer}
             openKlusjes={openKlusjes}
             onVoegKlusjeToe={voegKlusjeAlsBlokToe}
             onVoegTrainingToe={voegTrainingAlsBlokToe}
+            openHuishoudTaken={openHuishoudTaken}
+            onVoegHuishoudTaakToe={voegHuishoudTaakAlsBlokToe}
           />
         )}
       </div>
 
       {weergave !== 'dag' && (
-        <button className="btn btn-g btn-full" onClick={() => setToonForm(true)}>+ Blok toevoegen</button>
+        <button className="btn btn-g btn-full" onClick={nieuwBlokFormOpenen}>+ Blok toevoegen</button>
       )}
 
       {toonForm && (
-        <Modal titel="Nieuw blok" onClose={() => setToonForm(false)}>
-          <AgendaBlokForm initieleDatum={referentieDatum} onOpslaan={nieuwBlokOpslaan} onAnnuleren={() => setToonForm(false)} />
+        <Modal titel={bewerkBlok ? 'Blok bewerken' : 'Nieuw blok'} onClose={() => { setToonForm(false); setBewerkBlok(null); }}>
+          <AgendaBlokForm
+            initieleDatum={referentieDatum}
+            bewerkBlok={bewerkBlok}
+            valideer={valideerBlok}
+            onOpslaan={blokOpslaan}
+            onAnnuleren={() => { setToonForm(false); setBewerkBlok(null); }}
+          />
         </Modal>
       )}
     </div>

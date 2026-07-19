@@ -13,6 +13,7 @@ const CATEGORIEEN = [
 
 function NieuwGerechtForm({ onOpslaan, onAnnuleren }) {
   const [naam, setNaam] = useState('');
+  const [bereiding, setBereiding] = useState('');
   const [ingredienten, setIngredienten] = useState('');
   const [optioneel, setOptioneel] = useState('');
   const [kruiden, setKruiden] = useState('');
@@ -23,6 +24,7 @@ function NieuwGerechtForm({ onOpslaan, onAnnuleren }) {
     if (!naam.trim() || ingredientenLijst.length === 0) return;
     onOpslaan({
       naam: naam.trim(),
+      bereiding: bereiding.trim(),
       ingredienten: ingredientenLijst,
       optioneel: parseSpraakTekst(optioneel),
       kruiden: parseSpraakTekst(kruiden),
@@ -34,6 +36,17 @@ function NieuwGerechtForm({ onOpslaan, onAnnuleren }) {
       <div className="ti-veld-grp">
         <label className="ti-lbl" htmlFor="ger-naam">Naam van het gerecht</label>
         <input id="ger-naam" className="ti-veld" value={naam} onChange={(e) => setNaam(e.target.value)} placeholder="bijv. Kip wraps" />
+      </div>
+      <div className="ti-veld-grp">
+        <label className="ti-lbl" htmlFor="ger-bereiding">Korte bereidingswijze (optioneel)</label>
+        <textarea
+          id="ger-bereiding"
+          className="ti-veld"
+          rows={3}
+          value={bereiding}
+          onChange={(e) => setBereiding(e.target.value)}
+          placeholder="bijv. Kipfilet bakken, groenten roerbakken, alles vullen in de wraps..."
+        />
       </div>
       <div className="ti-veld-grp">
         <label className="ti-lbl">Ingrediënten (één per regel, komma of &quot;en&quot;)</label>
@@ -60,6 +73,7 @@ function NieuwGerechtForm({ onOpslaan, onAnnuleren }) {
 // alles-of-niets). De selectie wordt na het toevoegen weer geleegd.
 function GerechtDetails({ gerecht, boodschappen, toonToast }) {
   const [selectie, setSelectie] = useState(() => new Set());
+  const [toonBereiding, setToonBereiding] = useState(false);
 
   function sleutel(categorie, tekst) {
     return `${categorie}:${tekst}`;
@@ -87,6 +101,19 @@ function GerechtDetails({ gerecht, boodschappen, toonToast }) {
 
   return (
     <div className="hhp-details">
+      {gerecht.bereiding && (
+        <div style={{ marginBottom: 'var(--space-sm)' }}>
+          <button
+            type="button"
+            className="bd-inklap-knop"
+            onClick={() => setToonBereiding((v) => !v)}
+          >
+            <span className="ti-lbl" style={{ marginBottom: 0 }}>🍳 Bereiding</span>
+            <span aria-hidden="true">{toonBereiding ? '▲' : '▼'}</span>
+          </button>
+          {toonBereiding && <p className="of-stap-tekst" style={{ marginTop: 'var(--space-xs)' }}>{gerecht.bereiding}</p>}
+        </div>
+      )}
       {CATEGORIEEN.map(({ key, label }) => {
         const items = gerecht[key] ?? [];
         if (items.length === 0) return null;

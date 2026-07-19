@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/mindfulness/meditatie.js';
 import { speelFragment } from '../../lib/geluid/fragmenten.js';
+import { MEDITATIE_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
 import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
+import { useMeditatieAudioSpeler } from '../../hooks/useMeditatieAudioSpeler.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
 import HandsFreeKnop from '../ui/HandsFreeKnop.jsx';
@@ -21,12 +23,18 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
+  const [audioAan, setAudioAan] = useState(false);
   const intervalRef = useRef(null);
   const geluidGespeeldRef = useRef(false);
+  const meditatieAudioRef = useRef(null);
   const spraak = useSpraakVoorlezer();
 
   const totaleSeconden = duurMinuten * 60;
   const klaar = gestart && elapsed >= totaleSeconden;
+
+  useMeditatieAudioSpeler(meditatieAudioRef, {
+    actief: gestart && !klaar, audioAan, pad: MEDITATIE_AUDIO_PAD[duurMinuten],
+  });
 
   useEffect(() => {
     if (!gestart || klaar) return undefined;
@@ -78,12 +86,22 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className={`btn btn-sm ${audioAan ? 'btn-p' : 'btn-g'}`}
+            style={{ marginBottom: 'var(--space-sm)' }}
+            onClick={() => setAudioAan((v) => !v)}
+          >
+            {audioAan ? '🔊 Meditatie-audio aan' : '🔇 Meditatie-audio uit'}
+          </button>
           <div className="of-acties">
             <button className="btn btn-text" onClick={onKlaar}>Terug</button>
             <button className="btn btn-p btn-full" onClick={() => setGestart(true)}>Start</button>
           </div>
         </>
       )}
+
+      <audio ref={meditatieAudioRef} preload="none" />
 
       {gestart && !klaar && fase && (
         <>

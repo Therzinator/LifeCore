@@ -15,9 +15,13 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
   const aangepasteTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'aangepast');
 
   useEffect(() => {
+    // Pas draaien zodra de echte taken + schemas geladen zijn — anders ziet
+    // dit de nog-lege initiële state en upsert het een lege toewijzing over
+    // een al bestaand schema heen (zie useHuishoudWeekschema.geladen).
+    if (!huishoudTaken.geladen || !weekschema.geladen) return;
     weekschema.zorgVoorWeekschema(wekelijkseTaken);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount checken/bootstrappen; latere taak-toevoegingen hoeven geen nieuwe generatie te triggeren (zie useHuishoudWeekschema).
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij het geladen worden checken/bootstrappen; latere taak-toevoegingen hoeven geen nieuwe generatie te triggeren (zie useHuishoudWeekschema).
+  }, [huishoudTaken.geladen, weekschema.geladen]);
 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
