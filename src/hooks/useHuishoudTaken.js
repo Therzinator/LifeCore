@@ -1,6 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { huidigePeriodeKey } from '../lib/werk/huishoudPeriode.js';
+import {
+  haalTaken, voegTakenToe as voegTakenToeGedeeld, verwijderTaak as verwijderTaakGedeeld,
+  haalLog, toggleDezePeriode as toggleDezePeriodeGedeeld, abonneerOpTaken, rijNaarTaak, logRijenNaarMap,
+} from '../lib/supabase/huishoudGedeeld.js';
 
 function leegRecord() {
   return nieuwRecord({ taken: [], log: {} });
@@ -13,10 +17,37 @@ function nieuweId() {
 // Log is per taak-id een map van periodeKey -> voltooid, dus geschiedenis
 // van eerdere weken/maanden blijft altijd staan (nooit overschreven) — een
 // gemiste periode wordt gewoon niet gezet, niet als "mislukt" gemarkeerd.
-export function useHuishoudTaken() {
-  const [record, setRecordState] = useState(() => leesLokaal('huishoud_taken', leegRecord()));
+//
+// huishoudenId === null: exact het oorspronkelijke gedrag (lokale blob).
+// huishoudenId gezet: taken + log leven in de gedeelde tabellen, live
+// bijgehouden via Realtime.
+export function useHuishoudTaken(huishoudenId = null, userId = null) {
+  const [record, setRecordState] = useState(() => (
+    huishoudenId ? leegRecord() : leesLokaal('huishoud_taken', leegRecord())
+  ));
+
+  useEffect(() => {
+    if (!huishoudenId) return undefined;
+
+    let actief = true;
+    async function laad() {
+      const taken = await haalTaken(huishoudenId);
+      const log = await haalLog(taken.map((t) => t.id));
+      if (actief) setRecordState(nieuwRecord({ taken: taken.map(rijNaarTaak), log: logRijenNaarMap(log) }));
+    }
+    laad();
+    const stopAbonnement = abonneerOpTaken(huishoudenId, laad);
+    return () => { actief = false; stopAbonnement(); };
+  }, [huishoudenId]);
 
   const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null) => {
+    if (huishoudenId) {
+      voegTakenToeGedeeld(teksten.map((tekst) => ({
+        huishouden_id: huishoudenId, tekst, frequentie, interval_dagen: frequentie === 'aangepast' ? intervalDagen : null,
+      })));
+      return;
+    }
+
     setRecordState((huidig) => {
       const nieuwe = teksten.map((tekst) => ({
         id: nieuweId(), tekst, frequentie, intervalDagen: frequentie === 'aangepast' ? intervalDagen : null,
@@ -25,11 +56,17 @@ export function useHuishoudTaken() {
       schrijfLokaal('huishoud_taken', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId]);
 
   const toggleDezePeriode = useCallback((taakId, frequentie, intervalDagen = null) => {
+    const periode = huidigePeriodeKey(frequentie, new Date(), intervalDagen);
+
+    if (huishoudenId) {
+      toggleDezePeriodeGedeeld(taakId, periode, userId);
+      return;
+    }
+
     setRecordState((huidig) => {
-      const periode = huidigePeriodeKey(frequentie, new Date(), intervalDagen);
       const log = { ...(huidig.log ?? {}) };
       const taakLog = { ...(log[taakId] ?? {}) };
       taakLog[periode] = !taakLog[periode];
@@ -38,15 +75,20 @@ export function useHuishoudTaken() {
       schrijfLokaal('huishoud_taken', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId, userId]);
 
   const verwijder = useCallback((id) => {
+    if (huishoudenId) {
+      verwijderTaakGedeeld(id);
+      return;
+    }
+
     setRecordState((huidig) => {
       const bijgewerkt = nieuwRecord({ ...huidig, taken: huidig.taken.filter((t) => t.id !== id) });
       schrijfLokaal('huishoud_taken', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId]);
 
   return { taken: record.taken ?? [], log: record.log ?? {}, voegMeerdereToe, toggleDezePeriode, verwijder };
 }

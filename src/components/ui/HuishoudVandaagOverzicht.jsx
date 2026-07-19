@@ -8,13 +8,13 @@ import './VandaagOverzicht.css';
 
 // Zelfde plek/patroon als VandaagOverzicht (Agenda) — zichtbaar bij het
 // openen van de app, zodat de huishoud-planning niet wegvalt tenzij je zelf
-// naar Werk -> Huishouden navigeert. Bootstrapt/ververst hier ook het
+// naar Thuis -> Huishouden navigeert. Bootstrapt/ververst hier ook het
 // weekschema (zie useHuishoudWeekschema) — dit scherm is voor de meeste
 // gebruikers het allereerste dat ze zien bij het openen van de app.
-export default function HuishoudVandaagOverzicht({ onOpenWerk }) {
+export default function HuishoudVandaagOverzicht({ onOpenThuis, huishoudenId }) {
   const vandaag = datumKey();
-  const huishoudTaken = useHuishoudTaken();
-  const weekschema = useHuishoudWeekschema();
+  const huishoudTaken = useHuishoudTaken(huishoudenId);
+  const weekschema = useHuishoudWeekschema(huishoudenId);
   const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function HuishoudVandaagOverzicht({ onOpenWerk }) {
   if (wekelijkseTaken.length === 0) return null;
 
   return (
-    <button type="button" className="vo-wrap" onClick={onOpenWerk}>
+    <button type="button" className="vo-wrap" onClick={onOpenThuis}>
       <div className="vo-titel">Huishouden vandaag</div>
       {takenVandaag.length === 0 && <p className="vo-leeg">Niets gepland vandaag.</p>}
       {takenVandaag.length > 0 && (

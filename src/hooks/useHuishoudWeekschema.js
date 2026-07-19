@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { maandagVan, dagIndexVan, datumKey } from '../utils/datum.js';
 import { genereerWeekschema } from '../lib/werk/huishoudWeekschema.js';
+import {
+  haalWeekschemas, upsertWeekschema, verwijderOudeWeekschemas, abonneerOpWeekschema, rijNaarWeekschema,
+} from '../lib/supabase/huishoudGedeeld.js';
 
 function leegRecord() {
   return nieuwRecord({ schemas: [] }); // [{ weekMaandag, toewijzing: {taakId: dagIndex} }]
@@ -16,8 +19,27 @@ function volgendeMaandag(vandaagIso) {
 // Eén week-schema per week (niet per taak permanent) — zo blijft "welke dag
 // deze week" losstaand van "welke dag normaal", en is elke week apart
 // aanpasbaar zonder een terugkerend patroon te verstoren.
-export function useHuishoudWeekschema() {
-  const [record, setRecordState] = useState(() => leesLokaal('huishoud_weekschema', leegRecord()));
+//
+// huishoudenId === null: exact het oorspronkelijke gedrag (lokale blob).
+// huishoudenId gezet: schema's leven in de gedeelde huishoud_weekschema-
+// tabel, live bijgehouden via Realtime.
+export function useHuishoudWeekschema(huishoudenId = null) {
+  const [record, setRecordState] = useState(() => (
+    huishoudenId ? leegRecord() : leesLokaal('huishoud_weekschema', leegRecord())
+  ));
+
+  useEffect(() => {
+    if (!huishoudenId) return undefined;
+
+    let actief = true;
+    async function laad() {
+      const rijen = await haalWeekschemas(huishoudenId);
+      if (actief) setRecordState(nieuwRecord({ schemas: rijen.map(rijNaarWeekschema) }));
+    }
+    laad();
+    const stopAbonnement = abonneerOpWeekschema(huishoudenId, laad);
+    return () => { actief = false; stopAbonnement(); };
+  }, [huishoudenId]);
 
   // Zorgt dat de lopende week een schema heeft (bootstrap: de eerste keer,
   // of een gemiste zondag, hoeft niet te wachten tot de volgende zondag) en
@@ -28,6 +50,26 @@ export function useHuishoudWeekschema() {
   const zorgVoorWeekschema = useCallback((wekelijkseTaken) => {
     const vandaag = datumKey();
     const huidigeMaandag = maandagVan(vandaag);
+
+    if (huishoudenId) {
+      setRecordState((huidig) => {
+        const schemas = huidig.schemas ?? [];
+
+        if (!schemas.some((s) => s.weekMaandag === huidigeMaandag)) {
+          upsertWeekschema(huishoudenId, huidigeMaandag, genereerWeekschema(wekelijkseTaken));
+        }
+        if (dagIndexVan(vandaag) === 6) {
+          const nieuweMaandag = volgendeMaandag(vandaag);
+          if (!schemas.some((s) => s.weekMaandag === nieuweMaandag)) {
+            upsertWeekschema(huishoudenId, nieuweMaandag, genereerWeekschema(wekelijkseTaken));
+          }
+        }
+        verwijderOudeWeekschemas(huishoudenId, huidigeMaandag);
+
+        return huidig; // Realtime brengt de nieuwe/opgeschoonde staat terug.
+      });
+      return;
+    }
 
     setRecordState((huidig) => {
       let schemas = huidig.schemas ?? [];
@@ -54,9 +96,19 @@ export function useHuishoudWeekschema() {
       schrijfLokaal('huishoud_weekschema', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId]);
 
   const zetDag = useCallback((weekMaandag, taakId, dagIndex) => {
+    if (huishoudenId) {
+      setRecordState((huidig) => {
+        const schema = (huidig.schemas ?? []).find((s) => s.weekMaandag === weekMaandag);
+        const toewijzing = { ...(schema?.toewijzing ?? {}), [taakId]: dagIndex };
+        upsertWeekschema(huishoudenId, weekMaandag, toewijzing);
+        return huidig;
+      });
+      return;
+    }
+
     setRecordState((huidig) => {
       const schemas = (huidig.schemas ?? []).map((s) => (
         s.weekMaandag === weekMaandag ? { ...s, toewijzing: { ...s.toewijzing, [taakId]: dagIndex } } : s
@@ -65,7 +117,7 @@ export function useHuishoudWeekschema() {
       schrijfLokaal('huishoud_weekschema', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId]);
 
   const schemas = record.schemas ?? [];
   const vandaag = datumKey();

@@ -5,7 +5,7 @@ import HuishoudVandaagOverzicht from '../ui/HuishoudVandaagOverzicht.jsx';
 import { MODULES, gefilterdeCategorieen } from '../../lib/nav/modules.js';
 import './SnelkeuzeScherm.css';
 
-export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag, actieveModules }) {
+export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag, actieveModules, huishoudenId }) {
   const categorieen = gefilterdeCategorieen(actieveModules);
 
   return (
@@ -17,7 +17,7 @@ export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag, actieveModule
 
       <VandaagOverzicht onOpenAgenda={() => onKies('agenda')} />
       <WeekOverzicht onKiesDag={onKiesAgendaDag} />
-      <HuishoudVandaagOverzicht onOpenWerk={() => onKies('werk')} />
+      <HuishoudVandaagOverzicht onOpenThuis={() => onKies('thuis')} huishoudenId={huishoudenId} />
 
       {categorieen.map((categorie) => (
         <div className="sk-categorie" key={categorie.id}>

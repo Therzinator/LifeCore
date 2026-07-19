@@ -55,7 +55,10 @@ export default function Ontspullen({ ontspullen, toonToast }) {
                     {i.afgerond ? '✓' : ''}
                   </button>
                   <span className={`hh-tekst ${i.afgerond ? 'gedaan' : ''}`}>{i.tekst}</span>
-                  <button className="hh-verwijder" onClick={() => ontspullen.verwijder(i.id)}>✕</button>
+                  <button
+                    className="hh-verwijder"
+                    onClick={() => { if (window.confirm(`"${i.tekst}" verwijderen uit Ontspullen?`)) ontspullen.verwijder(i.id); }}
+                  >✕</button>
                 </div>
               ))}
             </div>

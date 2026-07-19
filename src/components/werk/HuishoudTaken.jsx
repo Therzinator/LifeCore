@@ -121,7 +121,10 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
-                <button className="hh-verwijder" onClick={() => huishoudTaken.verwijder(t.id)}>✕</button>
+                <button
+                  className="hh-verwijder"
+                  onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
+                >✕</button>
               </div>
             );
           })}
@@ -142,7 +145,10 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
-                <button className="hh-verwijder" onClick={() => huishoudTaken.verwijder(t.id)}>✕</button>
+                <button
+                  className="hh-verwijder"
+                  onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
+                >✕</button>
               </div>
             );
           })}
@@ -169,7 +175,10 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {t.tekst}
                   <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
                 </span>
-                <button className="hh-verwijder" onClick={() => huishoudTaken.verwijder(t.id)}>✕</button>
+                <button
+                  className="hh-verwijder"
+                  onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
+                >✕</button>
               </div>
             );
           })}

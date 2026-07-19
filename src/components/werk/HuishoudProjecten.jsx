@@ -151,6 +151,31 @@ function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onZ
   );
 }
 
+// Klusje toevoegen aan een BESTAAND project — projecten blijven altijd
+// bewerkbaar, niet alleen bij het aanmaken (zie NieuwProjectForm hierboven).
+function NieuwKlusjeInvoer({ projectId, onToevoegen }) {
+  const [tekst, setTekst] = useState('');
+
+  function voegToe() {
+    if (!tekst.trim()) return;
+    onToevoegen(projectId, tekst.trim());
+    setTekst('');
+  }
+
+  return (
+    <div className="hhp-stap-invoer">
+      <input
+        className="ti-veld"
+        value={tekst}
+        onChange={(e) => setTekst(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); voegToe(); } }}
+        placeholder="Nieuw klusje..."
+      />
+      <button type="button" className="btn btn-g btn-sm" onClick={voegToe} disabled={!tekst.trim()}>+ Klusje</button>
+    </div>
+  );
+}
+
 // "Taak kan pas na" — dropdown met de andere klusjes van hetzelfde project.
 // Geen cirkel-detectie (A vereist B, B vereist A) — bewust simpel, in het
 // ergste geval krijgt geen van beide een Agenda-suggestie, wat de
@@ -173,9 +198,9 @@ function VereisteKiezer({ projectId, klusje, andereKlusjes, onZet }) {
 
 function ProjectKaart({
   project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
-  onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
+  onToggleWerktaak, onOntkoppelWerktaak, onVoegKlusje, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
   onZetVereiste, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
-  onVoegFoto, onVerwijderFoto, userId, toonToast,
+  onVoegFoto, onVerwijderFoto, userId, huishoudenId, toonToast,
 }) {
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
   const [toonWerkvoorbereiding, setToonWerkvoorbereiding] = useState(false);
@@ -206,7 +231,14 @@ function ProjectKaart({
         >
           🛠 Werkvoorbereiding
         </button>
-        <button className="hh-verwijder" onClick={() => onVerwijderProject(project.id)}>✕</button>
+        <button
+          className="hh-verwijder"
+          onClick={() => {
+            if (window.confirm(`Project "${project.naam}" verwijderen? Dit verwijdert ook alle klusjes, stappen en foto's binnen dit project. Dit kan niet ongedaan worden gemaakt.`)) {
+              onVerwijderProject(project.id);
+            }
+          }}
+        >✕</button>
       </div>
 
       {toonWerkvoorbereiding && (
@@ -233,6 +265,8 @@ function ProjectKaart({
           <span className={`hhp-deadline-lbl ${dagen < 0 ? 'verlopen' : ''}`}>{deadlineTekst(dagen)}</span>
         )}
       </div>
+
+      <NieuwKlusjeInvoer projectId={project.id} onToevoegen={onVoegKlusje} />
 
       {perMaand.map(([maand, items]) => (
         <div key={maand} className="hhp-maand">
@@ -285,7 +319,12 @@ function ProjectKaart({
                     )}
                     <button
                       className="hh-verwijder"
-                      onClick={() => (isWerk ? onOntkoppelWerktaak(item.id) : onVerwijderKlusje(project.id, item.id))}
+                      onClick={() => {
+                        if (isWerk) { onOntkoppelWerktaak(item.id); return; }
+                        if (window.confirm(`Klusje "${item.tekst}" verwijderen? Inclusief eventuele stappen en foto's.`)) {
+                          onVerwijderKlusje(project.id, item.id);
+                        }
+                      }}
                       aria-label={isWerk ? 'Ontkoppel van project' : 'Verwijder klusje'}
                       title={isWerk ? 'Ontkoppel van project (taak blijft bestaan in Werktaken)' : undefined}
                     >✕</button>
@@ -310,6 +349,7 @@ function ProjectKaart({
                       />
                       <FotosLijst
                         userId={userId}
+                        huishoudenId={huishoudenId}
                         projectId={project.id}
                         klusjeId={item.id}
                         paden={item.fotos ?? []}
@@ -329,7 +369,7 @@ function ProjectKaart({
   );
 }
 
-export default function HuishoudProjecten({ projecten, werkTaken, toonToast, userId }) {
+export default function HuishoudProjecten({ projecten, werkTaken, toonToast, userId, huishoudenId }) {
   const [toonForm, setToonForm] = useState(false);
 
   function toevoegen(naam, aantalMaanden, klusjes, deadline) {
@@ -362,6 +402,7 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast, use
           onZetDeadline={projecten.zetDeadline}
           onToggleWerktaak={werkTaken.toggleKlaar}
           onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
+          onVoegKlusje={projecten.voegKlusjeToe}
           onVoegStapToe={projecten.voegSubklusjeToe}
           onToggleStap={projecten.toggleSubklusje}
           onZetStapUren={projecten.zetStapUren}
@@ -373,6 +414,7 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast, use
           onVoegFoto={projecten.voegFotoToe}
           onVerwijderFoto={projecten.verwijderFotoVanKlusje}
           userId={userId}
+          huishoudenId={huishoudenId}
           toonToast={toonToast}
         />
       ))}

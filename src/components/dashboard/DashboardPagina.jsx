@@ -13,12 +13,12 @@ function weekLabel(maandagIso) {
   return new Date(maandagIso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'numeric' });
 }
 
-export default function DashboardPagina() {
+export default function DashboardPagina({ huishoudenId }) {
   const geschiedenis = useTrainingGeschiedenis();
   const { instellingen: trainingInstellingen } = useTrainingInstellingen();
   const checklist = useCardioChecklist();
   const werkTaken = useWerkTaken();
-  const huishoudTaken = useHuishoudTaken();
+  const huishoudTaken = useHuishoudTaken(huishoudenId);
 
   const kracht = krachtPerWeek(geschiedenis.sessies);
   const overgangWeek = trainingInstellingen.programmaOvergangsdatum

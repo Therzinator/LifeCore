@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useThemaVoorkeur } from '../../hooks/useThemaVoorkeur.js';
-import { useHuishouden } from '../../hooks/useHuishouden.js';
 import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
 import './ProfielInstellingenModal.css';
 
@@ -126,8 +125,7 @@ function WachtwoordSectie({ auth }) {
   );
 }
 
-function HuishoudenSectie({ auth }) {
-  const huishouden = useHuishouden(auth.user?.id, auth.user?.email);
+function HuishoudenSectie({ auth, huishouden }) {
   const [naam, setNaam] = useState('');
   const [email, setEmail] = useState('');
   const [nieuweLink, setNieuweLink] = useState(null);
@@ -319,7 +317,7 @@ function AppSectie({ appUpdate }) {
   );
 }
 
-export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorkeuren, onUitgelogd }) {
+export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorkeuren, huishouden, onUitgelogd }) {
   const { profiel, bewaar } = usePersoonsProfiel();
   const { thema, setThema } = useThemaVoorkeur();
   const [tab, setTab] = useState('profiel');
@@ -428,7 +426,7 @@ export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorke
 
       {tab === 'modules' && <ModulesSectie moduleVoorkeuren={moduleVoorkeuren} />}
 
-      {tab === 'huishouden' && heeftAccountTab && <HuishoudenSectie auth={auth} />}
+      {tab === 'huishouden' && heeftAccountTab && <HuishoudenSectie auth={auth} huishouden={huishouden} />}
 
       {tab === 'account' && heeftAccountTab && <AccountSectie auth={auth} onUitgelogd={onUitgelogd} />}
 

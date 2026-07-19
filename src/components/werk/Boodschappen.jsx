@@ -58,7 +58,10 @@ export default function Boodschappen({ boodschappen, toonToast }) {
                 <span className="bd-aantal-val">{i.aantal}</span>
                 <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(i.id, i.aantal + 1)}>+</button>
               </div>
-              <button className="hh-verwijder" onClick={() => boodschappen.verwijder(i.id)}>✕</button>
+              <button
+                className="hh-verwijder"
+                onClick={() => { if (window.confirm(`"${i.tekst}" verwijderen van de boodschappenlijst?`)) boodschappen.verwijder(i.id); }}
+              >✕</button>
             </div>
           ))}
         </div>

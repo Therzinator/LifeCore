@@ -1,11 +1,11 @@
-.wkp-tabs {
+.thp-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
   margin-bottom: var(--space-md);
 }
 
-.wkp-tab {
+.thp-tab {
   flex-shrink: 0;
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -19,8 +19,8 @@
   transition: var(--tx);
   white-space: nowrap;
 }
-.wkp-tab:hover { color: var(--txt); }
-.wkp-tab.on {
+.thp-tab:hover { color: var(--txt); }
+.thp-tab.on {
   background: var(--accent-dim);
   border-color: var(--accent-mid);
   color: var(--accent);

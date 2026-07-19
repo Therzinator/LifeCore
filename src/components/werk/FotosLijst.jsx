@@ -7,7 +7,11 @@ import './FotosLijst.css';
 // Foto's per klusje, om te verduidelijken wat er precies moet gebeuren.
 // paden zijn Storage-paden (geen URL's, zie klusjeFotos.js) — elke
 // weergave haalt zelf een verse signed URL op.
-export default function FotosLijst({ userId, projectId, klusjeId, paden, onVoegToe, onVerwijder, toonToast }) {
+export default function FotosLijst({ userId, huishoudenId, projectId, klusjeId, paden, onVoegToe, onVerwijder, toonToast }) {
+  // Zodra een project bij een huishouden hoort, uploadt een foto onder het
+  // huishouden-pad (RLS staat dan leesbaarheid toe voor elk lid) i.p.v.
+  // onder de eigen user_id — zie migratie 0013.
+  const scopeId = huishoudenId ?? userId;
   const [urls, setUrls] = useState({});
   const [bezig, setBezig] = useState(false);
   const [uitgelicht, setUitgelicht] = useState(null);
@@ -32,7 +36,7 @@ export default function FotosLijst({ userId, projectId, klusjeId, paden, onVoegT
     setBezig(true);
     try {
       const verwerkt = await verwerkFoto(bestand);
-      const pad = await uploadFoto(userId, klusjeId, verwerkt);
+      const pad = await uploadFoto(scopeId, klusjeId, verwerkt);
       if (pad) {
         onVoegToe(projectId, klusjeId, pad);
         toonToast('Foto toegevoegd', 'ok');

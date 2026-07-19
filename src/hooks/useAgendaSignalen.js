@@ -15,8 +15,8 @@ import {
 // instantie nodig (om overrides te kunnen zetten), en twee losse hook-
 // instanties van dezelfde useState-gebaseerde hook synchroniseren niet met
 // elkaar: de schrijvende instantie zou hier niet in gereflecteerd worden.
-export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}) {
-  const huishoudProjecten = useHuishoudProjecten();
+export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}, huishoudenId = null) {
+  const huishoudProjecten = useHuishoudProjecten(huishoudenId);
   const { instellingen: welzijnInstellingen } = useWelzijnInstellingen();
   const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
   const { instellingen: werkInstellingen } = useWerkInstellingen();

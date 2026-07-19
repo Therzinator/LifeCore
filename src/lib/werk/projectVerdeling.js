@@ -55,18 +55,71 @@ export function berekenGeschatteUren(klusje) {
   return stappen.reduce((som, s) => som + (s.duurUren ?? 0.5), 0);
 }
 
+// Verwerkingsvolgorde die 'Taak kan pas na' (vereistKlusjeId) respecteert:
+// Kahn's topologische sortering, met LPT (zwaarste eerst) als tiebreak
+// tussen klusjes die op hetzelfde moment 'vrij' zijn — dit is 'list
+// scheduling met precedence constraints' (Graham, 1966), de standaard
+// uitbreiding van LPT zodra taken een onderlinge volgorde-eis hebben, geen
+// zelfverzonnen heuristiek. Een vereiste die niet bestaat of een cirkel
+// vormt blijft bewust zonder crash gewoon achteraan hangen — zie ook
+// isGeblokkeerd's toelichting: geen cirkel-detectie, in het ergste geval
+// mist één klusje een optimale plek, dat herstelt de gebruiker zelf door
+// de vereiste los te koppelen.
+function topologischeVolgorde(klusjes) {
+  const byId = new Map(klusjes.map((k) => [k.id, k]));
+  const afhankelijken = new Map(klusjes.map((k) => [k.id, []]));
+  const inDegree = new Map(klusjes.map((k) => [k.id, 0]));
+
+  klusjes.forEach((k) => {
+    if (k.vereistKlusjeId && byId.has(k.vereistKlusjeId)) {
+      afhankelijken.get(k.vereistKlusjeId).push(k.id);
+      inDegree.set(k.id, 1);
+    }
+  });
+
+  const wachtrij = klusjes.filter((k) => inDegree.get(k.id) === 0);
+  const verwerkt = new Set();
+  const resultaat = [];
+
+  while (wachtrij.length > 0) {
+    wachtrij.sort((a, b) => (b.geschatteUren ?? 1) - (a.geschatteUren ?? 1));
+    const volgende = wachtrij.shift();
+    if (verwerkt.has(volgende.id)) continue;
+    verwerkt.add(volgende.id);
+    resultaat.push(volgende);
+    (afhankelijken.get(volgende.id) ?? []).forEach((afhankelijkeId) => {
+      const nieuw = (inDegree.get(afhankelijkeId) ?? 0) - 1;
+      inDegree.set(afhankelijkeId, nieuw);
+      if (nieuw <= 0 && !verwerkt.has(afhankelijkeId)) wachtrij.push(byId.get(afhankelijkeId));
+    });
+  }
+
+  klusjes.forEach((k) => { if (!verwerkt.has(k.id)) resultaat.push(k); });
+  return resultaat;
+}
+
 export function verdeelKlusjesOverMaanden(klusjes, aantalMaanden, startMaand) {
   const maanden = Array.from({ length: Math.max(1, aantalMaanden) }, (_, i) => ({
+    index: i,
     maand: maandOffset(startMaand, i),
     belasting: 0,
   }));
 
-  const gesorteerd = [...klusjes].sort((a, b) => (b.geschatteUren ?? 1) - (a.geschatteUren ?? 1));
+  const maandIndexPerId = {};
 
-  return gesorteerd.map((klusje) => {
-    const lichtsteMaand = maanden.reduce((min, m) => (m.belasting < min.belasting ? m : min), maanden[0]);
-    lichtsteMaand.belasting += klusje.geschatteUren ?? 1;
-    return { ...klusje, maand: lichtsteMaand.maand };
+  return topologischeVolgorde(klusjes).map((klusje) => {
+    // Een klusje mag nooit vóór zijn vereiste ingepland staan — de vereiste
+    // is (dankzij de topologische volgorde hierboven) al verwerkt en heeft
+    // dus al een maand-index, die hier als ondergrens dient. Zo schuift de
+    // vereiste zelf altijd even ver naar voren als nodig, i.p.v. dat de
+    // afhankelijke klus er willekeurig vóór kan belanden.
+    const vereisteIndex = klusje.vereistKlusjeId ? maandIndexPerId[klusje.vereistKlusjeId] : undefined;
+    const minIndex = vereisteIndex ?? 0;
+    const kandidaten = maanden.filter((m) => m.index >= minIndex);
+    const doelMaand = kandidaten.reduce((min, m) => (m.belasting < min.belasting ? m : min), kandidaten[0]);
+    doelMaand.belasting += klusje.geschatteUren ?? 1;
+    maandIndexPerId[klusje.id] = doelMaand.index;
+    return { ...klusje, maand: doelMaand.maand };
   });
 }
 

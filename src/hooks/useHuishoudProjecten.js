@@ -1,6 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { verdeelKlusjesOverMaanden, berekenGeschatteUren } from '../lib/werk/projectVerdeling.js';
+import {
+  haalProjecten, maakProject, werkProjectBij, verwijderProject as verwijderProjectGedeeld,
+  abonneerOpProjecten, rijNaarProject,
+} from '../lib/supabase/kluslijstGedeeld.js';
 
 function leegRecord() {
   return nieuwRecord({ projecten: [] });
@@ -47,8 +51,46 @@ function bijwerkStappen(projecten, projectId, klusjeId, updater) {
   return bijgewerkt.map((p) => (p.id === projectId ? herverdeel(p) : p));
 }
 
-export function useHuishoudProjecten() {
-  const [record, setRecordState] = useState(() => leesLokaal('huishoud_projecten', leegRecord()));
+// huishoudenId === null: exact het oorspronkelijke gedrag (lokale blob).
+// huishoudenId gezet: projecten leven in de gedeelde kluslijst_projecten-
+// tabel, live bijgehouden via Realtime — dezelfde reducer-logica hierboven
+// blijft de bron van waarheid voor de VORM van een wijziging, alleen de
+// opslag-stap (bewaar()) wisselt van pad.
+export function useHuishoudProjecten(huishoudenId = null, userId = null) {
+  const [record, setRecordState] = useState(() => (
+    huishoudenId ? leegRecord() : leesLokaal('huishoud_projecten', leegRecord())
+  ));
+
+  useEffect(() => {
+    if (!huishoudenId) return undefined;
+
+    let actief = true;
+    async function laad() {
+      const rijen = await haalProjecten(huishoudenId);
+      if (actief) setRecordState(nieuwRecord({ projecten: rijen.map(rijNaarProject) }));
+    }
+    laad();
+    const stopAbonnement = abonneerOpProjecten(huishoudenId, laad);
+    return () => { actief = false; stopAbonnement(); };
+  }, [huishoudenId]);
+
+  // Slaat één gewijzigd project op — lokaal (hele blob herschrijven) of
+  // gedeeld (alleen dat project-record patchen in Supabase). Wordt door elke
+  // mutator hieronder aangeroepen i.p.v. rechtstreeks schrijfLokaal.
+  const bewaar = useCallback((bijgewerkt, gewijzigdProjectId) => {
+    if (huishoudenId) {
+      const project = bijgewerkt.projecten.find((p) => p.id === gewijzigdProjectId);
+      if (project) {
+        werkProjectBij(project.id, {
+          klusjes: project.klusjes,
+          werkvoorbereiding: project.werkvoorbereiding,
+          deadline: project.deadline,
+        });
+      }
+    } else {
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+    }
+  }, [huishoudenId]);
 
   const voegProjectToe = useCallback((naam, aantalMaanden, klusjeTeksten, deadline = null) => {
     setRecordState((huidig) => {
@@ -60,21 +102,48 @@ export function useHuishoudProjecten() {
         id: nieuweId('proj'), naam, aantalMaanden, startMaand: huidigeMaandKey(), deadline,
         aangemaaktOp: new Date().toISOString(), klusjes, werkvoorbereiding: [],
       });
+
+      if (huishoudenId) {
+        // Geen optimistische toevoeging: het echte record (met zijn db-id)
+        // komt terug via de Realtime-subscriptie zodra de insert lukt —
+        // anders zou er kortstondig een dubbel project staan.
+        maakProject(huishoudenId, userId, nieuw);
+        return huidig;
+      }
+
       const projecten = [...(huidig.projecten ?? []), nieuw];
       const bijgewerkt = nieuwRecord({ projecten });
       schrijfLokaal('huishoud_projecten', bijgewerkt);
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId, userId]);
 
   const zetDeadline = useCallback((projectId, deadline) => {
     setRecordState((huidig) => {
       const projecten = huidig.projecten.map((p) => (p.id === projectId ? { ...p, deadline } : p));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
+
+  // Nieuw klusje aan een BESTAAND project toevoegen — projecten blijven
+  // altijd bewerkbaar, niet alleen op het moment van aanmaken.
+  const voegKlusjeToe = useCallback((projectId, tekst, geschatteUren = 1) => {
+    setRecordState((huidig) => {
+      const projecten = huidig.projecten.map((p) => {
+        if (p.id !== projectId) return p;
+        const nieuwKlusje = {
+          id: nieuweId('kl'), tekst, geschatteUren, afgerond: false, afgerondOp: null, subklusjes: [],
+          vereistKlusjeId: null, fotos: [],
+        };
+        return herverdeel({ ...p, klusjes: [...p.klusjes, nieuwKlusje] });
+      });
+      const bijgewerkt = nieuwRecord({ projecten });
+      bewaar(bijgewerkt, projectId);
+      return bijgewerkt;
+    });
+  }, [bewaar]);
 
   const toggleKlusje = useCallback((projectId, klusjeId) => {
     setRecordState((huidig) => {
@@ -88,10 +157,10 @@ export function useHuishoudProjecten() {
         return { ...p, klusjes };
       });
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const zetGeschatteUren = useCallback((projectId, klusjeId, uren) => {
     setRecordState((huidig) => {
@@ -101,10 +170,10 @@ export function useHuishoudProjecten() {
         return herverdeel({ ...p, klusjes });
       });
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const verwijderKlusje = useCallback((projectId, klusjeId) => {
     setRecordState((huidig) => {
@@ -118,10 +187,10 @@ export function useHuishoudProjecten() {
         return herverdeel({ ...p, klusjes });
       });
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   // Taakvolgorde — een klusje kan pas 'op te pakken' zijn als een ander
   // klusje uit hetzelfde project al is afgerond. Blokkeert bewust NIET het
@@ -133,10 +202,10 @@ export function useHuishoudProjecten() {
     setRecordState((huidig) => {
       const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, vereistKlusjeId }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   // Werkvoorbereiding — een losse checklist per PROJECT (niet per klusje)
   // voor bv. bouwmarkt-materiaal en zaagmaten, met een simpele check erbij.
@@ -149,10 +218,10 @@ export function useHuishoudProjecten() {
         werkvoorbereiding: [...(p.werkvoorbereiding ?? []), { id: nieuweId('wv'), tekst, afgerond: false }],
       } : p));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const toggleWerkvoorbereiding = useCallback((projectId, itemId) => {
     setRecordState((huidig) => {
@@ -161,10 +230,10 @@ export function useHuishoudProjecten() {
         werkvoorbereiding: (p.werkvoorbereiding ?? []).map((w) => (w.id === itemId ? { ...w, afgerond: !w.afgerond } : w)),
       } : p));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const verwijderWerkvoorbereiding = useCallback((projectId, itemId) => {
     setRecordState((huidig) => {
@@ -173,10 +242,10 @@ export function useHuishoudProjecten() {
         werkvoorbereiding: (p.werkvoorbereiding ?? []).filter((w) => w.id !== itemId),
       } : p));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   // Foto's per klusje — alleen het Storage-pad wordt bewaard (zie
   // lib/supabase/klusjeFotos.js), niet een kant-en-klare URL: de bucket is
@@ -188,10 +257,10 @@ export function useHuishoudProjecten() {
         ...k, fotos: [...(k.fotos ?? []), pad],
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const verwijderFotoVanKlusje = useCallback((projectId, klusjeId, pad) => {
     setRecordState((huidig) => {
@@ -199,18 +268,22 @@ export function useHuishoudProjecten() {
         ...k, fotos: (k.fotos ?? []).filter((f) => f !== pad),
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const verwijderProject = useCallback((projectId) => {
     setRecordState((huidig) => {
       const bijgewerkt = nieuwRecord({ projecten: huidig.projecten.filter((p) => p.id !== projectId) });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      if (huishoudenId) {
+        verwijderProjectGedeeld(projectId);
+      } else {
+        schrijfLokaal('huishoud_projecten', bijgewerkt);
+      }
       return bijgewerkt;
     });
-  }, []);
+  }, [huishoudenId]);
 
   // Subklusjes ("stappen" in de UI) — een klusje verder opdelen in kleinere
   // stukjes voor extra grote taken. Elke stap draagt zijn eigen duurUren;
@@ -227,10 +300,10 @@ export function useHuishoudProjecten() {
         subklusjes: [...(k.subklusjes ?? []), { id: nieuweId('skl'), tekst, duurUren, afgerond: false, afgerondOp: null }],
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const toggleSubklusje = useCallback((projectId, klusjeId, subklusjeId) => {
     setRecordState((huidig) => {
@@ -243,10 +316,10 @@ export function useHuishoudProjecten() {
         }),
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const zetStapUren = useCallback((projectId, klusjeId, subklusjeId, duurUren) => {
     setRecordState((huidig) => {
@@ -257,10 +330,10 @@ export function useHuishoudProjecten() {
         )),
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   const verwijderSubklusje = useCallback((projectId, klusjeId, subklusjeId) => {
     setRecordState((huidig) => {
@@ -269,14 +342,15 @@ export function useHuishoudProjecten() {
         subklusjes: (k.subklusjes ?? []).filter((s) => s.id !== subklusjeId),
       }));
       const bijgewerkt = nieuwRecord({ projecten });
-      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      bewaar(bijgewerkt, projectId);
       return bijgewerkt;
     });
-  }, []);
+  }, [bewaar]);
 
   return {
     projecten: record.projecten ?? [],
     voegProjectToe,
+    voegKlusjeToe,
     zetDeadline,
     toggleKlusje,
     zetGeschatteUren,

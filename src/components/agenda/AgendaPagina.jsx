@@ -42,7 +42,7 @@ function bereikVoorWeergave(weergave, referentieDatum) {
   return { bereikStart: referentieDatum, bereikEind: referentieDatum };
 }
 
-export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onInitieleDatumGeconsumeerd }) {
+export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onInitieleDatumGeconsumeerd, huishoudenId }) {
   const [weergave, setWeergave] = useState(() => (initieleDatum ? 'dag' : 'maand'));
   const [referentieDatum, setReferentieDatum] = useState(() => initieleDatum ?? vandaagIso());
   const [toonForm, setToonForm] = useState(false);
@@ -55,14 +55,14 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const blokken = useAgendaBlokken();
   const { overrides: dagTypeOverrides, zetOverride: zetDagTypeOverride } = useDagTypeOverrides();
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
-  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides);
+  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides, huishoudenId);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
 
   // Alleen-lezen tweede instantie — zelfde precedent als de dubbele
   // useDagTypeOverrides-instantie (zie useAgendaSignalen.js): deze pagina
   // heeft de open-klusjeslijst nodig voor de Klusjes-dag-suggesties, los van
   // wat useAgendaSignalen zelf al intern gebruikt voor huishoudProjectSignalen.
-  const huishoudProjecten = useHuishoudProjecten();
+  const huishoudProjecten = useHuishoudProjecten(huishoudenId);
   const openKlusjes = huishoudProjecten.projecten
     .flatMap((p) => p.klusjes
       // Een klusje met een nog-openstaande vereiste (taakvolgorde, zie

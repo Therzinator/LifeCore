@@ -15,6 +15,7 @@ import TrainingPagina from './components/training/TrainingPagina.jsx';
 import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import WerkPagina from './components/werk/WerkPagina.jsx';
+import ThuisPagina from './components/thuis/ThuisPagina.jsx';
 import AgendaPagina from './components/agenda/AgendaPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
@@ -25,10 +26,11 @@ import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
 import { useModuleVoorkeuren } from './hooks/useModuleVoorkeuren.js';
+import { useHuishouden } from './hooks/useHuishouden.js';
 import { MODULES, MODULE_CATEGORIEEN } from './lib/nav/modules.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum, userId) {
+function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum, userId, huishoudenId) {
   switch (paginaId) {
     case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
@@ -37,7 +39,8 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
-    case 'werk': return <WerkPagina toonToast={toonToast} userId={userId} />;
+    case 'werk': return <WerkPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
+    case 'thuis': return <ThuisPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'agenda':
       return (
         <AgendaPagina
@@ -45,9 +48,10 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
           onNavigeer={setPagina}
           initieleDatum={agendaInitieleDatum}
           onInitieleDatumGeconsumeerd={wisAgendaInitieleDatum}
+          huishoudenId={huishoudenId}
         />
       );
-    case 'dashboard': return <DashboardPagina />;
+    case 'dashboard': return <DashboardPagina huishoudenId={huishoudenId} />;
     default: return null;
   }
 }
@@ -60,6 +64,12 @@ export default function App() {
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
   const moduleVoorkeuren = useModuleVoorkeuren();
+  // Opgetild i.p.v. alleen binnen ProfielInstellingenModal aangeroepen —
+  // anders lopen twee losse hook-instanties uit de pas (exact het
+  // bugpatroon dat moduleVoorkeuren eerder al opleverde). WerkPagina heeft
+  // dezelfde huishoudenId nodig om zijn 4 hooks in gedeelde modus te zetten.
+  const huishouden = useHuishouden(auth.user?.id, auth.user?.email);
+  const huishoudenId = huishouden.huishouden?.id ?? null;
   const [uitnodigingToken, setUitnodigingToken] = useState(
     () => new URLSearchParams(window.location.search).get('uitnodiging'),
   );
@@ -69,6 +79,10 @@ export default function App() {
     const url = new URL(window.location.href);
     url.searchParams.delete('uitnodiging');
     window.history.replaceState({}, '', url);
+    // Ná accepteren moet dit tabblad zijn eigen huishouden-state verversen
+    // — de opgetilde useHuishouden-instantie leest anders pas bij een
+    // volgende mount/userId-wijziging opnieuw.
+    huishouden.ververs();
   }
 
   // Zonder dit blijft de scrollpositie van de vorige module hangen (er is
@@ -144,11 +158,11 @@ export default function App() {
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <InstallBanner />
-        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren}>
+        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden}>
           <ErrorBoundary key={pagina}>
             {pagina === 'snelkeuze'
-              ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />
-              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id)}
+              ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} huishoudenId={huishoudenId} />
+              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId)}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
@@ -159,11 +173,11 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} />
+      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />}
-          {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
+          {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId)}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} actieveModules={moduleVoorkeuren.actieveModules} />

@@ -88,6 +88,37 @@ describe('verdeelKlusjesOverMaanden', () => {
     const perMaand = groepeerPerMaand(verdeeld);
     expect(perMaand).toHaveLength(2);
   });
+
+  it('plant een klusje nooit vóór zijn vereiste, ook al zou pure LPT dat wel doen', () => {
+    // 'b' is veruit het zwaarst en zou zonder de vereiste als eerste (dus
+    // vroegste maand) worden ingepland — maar 'b' vereist 'a', dus 'a' moet
+    // even ver naar voren schuiven en 'b' mag niet eerder dan 'a' liggen.
+    const klusjes = [
+      { id: 'a', geschatteUren: 1 },
+      { id: 'b', geschatteUren: 10, vereistKlusjeId: 'a' },
+      { id: 'c', geschatteUren: 5 },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 3, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('a') <= maandVan('b')).toBe(true);
+  });
+
+  it('respecteert een keten van vereisten (a -> b -> c)', () => {
+    const klusjes = [
+      { id: 'a', geschatteUren: 3 },
+      { id: 'b', geschatteUren: 8, vereistKlusjeId: 'a' },
+      { id: 'c', geschatteUren: 2, vereistKlusjeId: 'b' },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 4, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('a') <= maandVan('b')).toBe(true);
+    expect(maandVan('b') <= maandVan('c')).toBe(true);
+  });
+
+  it('negeert een vereiste die niet meer bestaat zonder te crashen', () => {
+    const klusjes = [{ id: 'a', geschatteUren: 2, vereistKlusjeId: 'weg' }];
+    expect(() => verdeelKlusjesOverMaanden(klusjes, 2, '2026-01')).not.toThrow();
+  });
 });
 
 describe('maandLabel', () => {

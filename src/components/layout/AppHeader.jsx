@@ -12,7 +12,7 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren }) {
+export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren, huishouden }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [toonProfiel, setToonProfiel] = useState(false);
@@ -41,7 +41,7 @@ export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren
       </div>
       {toonProfiel && (
         <Modal titel="Profiel & account" onClose={() => setToonProfiel(false)}>
-          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} onUitgelogd={() => setToonProfiel(false)} />
+          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden} onUitgelogd={() => setToonProfiel(false)} />
         </Modal>
       )}
     </header>

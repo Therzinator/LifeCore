@@ -3,6 +3,7 @@ import {
   haalMijnHuishouden, maakHuishouden, maakUitnodiging, haalUitnodigingenVoorHuishouden,
   trekUitnodigingIn, verwijderLid,
 } from '../lib/supabase/huishoudens.js';
+import { migreerNaarHuishouden } from '../lib/werk/huishoudMigratie.js';
 
 // Eén huishouden per gebruiker (v1, zie migratie 0003_huishoudens.sql).
 // 'Huishouden verlaten' heeft geen eigen actie — de UI roept verwijderLid
@@ -25,7 +26,11 @@ export function useHuishouden(userId, email) {
 
   const maakAan = useCallback(async (naam) => {
     if (!userId) return;
-    await maakHuishouden(email, naam);
+    const nieuw = await maakHuishouden(email, naam);
+    // Bestaande lokale data van de aanmaker verhuist eenmalig mee — een
+    // latere toetreder met eigen data wordt hier bewust NIET geraakt (die
+    // roept maakAan niet aan, alleen accepteerUitnodiging).
+    if (nieuw) await migreerNaarHuishouden(nieuw.id, userId);
     await ververs();
   }, [userId, email, ververs]);
 

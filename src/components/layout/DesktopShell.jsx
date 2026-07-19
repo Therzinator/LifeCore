@@ -14,7 +14,7 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function DesktopShell({ pagina, setPagina, auth, appUpdate, moduleVoorkeuren, children }) {
+export default function DesktopShell({ pagina, setPagina, auth, appUpdate, moduleVoorkeuren, huishouden, children }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [ingeklapt, setIngeklapt] = useState(() => leesLokaal('zijbalk_ingeklapt', false));
@@ -95,7 +95,7 @@ export default function DesktopShell({ pagina, setPagina, auth, appUpdate, modul
 
       {toonProfiel && (
         <Modal titel="Profiel & account" onClose={() => setToonProfiel(false)}>
-          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} onUitgelogd={() => setToonProfiel(false)} />
+          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden} onUitgelogd={() => setToonProfiel(false)} />
         </Modal>
       )}
     </div>
