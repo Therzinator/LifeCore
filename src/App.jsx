@@ -38,7 +38,7 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
     case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
-    case 'adhd': return <AdhdPagina toonToast={toonToast} />;
+    case 'adhd': return <AdhdPagina toonToast={toonToast} onNavigeer={setPagina} userId={userId} huishoudenId={huishoudenId} />;
     case 'werk': return <WerkPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'thuis': return <ThuisPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'agenda':

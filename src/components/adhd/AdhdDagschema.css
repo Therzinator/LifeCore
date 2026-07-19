@@ -1,0 +1,38 @@
+.adsc-tijdlijn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.adsc-blok {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+
+.adsc-werk { background: var(--bg-2); }
+
+.adsc-pauze {
+  background: none;
+  border-style: dashed;
+  border-color: var(--border-2);
+}
+.adsc-pauze.lang { border-color: var(--accent-mid); }
+
+.adsc-tijd {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  min-width: 92px;
+}
+
+.adsc-inhoud { flex: 1; min-width: 0; }
+
+.adsc-taak-tekst { font-size: var(--font-size-sm); overflow-wrap: break-word; }
+
+.adsc-pauze-tekst { font-size: var(--font-size-sm); color: var(--txt-muted); }

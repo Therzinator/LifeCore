@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDagdata } from '../../hooks/useDagdata.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
-import { dagLimiet, minutenTotStopmoment, middagAdvies } from '../../lib/adhd/dagLimiet.js';
+import { dagLimiet, minutenTotStopmoment, middagAdvies, effectieveEnergie } from '../../lib/adhd/dagLimiet.js';
 import { datumKey } from '../../utils/datum.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
@@ -22,8 +22,8 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
 
   const vandaagOverride = dagTypeOverrides[datumKey()] ?? null;
   const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
-  const effectieveEnergie = (adhdDag.dag.middagEnergie === 'laag' || focusMoetVerlagen) ? 'laag' : ochtendEnergie;
-  const limiet = dagLimiet(effectieveEnergie, instellingen.werkurenPerDag);
+  const huidigeEnergie = effectieveEnergie(ochtendEnergie, adhdDag.dag.middagEnergie, focusMoetVerlagen);
+  const limiet = dagLimiet(huidigeEnergie, instellingen.werkurenPerDag);
   const openTaken = adhdDag.dag.taken.filter((t) => !t.klaar).length;
   const takenPct = Math.min(100, Math.round((openTaken / limiet.taken) * 100));
 
@@ -67,8 +67,8 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
       <div className="card">
         <div className="ad-energie-rij">
           <span className="ad-energie-lbl">Energie vandaag</span>
-          <span className={`ad-energie-badge ${effectieveEnergie || 'onbekend'}`}>
-            {ENERGIE_LABEL[effectieveEnergie] ?? 'Nog niet ingevuld'}
+          <span className={`ad-energie-badge ${huidigeEnergie || 'onbekend'}`}>
+            {ENERGIE_LABEL[huidigeEnergie] ?? 'Nog niet ingevuld'}
           </span>
         </div>
         {!ochtendEnergie && <p className="ad-hint">Vul je energie in bij de ochtend-check-in voor een passende daglimiet.</p>}

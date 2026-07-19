@@ -29,3 +29,13 @@ const MIDDAG_ADVIES = {
 export function middagAdvies(niveau) {
   return MIDDAG_ADVIES[niveau] ?? null;
 }
+
+// Eén centrale plek voor 'welke energie tellen we nu echt' — een aanhoudende
+// uitputtingssignaal uit de Welzijn-check (kruismodule) of een handmatig
+// gezakte middagcheck telt allebei als laag, ongeacht wat de ochtend-
+// check-in zei. Was voorheen inline gedupliceerd in AdhdDashboard; ook het
+// Dagschema-tabblad heeft dezelfde berekening nodig.
+export function effectieveEnergie(ochtendEnergie, middagEnergie, focusMoetVerlagen) {
+  if (middagEnergie === 'laag' || focusMoetVerlagen) return 'laag';
+  return ochtendEnergie;
+}
