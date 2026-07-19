@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
-import { projectMaandOverzicht, maandLabel, dagenTotDeadline, isGeblokkeerd } from '../../lib/werk/projectVerdeling.js';
+import {
+  projectMaandOverzicht, maandLabel, dagenTotDeadline, isGeblokkeerd, alleItemsVanProject, vereisteOpties,
+} from '../../lib/werk/projectVerdeling.js';
 import { vandaagKey } from '../../utils/datum.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import WerkvoorbereidingLijst from './WerkvoorbereidingLijst.jsx';
 import FotosLijst from './FotosLijst.jsx';
+import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
 import './HuishoudProjecten.css';
 
 function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
@@ -106,30 +109,70 @@ function UrenVeld({ waarde, stap, onCommit }) {
 // Stapjes waarin een (extra groot) klusje verder opgeknipt kan worden — een
 // los, derde niveau onder project -> klusje. Bewust 'Stappen' genoemd i.p.v.
 // 'Subklusjes': die term is al in gebruik voor de klusjes van het project
-// zelf (zie NieuwProjectForm hierboven), dit voorkomt naamsverwarring.
-function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onZetUren, onVerwijderen }) {
+// zelf (zie NieuwProjectForm hierboven), dit voorkomt naamsverwarring. Elke
+// stap heeft nu ook zijn eigen ingeklapte 'Taak kan pas na' — een stap kan
+// net zo goed pas op te pakken zijn na een ander klusje (of diens stap).
+function StappenLijst({ project, klusjeId, stappen, onToevoegen, onToggle, onZetUren, onVerwijderen, onZetVereiste }) {
   const [tekst, setTekst] = useState('');
+  const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
+  const alleItems = alleItemsVanProject(project.klusjes);
 
   function voegToe() {
     if (!tekst.trim()) return;
-    onToevoegen(projectId, klusjeId, tekst.trim());
+    onToevoegen(project.id, klusjeId, tekst.trim());
     setTekst('');
+  }
+
+  function wisselUitgeklapt(id) {
+    setUitgeklapt((huidig) => {
+      const nieuw = new Set(huidig);
+      if (nieuw.has(id)) nieuw.delete(id); else nieuw.add(id);
+      return nieuw;
+    });
   }
 
   return (
     <div className="hhp-stappen">
       {stappen.map((s) => (
-        <div className="hhp-stap-item" key={s.id}>
-          <button className={`hh-check ${s.afgerond ? 'gedaan' : ''}`} onClick={() => onToggle(projectId, klusjeId, s.id)}>
-            {s.afgerond ? '✓' : ''}
-          </button>
-          <span className={`hh-tekst ${s.afgerond ? 'gedaan' : ''}`}>{s.tekst}</span>
-          <UrenVeld
-            waarde={s.duurUren ?? 0.5}
-            stap={0.25}
-            onCommit={(w) => onZetUren(projectId, klusjeId, s.id, w)}
-          />
-          <button className="hh-verwijder" onClick={() => onVerwijderen(projectId, klusjeId, s.id)}>✕</button>
+        <div key={s.id}>
+          <div className="hhp-stap-item">
+            <button className={`hh-check ${s.afgerond ? 'gedaan' : ''}`} onClick={() => onToggle(project.id, klusjeId, s.id)}>
+              {s.afgerond ? '✓' : ''}
+            </button>
+            <span className={`hh-tekst ${s.afgerond ? 'gedaan' : ''}`}>
+              {s.tekst}
+              {isGeblokkeerd(s, alleItems) && (
+                <span
+                  className="hhp-geblokkeerd"
+                  title={`Wacht op: ${alleItems.find((i) => i.id === s.vereistKlusjeId)?.tekst ?? ''}`}
+                > ⛔</span>
+              )}
+            </span>
+            <UrenVeld
+              waarde={s.duurUren ?? 0.5}
+              stap={0.25}
+              onCommit={(w) => onZetUren(project.id, klusjeId, s.id, w)}
+            />
+            <button
+              type="button"
+              className="hhp-stappen-toggle"
+              onClick={() => wisselUitgeklapt(s.id)}
+              aria-label="Taak kan pas na tonen of verbergen"
+              title="Taak kan pas na instellen"
+            >
+              {s.vereistKlusjeId ? '🔗' : '+'}
+            </button>
+            <button className="hh-verwijder" onClick={() => onVerwijderen(project.id, klusjeId, s.id)}>✕</button>
+          </div>
+          {uitgeklapt.has(s.id) && (
+            <div className="hhp-details">
+              <VereisteKiezer
+                waarde={s.vereistKlusjeId}
+                opties={vereisteOpties(project.klusjes, s.id, klusjeId)}
+                onZet={(vereistId) => onZetVereiste(project.id, klusjeId, s.id, vereistId)}
+              />
+            </div>
+          )}
         </div>
       ))}
       <div className="hhp-stap-invoer">
@@ -176,21 +219,20 @@ function NieuwKlusjeInvoer({ projectId, onToevoegen }) {
   );
 }
 
-// "Taak kan pas na" — dropdown met de andere klusjes van hetzelfde project.
-// Geen cirkel-detectie (A vereist B, B vereist A) — bewust simpel, in het
-// ergste geval krijgt geen van beide een Agenda-suggestie, wat de
-// gebruiker zelf meteen kan herstellen door de vereiste weer los te koppelen.
-function VereisteKiezer({ projectId, klusje, andereKlusjes, onZet }) {
+// "Taak kan pas na" — dropdown met de geldige opties (zie vereisteOpties):
+// andere klusjes én hun stappen, uit hetzelfde project. Generiek gehouden
+// (waarde/opties/onZet als props) zodat zowel een klusje als een stap 'm
+// kan gebruiken. Geen cirkel-detectie (A vereist B, B vereist A) — bewust
+// simpel, in het ergste geval krijgt geen van beide een Agenda-suggestie,
+// wat de gebruiker zelf meteen kan herstellen door de vereiste los te
+// koppelen.
+function VereisteKiezer({ waarde, opties, onZet }) {
   return (
     <div className="ti-veld-grp hhp-vereiste">
       <label className="ti-lbl">Taak kan pas na</label>
-      <select
-        className="ti-veld"
-        value={klusje.vereistKlusjeId ?? ''}
-        onChange={(e) => onZet(projectId, klusje.id, e.target.value || null)}
-      >
+      <select className="ti-veld" value={waarde ?? ''} onChange={(e) => onZet(e.target.value || null)}>
         <option value="">— geen vereiste —</option>
-        {andereKlusjes.map((k) => <option key={k.id} value={k.id}>{k.tekst}</option>)}
+        {opties.map((o) => <option key={o.id} value={o.id}>{o.tekst}</option>)}
       </select>
     </div>
   );
@@ -198,8 +240,9 @@ function VereisteKiezer({ projectId, klusje, andereKlusjes, onZet }) {
 
 function ProjectKaart({
   project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
-  onToggleWerktaak, onOntkoppelWerktaak, onVoegKlusje, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
-  onZetVereiste, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
+  onToggleWerktaak, onOntkoppelWerktaak, onVoegKlusje, onHernoemKlusje, onTogglePrioriteit,
+  onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
+  onZetVereiste, onZetVereisteStap, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
   onVoegFoto, onVerwijderFoto, userId, huishoudenId, toonToast,
 }) {
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
@@ -211,6 +254,10 @@ function ProjectKaart({
   const pct = totaal ? Math.round((afgerond / totaal) * 100) : 0;
   const perMaand = projectMaandOverzicht(project.klusjes, gekoppeldeWerktaken, project.aantalMaanden, project.startMaand);
   const dagen = dagenTotDeadline(project.deadline, vandaagKey());
+  // Platte lijst (klusjes + hun stappen) voor de isGeblokkeerd-badge en de
+  // 'Taak kan pas na'-opties — apart van 'alleItems' hierboven (die is voor
+  // de voortgangsteller en telt ook gekoppelde werktaken mee).
+  const alleProjectItems = alleItemsVanProject(project.klusjes);
 
   function wisselUitgeklapt(id) {
     setUitgeklapt((huidig) => {
@@ -286,12 +333,19 @@ function ProjectKaart({
                       {item.afgerond ? '✓' : ''}
                     </button>
                     <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
-                      {item.tekst}
+                      {isWerk ? item.tekst : (
+                        <BewerkbareTekst
+                          waarde={item.tekst}
+                          onWijzig={(t) => onHernoemKlusje(project.id, item.id, t)}
+                          label="Naam van het klusje"
+                        />
+                      )}
                       {isWerk && <span className="hhp-werk-badge"> · werk</span>}
-                      {!isWerk && isGeblokkeerd(item, project.klusjes) && (
+                      {!isWerk && item.prioriteit && <span className="hhp-prioriteit" title="Prioriteit (externe deadline)"> ⭐</span>}
+                      {!isWerk && isGeblokkeerd(item, alleProjectItems) && (
                         <span
                           className="hhp-geblokkeerd"
-                          title={`Wacht op: ${project.klusjes.find((k) => k.id === item.vereistKlusjeId)?.tekst ?? ''}`}
+                          title={`Wacht op: ${alleProjectItems.find((i) => i.id === item.vereistKlusjeId)?.tekst ?? ''}`}
                         > ⛔</span>
                       )}
                     </span>
@@ -305,6 +359,15 @@ function ProjectKaart({
                         stap={1}
                         onCommit={(w) => onZetUren(project.id, item.id, w)}
                       />
+                    )}
+                    {!isWerk && (
+                      <button
+                        type="button"
+                        className={`hhp-prioriteit-toggle ${item.prioriteit ? 'on' : ''}`}
+                        onClick={() => onTogglePrioriteit(project.id, item.id)}
+                        aria-label="Prioriteit wisselen"
+                        title="Prioriteit (bv. geleend gereedschap, weersomstandigheden) — gaat vóór op de planning"
+                      >★</button>
                     )}
                     {!isWerk && (
                       <button
@@ -333,19 +396,19 @@ function ProjectKaart({
                   {!isWerk && isUitgeklapt && (
                     <div className="hhp-details">
                       <VereisteKiezer
-                        projectId={project.id}
-                        klusje={item}
-                        andereKlusjes={project.klusjes.filter((k) => k.id !== item.id)}
-                        onZet={onZetVereiste}
+                        waarde={item.vereistKlusjeId}
+                        opties={vereisteOpties(project.klusjes, item.id, item.id)}
+                        onZet={(vereistId) => onZetVereiste(project.id, item.id, vereistId)}
                       />
                       <StappenLijst
-                        projectId={project.id}
+                        project={project}
                         klusjeId={item.id}
                         stappen={stappen}
                         onToevoegen={onVoegStapToe}
                         onToggle={onToggleStap}
                         onZetUren={onZetStapUren}
                         onVerwijderen={onVerwijderStap}
+                        onZetVereiste={onZetVereisteStap}
                       />
                       <FotosLijst
                         userId={userId}
@@ -403,11 +466,14 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast, use
           onToggleWerktaak={werkTaken.toggleKlaar}
           onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
           onVoegKlusje={projecten.voegKlusjeToe}
+          onHernoemKlusje={projecten.hernoemKlusje}
+          onTogglePrioriteit={projecten.togglePrioriteit}
           onVoegStapToe={projecten.voegSubklusjeToe}
           onToggleStap={projecten.toggleSubklusje}
           onZetStapUren={projecten.zetStapUren}
           onVerwijderStap={projecten.verwijderSubklusje}
           onZetVereiste={projecten.zetVereistKlusje}
+          onZetVereisteStap={projecten.zetVereisteStap}
           onVoegWerkvoorbereidingToe={projecten.voegWerkvoorbereidingToe}
           onToggleWerkvoorbereiding={projecten.toggleWerkvoorbereiding}
           onVerwijderWerkvoorbereiding={projecten.verwijderWerkvoorbereiding}

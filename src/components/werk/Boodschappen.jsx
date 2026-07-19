@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { relatieveTijd } from '../../utils/datum.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
+import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
 import './HuishoudTaken.css';
 import './Boodschappen.css';
 
@@ -50,7 +51,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
             <div className="hh-item" key={i.id}>
               <button className="hh-check" onClick={() => boodschappen.toggleGekocht(i.id)} aria-label="Markeer als gekocht" title="Gekocht" />
               <span className="hh-tekst">
-                {i.tekst}
+                <BewerkbareTekst waarde={i.tekst} onWijzig={(t) => boodschappen.hernoemItem(i.id, t)} label="Naam" />
                 <span className="hhp-werk-badge"> · {i.frequentie === 'week' ? 'wekelijks' : 'maandelijks'}</span>
               </span>
               <div className="bd-aantal-ctrl">

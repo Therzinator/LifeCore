@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline, berekenGeschatteUren, isGeblokkeerd,
+  alleItemsVanProject, vereisteOpties,
 } from './projectVerdeling.js';
 
 describe('isGeblokkeerd', () => {
@@ -23,6 +24,54 @@ describe('isGeblokkeerd', () => {
 
   it('is niet geblokkeerd als de vereiste niet meer bestaat', () => {
     expect(isGeblokkeerd({ id: 'c', vereistKlusjeId: 'weg' }, klusjes)).toBe(false);
+  });
+});
+
+describe('alleItemsVanProject', () => {
+  it('platst klusjes en hun stappen tot één lijst, met klusjeId per item', () => {
+    const klusjes = [
+      { id: 'k1', tekst: 'Schuur', afgerond: false, subklusjes: [{ id: 's1', tekst: 'Sorteren', afgerond: true }] },
+      { id: 'k2', tekst: 'Tuin', afgerond: false, subklusjes: [] },
+    ];
+    const items = alleItemsVanProject(klusjes);
+    expect(items).toHaveLength(3);
+    expect(items.find((i) => i.id === 'k1')).toMatchObject({ klusjeId: 'k1', isStap: false });
+    expect(items.find((i) => i.id === 's1')).toMatchObject({ klusjeId: 'k1', isStap: true, afgerond: true });
+    expect(items.find((i) => i.id === 's1').tekst).toContain('Schuur');
+    expect(items.find((i) => i.id === 's1').tekst).toContain('Sorteren');
+  });
+});
+
+describe('vereisteOpties', () => {
+  const klusjes = [
+    { id: 'k1', tekst: 'Schuur', subklusjes: [{ id: 's1', tekst: 'Sorteren' }, { id: 's2', tekst: 'Schilderen' }] },
+    { id: 'k2', tekst: 'Tuin', subklusjes: [] },
+  ];
+
+  it('laat een klusje niet afhangen van zijn eigen stap', () => {
+    const opties = vereisteOpties(klusjes, 'k1', 'k1');
+    expect(opties.some((o) => o.id === 's1' || o.id === 's2')).toBe(false);
+    expect(opties.some((o) => o.id === 'k2')).toBe(true);
+  });
+
+  it('laat een stap niet afhangen van zijn eigen ouder-klusje', () => {
+    const opties = vereisteOpties(klusjes, 's1', 'k1');
+    expect(opties.some((o) => o.id === 'k1')).toBe(false);
+  });
+
+  it('laat een stap wel afhangen van een sibling-stap binnen hetzelfde klusje', () => {
+    const opties = vereisteOpties(klusjes, 's2', 'k1');
+    expect(opties.some((o) => o.id === 's1')).toBe(true);
+  });
+
+  it('laat een stap afhangen van een ander klusje of diens stap', () => {
+    const opties = vereisteOpties(klusjes, 's1', 'k1');
+    expect(opties.some((o) => o.id === 'k2')).toBe(true);
+  });
+
+  it('sluit het item zelf altijd uit', () => {
+    const opties = vereisteOpties(klusjes, 's1', 'k1');
+    expect(opties.some((o) => o.id === 's1')).toBe(false);
   });
 });
 
@@ -118,6 +167,61 @@ describe('verdeelKlusjesOverMaanden', () => {
   it('negeert een vereiste die niet meer bestaat zonder te crashen', () => {
     const klusjes = [{ id: 'a', geschatteUren: 2, vereistKlusjeId: 'weg' }];
     expect(() => verdeelKlusjesOverMaanden(klusjes, 2, '2026-01')).not.toThrow();
+  });
+
+  it('een stap die een ANDER klusje vereist, schuift het eigen klusje niet vóór dat andere klusje', () => {
+    // Klusje 'a' heeft een stap die klusje 'b' vereist — dus 'a' mag niet
+    // vóór 'b' ingepland staan, ook al is er geen vereiste op klusje-niveau.
+    const klusjes = [
+      { id: 'a', geschatteUren: 10, subklusjes: [{ id: 'a1', vereistKlusjeId: 'b' }] },
+      { id: 'b', geschatteUren: 1 },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 3, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('b') <= maandVan('a')).toBe(true);
+  });
+
+  it('een stap die een stap van een ander klusje vereist, telt ook mee op klusje-niveau', () => {
+    const klusjes = [
+      { id: 'a', geschatteUren: 10, subklusjes: [{ id: 'a1', vereistKlusjeId: 'b1' }] },
+      { id: 'b', geschatteUren: 1, subklusjes: [{ id: 'b1' }] },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 3, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('b') <= maandVan('a')).toBe(true);
+  });
+
+  it('een klusje met prioriteit claimt de vroegste maand vóór een zwaarder, niet-prioritair klusje', () => {
+    const klusjes = [
+      { id: 'a', geschatteUren: 1, prioriteit: true },
+      { id: 'b', geschatteUren: 10 },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 3, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('a') <= maandVan('b')).toBe(true);
+  });
+
+  it('prioriteit respecteert nog steeds een "Taak kan pas na"-vereiste', () => {
+    const klusjes = [
+      { id: 'a', geschatteUren: 1, prioriteit: true, vereistKlusjeId: 'b' },
+      { id: 'b', geschatteUren: 1 },
+    ];
+    const verdeeld = verdeelKlusjesOverMaanden(klusjes, 3, '2026-01');
+    const maandVan = (id) => verdeeld.find((k) => k.id === id).maand;
+    expect(maandVan('b') <= maandVan('a')).toBe(true);
+  });
+
+  it('een stap die een SIBLING-stap binnen hetzelfde klusje vereist, verandert de maand-planning niet', () => {
+    const klusjes = [
+      { id: 'a', geschatteUren: 3, subklusjes: [{ id: 'a1' }, { id: 'a2', vereistKlusjeId: 'a1' }] },
+      { id: 'b', geschatteUren: 3 },
+    ];
+    const zonder = verdeelKlusjesOverMaanden(
+      [{ id: 'a', geschatteUren: 3, subklusjes: [{ id: 'a1' }, { id: 'a2' }] }, { id: 'b', geschatteUren: 3 }],
+      2, '2026-01',
+    );
+    const met = verdeelKlusjesOverMaanden(klusjes, 2, '2026-01');
+    expect(met.find((k) => k.id === 'a').maand).toBe(zonder.find((k) => k.id === 'a').maand);
   });
 });
 

@@ -29,10 +29,19 @@
   background: var(--bg-2);
   border: 1px solid var(--border-2);
   border-radius: var(--r-sm);
-  width: 44px;
+  width: 56px;
   text-align: center;
-  padding: 2px 0;
+  padding: 2px 4px;
 }
+/* De eigen −/+ knoppen ernaast maken de browser-eigen spinner-pijltjes
+   overbodig — die pijltjes namen anders ruimte binnen de vaste breedte in
+   en drukten de laatste cijfers (bv. "2.75") half uit beeld. */
+.hhp-uren-input::-webkit-outer-spin-button,
+.hhp-uren-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.hhp-uren-input { -moz-appearance: textfield; }
 
 .hhp-werk-badge { color: var(--accent-mid); font-size: var(--font-size-xs); }
 
@@ -87,5 +96,20 @@
 .hhp-vereiste { margin: 0; }
 
 .hhp-geblokkeerd { font-size: var(--font-size-xs); }
+.hhp-prioriteit { font-size: var(--font-size-xs); }
+
+.hhp-prioriteit-toggle {
+  flex-shrink: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  padding: 3px 6px;
+  min-width: 22px;
+}
+.hhp-prioriteit-toggle:hover { background: var(--bg-3); }
+.hhp-prioriteit-toggle.on { color: var(--accent); border-color: var(--accent-mid); background: var(--accent-dim); }
 
 .hhp-werkvoorbereiding { margin-top: var(--space-sm); }

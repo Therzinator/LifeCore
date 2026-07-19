@@ -100,6 +100,20 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
+  const hernoemItem = useCallback((id, tekst) => {
+    if (huishoudenId) {
+      werkItemBij(id, { tekst });
+      return;
+    }
+
+    setRecordState((huidig) => {
+      const items = (huidig.items ?? []).map((i) => (i.id === id ? { ...i, tekst } : i));
+      const bijgewerkt = nieuwRecord({ items });
+      schrijfLokaal('boodschappen', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
   const verwijder = useCallback((id) => {
     if (huishoudenId) {
       verwijderItemGedeeld(id);
@@ -113,5 +127,5 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
-  return { items: record.items ?? [], voegToe, zetAantal, toggleGekocht, heractiveren, verwijder };
+  return { items: record.items ?? [], voegToe, zetAantal, toggleGekocht, heractiveren, hernoemItem, verwijder };
 }

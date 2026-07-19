@@ -96,7 +96,7 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
     setRecordState((huidig) => {
       const klusjes = klusjeTeksten.map((tekst) => ({
         id: nieuweId('kl'), tekst, geschatteUren: 1, afgerond: false, afgerondOp: null, subklusjes: [],
-        vereistKlusjeId: null, fotos: [],
+        vereistKlusjeId: null, fotos: [], prioriteit: false,
       }));
       const nieuw = herverdeel({
         id: nieuweId('proj'), naam, aantalMaanden, startMaand: huidigeMaandKey(), deadline,
@@ -135,7 +135,7 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
         if (p.id !== projectId) return p;
         const nieuwKlusje = {
           id: nieuweId('kl'), tekst, geschatteUren, afgerond: false, afgerondOp: null, subklusjes: [],
-          vereistKlusjeId: null, fotos: [],
+          vereistKlusjeId: null, fotos: [], prioriteit: false,
         };
         return herverdeel({ ...p, klusjes: [...p.klusjes, nieuwKlusje] });
       });
@@ -156,6 +156,29 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
         });
         return { ...p, klusjes };
       });
+      const bijgewerkt = nieuwRecord({ projecten });
+      bewaar(bijgewerkt, projectId);
+      return bijgewerkt;
+    });
+  }, [bewaar]);
+
+  const hernoemKlusje = useCallback((projectId, klusjeId, tekst) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, tekst }));
+      const bijgewerkt = nieuwRecord({ projecten });
+      bewaar(bijgewerkt, projectId);
+      return bijgewerkt;
+    });
+  }, [bewaar]);
+
+  // Prioriteit — voor klusjes met een externe deadline (geleend gereedschap,
+  // een weerraam) die vóór de normale gewicht-gebaseerde verdeling gaat, zie
+  // vergelijkVoorWachtrij in projectVerdeling.js. herverdeel() erna, want dit
+  // verandert direct de maand-planning.
+  const togglePrioriteit = useCallback((projectId, klusjeId) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, prioriteit: !k.prioriteit }))
+        .map((p) => (p.id === projectId ? herverdeel(p) : p));
       const bijgewerkt = nieuwRecord({ projecten });
       bewaar(bijgewerkt, projectId);
       return bijgewerkt;
@@ -200,7 +223,28 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
   // openstaat. vereistKlusjeId=null betekent 'geen vereiste'.
   const zetVereistKlusje = useCallback((projectId, klusjeId, vereistKlusjeId) => {
     setRecordState((huidig) => {
-      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, vereistKlusjeId }));
+      // herverdeel() na de wijziging — een nieuwe/losgekoppelde vereiste kan
+      // de maandplanning direct verschuiven (zie verdeelKlusjesOverMaanden),
+      // dus de opgeslagen maand-toewijzing moet meteen mee, niet pas bij de
+      // eerstvolgende, andere wijziging.
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, vereistKlusjeId }))
+        .map((p) => (p.id === projectId ? herverdeel(p) : p));
+      const bijgewerkt = nieuwRecord({ projecten });
+      bewaar(bijgewerkt, projectId);
+      return bijgewerkt;
+    });
+  }, [bewaar]);
+
+  // Zelfde taakvolgorde-concept als zetVereistKlusje, maar dan op het
+  // niveau van een STAP: een stap kan net zo goed pas op te pakken zijn na
+  // een ander klusje (of diens stap) — bv. 'schilderen' pas na 'plamuren' in
+  // een ander klusje. vereistId=null betekent 'geen vereiste'.
+  const zetVereisteStap = useCallback((projectId, klusjeId, subklusjeId, vereistId) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({
+        ...k,
+        subklusjes: (k.subklusjes ?? []).map((s) => (s.id === subklusjeId ? { ...s, vereistKlusjeId: vereistId } : s)),
+      })).map((p) => (p.id === projectId ? herverdeel(p) : p));
       const bijgewerkt = nieuwRecord({ projecten });
       bewaar(bijgewerkt, projectId);
       return bijgewerkt;
@@ -297,7 +341,10 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
     setRecordState((huidig) => {
       const projecten = bijwerkStappen(huidig.projecten, projectId, klusjeId, (k) => ({
         ...k,
-        subklusjes: [...(k.subklusjes ?? []), { id: nieuweId('skl'), tekst, duurUren, afgerond: false, afgerondOp: null }],
+        subklusjes: [
+          ...(k.subklusjes ?? []),
+          { id: nieuweId('skl'), tekst, duurUren, afgerond: false, afgerondOp: null, vereistKlusjeId: null },
+        ],
       }));
       const bijgewerkt = nieuwRecord({ projecten });
       bewaar(bijgewerkt, projectId);
@@ -351,6 +398,8 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
     projecten: record.projecten ?? [],
     voegProjectToe,
     voegKlusjeToe,
+    hernoemKlusje,
+    togglePrioriteit,
     zetDeadline,
     toggleKlusje,
     zetGeschatteUren,
@@ -361,6 +410,7 @@ export function useHuishoudProjecten(huishoudenId = null, userId = null) {
     zetStapUren,
     verwijderSubklusje,
     zetVereistKlusje,
+    zetVereisteStap,
     voegWerkvoorbereidingToe,
     toggleWerkvoorbereiding,
     verwijderWerkvoorbereiding,
