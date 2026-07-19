@@ -19,31 +19,21 @@ export async function haalMijnHuishouden() {
   return data;
 }
 
-export async function maakHuishouden(userId, email, naam) {
+// Atomaire RPC (create_huishouden, zie migratie 0008) i.p.v. twee losse
+// inserts: direct na het aanmaken van het huishouden bestaat het
+// lidmaatschap nog niet, dus een client-side .select() erna zou stuklopen
+// op de huishoudens_select_lid-policy — de RPC omzeilt dat door de
+// aangemaakte rij rechtstreeks terug te geven, niet via een herquery.
+export async function maakHuishouden(email, naam) {
   const sb = sbClient();
   if (!sb) return null;
 
-  const { data: huishouden, error: huishoudenFout } = await sb
-    .from('huishoudens')
-    .insert({ naam, aangemaakt_door: userId })
-    .select()
-    .single();
-
-  if (huishoudenFout) {
-    console.error('Kon huishouden niet aanmaken', huishoudenFout);
+  const { data, error } = await sb.rpc('create_huishouden', { _naam: naam, _email: email });
+  if (error) {
+    console.error('Kon huishouden niet aanmaken', error);
     return null;
   }
-
-  const { error: lidFout } = await sb
-    .from('huishouden_leden')
-    .insert({ huishouden_id: huishouden.id, user_id: userId, rol: 'eigenaar', lid_email: email });
-
-  if (lidFout) {
-    console.error('Kon jezelf niet als eigenaar toevoegen', lidFout);
-    return null;
-  }
-
-  return huishouden;
+  return data;
 }
 
 export async function maakUitnodiging(huishoudenId, userId, email) {

@@ -25,7 +25,7 @@ export function useHuishouden(userId, email) {
 
   const maakAan = useCallback(async (naam) => {
     if (!userId) return;
-    await maakHuishouden(userId, email, naam);
+    await maakHuishouden(email, naam);
     await ververs();
   }, [userId, email, ververs]);
 
