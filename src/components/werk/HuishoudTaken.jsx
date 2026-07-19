@@ -9,8 +9,10 @@ const DAGLABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) {
   const [invoer, setInvoer] = useState('');
   const [frequentie, setFrequentie] = useState('week');
+  const [intervalDagen, setIntervalDagen] = useState(10);
 
   const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
+  const aangepasteTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'aangepast');
 
   useEffect(() => {
     weekschema.zorgVoorWeekschema(wekelijkseTaken);
@@ -20,7 +22,7 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
     if (teksten.length === 0) { toonToast('Geen taken gevonden in de tekst', 'wn'); return; }
-    huishoudTaken.voegMeerdereToe(teksten, frequentie);
+    huishoudTaken.voegMeerdereToe(teksten, frequentie, intervalDagen);
     setInvoer('');
     toonToast(`${teksten.length} klus/klussen toegevoegd`, 'ok');
   }
@@ -57,7 +59,21 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
         <div className="hh-freq-rij">
           <button className={`btn btn-sm ${frequentie === 'week' ? 'btn-p' : 'btn-g'}`} onClick={() => setFrequentie('week')}>Wekelijks</button>
           <button className={`btn btn-sm ${frequentie === 'maand' ? 'btn-p' : 'btn-g'}`} onClick={() => setFrequentie('maand')}>Maandelijks</button>
+          <button className={`btn btn-sm ${frequentie === 'aangepast' ? 'btn-p' : 'btn-g'}`} onClick={() => setFrequentie('aangepast')}>Aangepast</button>
         </div>
+        {frequentie === 'aangepast' && (
+          <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
+            <label className="ti-lbl" htmlFor="ht-interval">Elke hoeveel dagen (herhaalt steeds)</label>
+            <input
+              id="ht-interval"
+              type="number"
+              className="ti-veld"
+              min="1"
+              value={intervalDagen}
+              onChange={(e) => setIntervalDagen(parseInt(e.target.value, 10) || 1)}
+            />
+          </div>
+        )}
         <button className="btn btn-p btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={takenToevoegen}>
           Klussen toevoegen
         </button>
@@ -126,6 +142,33 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
+                <button className="hh-verwijder" onClick={() => huishoudTaken.verwijder(t.id)}>✕</button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Aangepaste klussen</div>
+        {aangepasteTaken.length === 0 && (
+          <p className="of-stap-tekst">Nog geen klussen met een eigen interval.</p>
+        )}
+        <div className="hh-lijst">
+          {aangepasteTaken.map((t) => {
+            const klaar = Boolean(huishoudTaken.log[t.id]?.[huidigePeriodeKey('aangepast', new Date(), t.intervalDagen)]);
+            return (
+              <div className="hh-item" key={t.id}>
+                <button
+                  className={`hh-check ${klaar ? 'gedaan' : ''}`}
+                  onClick={() => huishoudTaken.toggleDezePeriode(t.id, 'aangepast', t.intervalDagen)}
+                >
+                  {klaar ? '✓' : ''}
+                </button>
+                <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>
+                  {t.tekst}
+                  <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
+                </span>
                 <button className="hh-verwijder" onClick={() => huishoudTaken.verwijder(t.id)}>✕</button>
               </div>
             );

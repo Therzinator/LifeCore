@@ -4,8 +4,21 @@ function maandKey(nu) {
   return `${nu.getFullYear()}-${String(nu.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function huidigePeriodeKey(frequentie, nu = new Date()) {
-  return frequentie === 'maand' ? maandKey(nu) : maandagVan(nu);
+// Epoch-verankerde cyclus i.p.v. 'sinds laatst afgerond' — zo blijft een
+// custom-interval-taak (bv. 'elke 10 dagen') een simpele periode-KEY net als
+// week/maand, herbruikbaar in dezelfde log-structuur ({taakId: {periode:
+// afgerond}}) i.p.v. een apart 'laatst afgerond op'-veld en eigen
+// vervaldatum-berekening nodig te hebben.
+function aangepastKey(nu, intervalDagen) {
+  const dagenSindsEpoch = Math.floor(nu.getTime() / (1000 * 60 * 60 * 24));
+  const cyclus = Math.floor(dagenSindsEpoch / intervalDagen);
+  return `elke${intervalDagen}d_${cyclus}`;
+}
+
+export function huidigePeriodeKey(frequentie, nu = new Date(), intervalDagen = null) {
+  if (frequentie === 'maand') return maandKey(nu);
+  if (frequentie === 'aangepast' && intervalDagen > 0) return aangepastKey(nu, intervalDagen);
+  return maandagVan(nu);
 }
 
 // Percentage afgerond voor de huidige periode (deze week/maand) — voor de

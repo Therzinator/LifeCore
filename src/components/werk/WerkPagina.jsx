@@ -3,10 +3,14 @@ import { useWerkTaken } from '../../hooks/useWerkTaken.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
+import { useOntspullen } from '../../hooks/useOntspullen.js';
+import { useBoodschappen } from '../../hooks/useBoodschappen.js';
 import { useWerkInstellingen } from '../../hooks/useWerkInstellingen.js';
 import WerkTaken from './WerkTaken.jsx';
 import HuishoudTaken from './HuishoudTaken.jsx';
 import HuishoudProjecten from './HuishoudProjecten.jsx';
+import Ontspullen from './Ontspullen.jsx';
+import Boodschappen from './Boodschappen.jsx';
 import WerkInstellingen from './WerkInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './WerkPagina.css';
@@ -15,6 +19,8 @@ const TABS = [
   { id: 'werk', label: 'Werktaken' },
   { id: 'huishouden', label: 'Huishouden' },
   { id: 'kluslijst', label: 'Kluslijst' },
+  { id: 'ontspullen', label: 'Ontspullen' },
+  { id: 'boodschappen', label: 'Boodschappen' },
 ];
 
 export default function WerkPagina({ toonToast }) {
@@ -22,6 +28,8 @@ export default function WerkPagina({ toonToast }) {
   const huishoudTaken = useHuishoudTaken();
   const huishoudProjecten = useHuishoudProjecten();
   const weekschema = useHuishoudWeekschema();
+  const ontspullen = useOntspullen();
+  const boodschappen = useBoodschappen();
   const { instellingen, bewaar, voegCategorieToe, verwijderCategorie } = useWerkInstellingen();
   const [tab, setTab] = useState('werk');
 
@@ -53,6 +61,8 @@ export default function WerkPagina({ toonToast }) {
         {tab === 'kluslijst' && (
           <HuishoudProjecten projecten={huishoudProjecten} werkTaken={werkTaken} toonToast={toonToast} />
         )}
+        {tab === 'ontspullen' && <Ontspullen ontspullen={ontspullen} toonToast={toonToast} />}
+        {tab === 'boodschappen' && <Boodschappen boodschappen={boodschappen} toonToast={toonToast} />}
       </div>
     </div>
   );

@@ -15,6 +15,22 @@ describe('huidigePeriodeKey', () => {
   it('geeft de kalendermaand voor frequentie "maand"', () => {
     expect(huidigePeriodeKey('maand', new Date(2026, 0, 20, 12))).toBe('2026-01');
   });
+
+  it('geeft dezelfde cyclus-key voor "aangepast" binnen hetzelfde interval', () => {
+    const a = huidigePeriodeKey('aangepast', new Date(2026, 0, 7, 12), 10);
+    const b = huidigePeriodeKey('aangepast', new Date(2026, 0, 10, 12), 10);
+    expect(a).toBe(b);
+  });
+
+  it('geeft een andere cyclus-key voor "aangepast" na het verstrijken van het interval', () => {
+    const a = huidigePeriodeKey('aangepast', new Date(2026, 0, 7, 12), 10);
+    const b = huidigePeriodeKey('aangepast', new Date(2026, 0, 20, 12), 10);
+    expect(a).not.toBe(b);
+  });
+
+  it('valt terug op het week-patroon voor "aangepast" zonder intervalDagen', () => {
+    expect(huidigePeriodeKey('aangepast', new Date(2026, 0, 7, 12))).toBe('2026-01-05');
+  });
 });
 
 describe('percentageAfgerond', () => {

@@ -16,18 +16,20 @@ function nieuweId() {
 export function useHuishoudTaken() {
   const [record, setRecordState] = useState(() => leesLokaal('huishoud_taken', leegRecord()));
 
-  const voegMeerdereToe = useCallback((teksten, frequentie) => {
+  const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null) => {
     setRecordState((huidig) => {
-      const nieuwe = teksten.map((tekst) => ({ id: nieuweId(), tekst, frequentie }));
+      const nieuwe = teksten.map((tekst) => ({
+        id: nieuweId(), tekst, frequentie, intervalDagen: frequentie === 'aangepast' ? intervalDagen : null,
+      }));
       const bijgewerkt = nieuwRecord({ ...huidig, taken: [...(huidig.taken ?? []), ...nieuwe] });
       schrijfLokaal('huishoud_taken', bijgewerkt);
       return bijgewerkt;
     });
   }, []);
 
-  const toggleDezePeriode = useCallback((taakId, frequentie) => {
+  const toggleDezePeriode = useCallback((taakId, frequentie, intervalDagen = null) => {
     setRecordState((huidig) => {
-      const periode = huidigePeriodeKey(frequentie);
+      const periode = huidigePeriodeKey(frequentie, new Date(), intervalDagen);
       const log = { ...(huidig.log ?? {}) };
       const taakLog = { ...(log[taakId] ?? {}) };
       taakLog[periode] = !taakLog[periode];
