@@ -8,7 +8,6 @@ import { checklistPerWeek } from '../../lib/cardio/checklist.js';
 import { werkTakenPerWeek } from '../../lib/werk/dashboardWerk.js';
 import { percentagePerWeek } from '../../lib/werk/huishoudPeriode.js';
 import LijnGrafiek from './LijnGrafiek.jsx';
-import WeekOverzicht from '../ui/WeekOverzicht.jsx';
 
 function weekLabel(maandagIso) {
   return new Date(maandagIso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'numeric' });
@@ -40,8 +39,6 @@ export default function DashboardPagina() {
         Voortgang over alle modules heen. Geschiedenis blijft altijd zichtbaar, ook na een gemiste dag of week —
         een gat in de lijn is geen falen.
       </p>
-
-      <WeekOverzicht />
 
       <div className="card">
         <div className="td-label">Kracht — sterkteprogressie (som geschatte 1RM per week)</div>

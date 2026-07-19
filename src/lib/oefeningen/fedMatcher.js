@@ -37,16 +37,27 @@ function fedAfbeeldingUrl(fedId) {
   return `${FED_BASIS}/${fedId}/0.jpg`;
 }
 
-// Best-effort automatische afbeelding-matching op naam — bedoeld voor
-// oefeningen zonder handmatig gecureerde fedId (met name eigen/custom
-// oefeningen die de gebruiker zelf toevoegt). Retourneert null als er geen
-// voldoende betrouwbare match is, i.p.v. een gok te presenteren als zeker.
-export function vindFedAfbeelding(naam) {
+const INDEX_OP_ID = new Map(FED_INDEX.map((e) => [e.id, e]));
+
+// Alle afbeeldingen (start- + eindpositie, indien de FED-index een tweede
+// heeft) voor een bekend fedId — gebruikt door zowel de handmatig gecureerde
+// overrides als de fuzzy-match hieronder, zodat beide paden hetzelfde
+// twee-afbeeldingen-gedrag krijgen i.p.v. het los te dupliceren.
+export function fedAfbeeldingenVoorId(fedId) {
+  const entry = INDEX_OP_ID.get(fedId);
+  const images = entry?.images?.length ? entry.images : [`${fedId}/0.jpg`];
+  return images.map((pad) => `${FED_BASIS}/${pad}`);
+}
+
+// Beste-match FED-index-entry op naam, of null zonder voldoende betrouwbare
+// match — gedeeld door vindFedAfbeelding (1 afbeelding) en
+// vindFedAfbeeldingen (alle afbeeldingen) hieronder.
+function vindFedEntry(naam) {
   const genorm = normaliseer(naam);
   if (!genorm) return null;
 
   const exact = GENORMALISEERDE_INDEX.find((e) => e.genorm === genorm);
-  if (exact) return fedAfbeeldingUrl(exact.id);
+  if (exact) return exact;
 
   let beste = null;
   let besteScore = 0;
@@ -57,6 +68,21 @@ export function vindFedAfbeelding(naam) {
       beste = entry;
     }
   }
-  if (beste && besteScore >= MIN_SCORE) return fedAfbeeldingUrl(beste.id);
-  return null;
+  return beste && besteScore >= MIN_SCORE ? beste : null;
+}
+
+// Best-effort automatische afbeelding-matching op naam — bedoeld voor
+// oefeningen zonder handmatig gecureerde fedId (met name eigen/custom
+// oefeningen die de gebruiker zelf toevoegt). Retourneert null als er geen
+// voldoende betrouwbare match is, i.p.v. een gok te presenteren als zeker.
+export function vindFedAfbeelding(naam) {
+  const entry = vindFedEntry(naam);
+  return entry ? fedAfbeeldingUrl(entry.id) : null;
+}
+
+// Zelfde matching als vindFedAfbeelding, maar geeft alle afbeeldingen
+// (start- + eindpositie indien beschikbaar) terug i.p.v. alleen de eerste.
+export function vindFedAfbeeldingen(naam) {
+  const entry = vindFedEntry(naam);
+  return entry ? fedAfbeeldingenVoorId(entry.id) : null;
 }

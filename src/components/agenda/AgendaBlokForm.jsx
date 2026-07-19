@@ -26,6 +26,12 @@ function pasTijdAan(tijd, deltaMinuten) {
   return `${nieuwUur}:${nieuwMinuut}`;
 }
 
+// Verwacht 'HH:MM'. Bij een leeg/onvolledig getypt tussenresultaat (bv. tijdens
+// het typen in de native picker) niets aanpassen — pas op een geldige waarde.
+function isVolledigeTijd(tijd) {
+  return /^\d{2}:\d{2}$/.test(tijd ?? '');
+}
+
 export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }) {
   const [titel, setTitel] = useState('');
   const [type, setType] = useState('ontspanning');
@@ -33,6 +39,11 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
   const [starttijd, setStarttijd] = useState('18:00');
   const [eindtijd, setEindtijd] = useState('19:00');
   const [herhaling, setHerhaling] = useState(false);
+
+  function wijzigStarttijd(nieuweStarttijd) {
+    setStarttijd(nieuweStarttijd);
+    if (isVolledigeTijd(nieuweStarttijd)) setEindtijd(pasTijdAan(nieuweStarttijd, 60));
+  }
 
   function submit(e) {
     e.preventDefault();
@@ -71,7 +82,7 @@ export default function AgendaBlokForm({ initieleDatum, onOpslaan, onAnnuleren }
           <label className="ti-lbl" htmlFor="ag-start">Starttijd</label>
           <div className="ag-tijd-ctrl">
             <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, -60))} aria-label="Starttijd een uur eerder">−1u</button>
-            <input id="ag-start" type="time" className="ti-veld" value={starttijd} onChange={(e) => setStarttijd(e.target.value)} />
+            <input id="ag-start" type="time" className="ti-veld" value={starttijd} onChange={(e) => wijzigStarttijd(e.target.value)} />
             <button type="button" className="btn btn-g btn-sm" onClick={() => setStarttijd((t) => pasTijdAan(t, 60))} aria-label="Starttijd een uur later">+1u</button>
           </div>
         </div>

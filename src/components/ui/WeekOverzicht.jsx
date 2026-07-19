@@ -9,7 +9,7 @@ const ICOON = { lift: '🏋', cardio: '🏃', rust: '—' };
 // verhuisd van Training's eigen dashboard naar het startscherm/hoofd-
 // dashboard, zodat het onderdeel is van de dagstructuur i.p.v. verstopt in
 // één module.
-export default function WeekOverzicht() {
+export default function WeekOverzicht({ onKiesDag }) {
   const geschiedenis = useTrainingGeschiedenis();
   const cardio = useCardioChecklist();
   const dagen = bepaalWeekoverzicht(geschiedenis.sessies, cardio.dagen);
@@ -24,10 +24,16 @@ export default function WeekOverzicht() {
           if (dag.vandaag) cls += ' vandaag';
           const icoon = dag.gedaan ? '✓' : ICOON[dag.type];
           return (
-            <div className="wo-dag" key={dag.label + dag.type}>
+            <button
+              type="button"
+              className="wo-dag"
+              key={dag.label + dag.type}
+              onClick={() => onKiesDag?.(dag.datum)}
+              disabled={!onKiesDag}
+            >
               <div className="wo-dag-lbl">{dag.label}</div>
               <div className={cls}>{icoon}</div>
-            </div>
+            </button>
           );
         })}
       </div>

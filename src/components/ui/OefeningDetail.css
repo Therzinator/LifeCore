@@ -2,8 +2,27 @@
   width: 100%;
   max-width: 100%;
   border-radius: var(--r-md);
-  margin-bottom: var(--space-md);
   background: var(--bg-2);
+  display: block;
+}
+
+.oe-afbeeldingen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.oe-afbeelding-cel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.oe-afbeelding-lbl {
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
 }
 
 .oe-uitleg {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
@@ -40,10 +40,15 @@ function bereikVoorWeergave(weergave, referentieDatum) {
   return { bereikStart: referentieDatum, bereikEind: referentieDatum };
 }
 
-export default function AgendaPagina({ toonToast, onNavigeer }) {
-  const [weergave, setWeergave] = useState('maand');
-  const [referentieDatum, setReferentieDatum] = useState(vandaagIso());
+export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onInitieleDatumGeconsumeerd }) {
+  const [weergave, setWeergave] = useState(() => (initieleDatum ? 'dag' : 'maand'));
+  const [referentieDatum, setReferentieDatum] = useState(() => initieleDatum ?? vandaagIso());
   const [toonForm, setToonForm] = useState(false);
+
+  useEffect(() => {
+    if (initieleDatum) onInitieleDatumGeconsumeerd?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: seed van de initiële datum is eenmalig, latere navigatie loopt via referentieDatum/weergave state.
+  }, []);
 
   const blokken = useAgendaBlokken();
   const { overrides: dagTypeOverrides, zetOverride: zetDagTypeOverride } = useDagTypeOverrides();

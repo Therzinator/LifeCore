@@ -33,10 +33,10 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
   return (
     <div className={`ds-layout ${ingeklapt ? 'ingeklapt' : ''}`}>
       <header className="ds-topbar">
-        <div className="ds-brand">
+        <button type="button" className="ds-brand" onClick={() => setPagina('snelkeuze')} aria-label="Naar snelkeuze">
           <span className="ds-brand-dot" aria-hidden="true" />
           LifeCore
-        </div>
+        </button>
         <div className="ds-topbar-acties">
           {toonSync && (
             <div className="ds-sync">

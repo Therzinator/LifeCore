@@ -24,7 +24,7 @@ import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast, setPagina) {
+function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum) {
   switch (paginaId) {
     case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
     case 'waarden': return <WaardenPagina />;
@@ -34,7 +34,15 @@ function renderModule(paginaId, toonToast, setPagina) {
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
     case 'adhd': return <AdhdPagina toonToast={toonToast} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
-    case 'agenda': return <AgendaPagina toonToast={toonToast} onNavigeer={setPagina} />;
+    case 'agenda':
+      return (
+        <AgendaPagina
+          toonToast={toonToast}
+          onNavigeer={setPagina}
+          initieleDatum={agendaInitieleDatum}
+          onInitieleDatumGeconsumeerd={wisAgendaInitieleDatum}
+        />
+      );
     case 'dashboard': return <DashboardPagina />;
     default: return null;
   }
@@ -42,10 +50,16 @@ function renderModule(paginaId, toonToast, setPagina) {
 
 export default function App() {
   const [pagina, setPaginaState] = useState(() => leesLokaal('actieve_pagina', 'snelkeuze'));
+  const [agendaInitieleDatum, setAgendaInitieleDatum] = useState(null);
   const { toasts, toonToast } = useToast();
   const auth = useAuth();
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
+
+  function naarAgendaDag(datum) {
+    setAgendaInitieleDatum(datum);
+    setPagina('agenda');
+  }
 
   function setPagina(nieuwePagina) {
     setPaginaState(nieuwePagina);
@@ -96,7 +110,7 @@ export default function App() {
         <InstallBanner />
         <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
           <ErrorBoundary key={desktopPagina}>
-            {renderModule(desktopPagina, toonToast, setPagina)}
+            {renderModule(desktopPagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
@@ -107,11 +121,11 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} />
+      <AppHeader auth={auth} setPagina={setPagina} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
-          {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} />}
-          {renderModule(pagina, toonToast, setPagina)}
+          {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />}
+          {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} />

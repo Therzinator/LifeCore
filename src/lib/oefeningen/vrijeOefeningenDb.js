@@ -6,7 +6,7 @@
 // van de stijl van de app (kort, direct).
 
 import { OEFENINGEN_BIBLIOTHEEK } from '../training/schema.js';
-import { vindFedAfbeelding } from './fedMatcher.js';
+import { vindFedAfbeelding, vindFedAfbeeldingen, fedAfbeeldingenVoorId } from './fedMatcher.js';
 
 const FED_BASIS = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
 
@@ -57,6 +57,14 @@ function afbeeldingVoorOefening(id, naam, overrides) {
   const fedId = overrides[id];
   if (fedId) return fedAfbeelding(fedId);
   return vindFedAfbeelding(naam);
+}
+
+// Start- + eindpositie-afbeeldingen (indien de FED-index een tweede heeft) —
+// zelfde bron als afbeeldingVoorOefening, maar dan alle beschikbare beelden.
+function afbeeldingenVoorOefening(id, naam, overrides) {
+  const fedId = overrides[id];
+  if (fedId) return fedAfbeeldingenVoorId(fedId);
+  return vindFedAfbeeldingen(naam) ?? [];
 }
 
 // StrongLifts 5×5-basisoefeningen — koppelt aan de id's uit lib/training/schema.js.
@@ -114,7 +122,7 @@ export const LIFTCORE_OEFENINGEN = {
 // 'klem komen te zitten'-gevoel — de kernset (2) wordt direct in de
 // ochtendroutine getoond, de volledige set is ook browsable via de
 // oefeningenbibliotheek en als aparte categorie in Training → Extra.
-export const SPANNING_OEFENINGEN = [
+const SPANNING_OEFENINGEN_RUW = [
   {
     id: 'kin-naar-borst',
     fedId: 'Chin_To_Chest_Stretch',
@@ -186,6 +194,13 @@ export const SPANNING_OEFENINGEN = [
   },
 ];
 
+// Start- + eindpositie-afbeeldingen toevoegen (afgeleid van fedId) zonder
+// dat elke entry hierboven dat los hoeft te vermelden.
+export const SPANNING_OEFENINGEN = SPANNING_OEFENINGEN_RUW.map((o) => ({
+  ...o,
+  afbeeldingen: fedAfbeeldingenVoorId(o.fedId),
+}));
+
 export function spanningOefeningKernSet() {
   return SPANNING_OEFENINGEN.filter((o) => o.kern);
 }
@@ -199,7 +214,15 @@ export function spanningOefeningKernSet() {
 function metAfbeelding(oef, overrides) {
   const curatie = LIFTCORE_OEFENINGEN[oef.id];
   if (curatie) {
-    return { id: oef.id, naam: oef.naam, kort: curatie.kort, uitleg: curatie.uitleg, afbeelding: curatie.afbeelding, equipment: null };
+    return {
+      id: oef.id,
+      naam: oef.naam,
+      kort: curatie.kort,
+      uitleg: curatie.uitleg,
+      afbeelding: curatie.afbeelding,
+      afbeeldingen: fedAfbeeldingenVoorId(curatie.fedId),
+      equipment: null,
+    };
   }
   return {
     id: oef.id,
@@ -207,6 +230,7 @@ function metAfbeelding(oef, overrides) {
     kort: `Traint: ${oef.spier}`,
     uitleg: `Hoofdspiergroep: ${oef.spier}${oef.equip ? ` · Materiaal: ${oef.equip}` : ''}. Zie de afbeelding voor de uitvoering.`,
     afbeelding: afbeeldingVoorOefening(oef.id, oef.naam, overrides),
+    afbeeldingen: afbeeldingenVoorOefening(oef.id, oef.naam, overrides),
     equipment: oef.equip ?? null,
   };
 }

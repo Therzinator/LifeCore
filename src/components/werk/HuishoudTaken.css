@@ -1,25 +1,3 @@
-.hh-subtabs {
-  display: flex;
-  gap: 2px;
-  background: var(--bg-3);
-  border-radius: var(--r-sm);
-  padding: 3px;
-  width: fit-content;
-  margin-bottom: var(--space-md);
-}
-.hh-subtab {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--txt-muted);
-  cursor: pointer;
-  font-family: inherit;
-}
-.hh-subtab.on { background: var(--surface); color: var(--txt); }
-
 .hh-freq-rij { display: flex; gap: var(--space-xs); margin-top: var(--space-sm); }
 
 .hh-lijst { display: flex; flex-direction: column; }

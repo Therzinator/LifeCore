@@ -1,4 +1,4 @@
-import { dagIndexVan, maandagVan } from '../../utils/datum.js';
+import { dagIndexVan, maandagVan, datumKey } from '../../utils/datum.js';
 import { CARDIO_ACTIVITEITEN } from '../cardio/checklist.js';
 
 const DAG_LABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
@@ -39,6 +39,8 @@ export function bepaalWeekoverzicht(trainingSessies, cardioDagenRecord) {
   return DAG_LABELS.map((label, i) => {
     const type = LIFT_DAGEN.includes(i) ? 'lift' : CARDIO_DAGEN.includes(i) ? 'cardio' : 'rust';
     const gedaan = type === 'lift' ? liftGedaan.has(i) : type === 'cardio' ? cardioGedaan.has(i) : null;
-    return { label, type, gedaan, vandaag: i === vandaagIndex };
+    const dagDatum = new Date(dezeMaandag);
+    dagDatum.setDate(dagDatum.getDate() + i);
+    return { label, type, gedaan, vandaag: i === vandaagIndex, datum: datumKey(dagDatum) };
   });
 }

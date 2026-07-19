@@ -18,12 +18,14 @@ const CATEGORIE_LABEL = {
 export default function OefeningenBibliotheek({ oefeningen, titel = 'Oefeningenbibliotheek', knopLabel = '📚 Oefeningenbibliotheek' }) {
   const [open, setOpen] = useState(false);
   const [actieveId, setActieveId] = useState(null);
+  const [lijstScroll, setLijstScroll] = useState(0);
 
   const actief = oefeningen.find((o) => o.id === actieveId) ?? null;
 
   function sluiten() {
     setOpen(false);
     setActieveId(null);
+    setLijstScroll(0);
   }
 
   const gegroepeerd = oefeningen.reduce((acc, o) => {
@@ -38,7 +40,7 @@ export default function OefeningenBibliotheek({ oefeningen, titel = 'Oefeningenb
       <button type="button" className="btn btn-g btn-sm" onClick={() => setOpen(true)}>{knopLabel}</button>
 
       {open && !actief && (
-        <Modal titel={titel} onClose={sluiten}>
+        <Modal titel={titel} onClose={sluiten} initieleScroll={lijstScroll} onScrollChange={setLijstScroll}>
           {Object.entries(gegroepeerd).map(([categorie, lijst]) => (
             <div className="ob-categorie" key={categorie}>
               <div className="ob-categorie-titel">{CATEGORIE_LABEL[categorie] ?? categorie}</div>

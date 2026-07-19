@@ -5,6 +5,7 @@ import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useWerkInstellingen } from '../../hooks/useWerkInstellingen.js';
 import WerkTaken from './WerkTaken.jsx';
 import HuishoudTaken from './HuishoudTaken.jsx';
+import HuishoudProjecten from './HuishoudProjecten.jsx';
 import WerkInstellingen from './WerkInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './WerkPagina.css';
@@ -12,6 +13,7 @@ import './WerkPagina.css';
 const TABS = [
   { id: 'werk', label: 'Werktaken' },
   { id: 'huishouden', label: 'Huishouden' },
+  { id: 'kluslijst', label: 'Kluslijst' },
 ];
 
 export default function WerkPagina({ toonToast }) {
@@ -43,9 +45,8 @@ export default function WerkPagina({ toonToast }) {
 
       <div className="card">
         {tab === 'werk' && <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} />}
-        {tab === 'huishouden' && (
-          <HuishoudTaken huishoudTaken={huishoudTaken} huishoudProjecten={huishoudProjecten} toonToast={toonToast} />
-        )}
+        {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} toonToast={toonToast} />}
+        {tab === 'kluslijst' && <HuishoudProjecten projecten={huishoudProjecten} toonToast={toonToast} />}
       </div>
     </div>
   );

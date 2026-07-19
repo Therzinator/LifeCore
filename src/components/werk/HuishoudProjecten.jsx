@@ -96,6 +96,7 @@ export default function HuishoudProjecten({ projecten, toonToast }) {
 
   return (
     <div>
+      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Kluslijst</div>
       <p className="of-stap-tekst">
         Grote klussen opgedeeld in kleinere subklusjes, verspreid over meerdere maanden — zodat je stap voor
         stap naar het eindresultaat toewerkt in plaats van tegen één grote taak op te kijken.

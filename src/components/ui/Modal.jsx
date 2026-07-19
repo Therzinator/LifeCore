@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react';
 import './Modal.css';
 
-export default function Modal({ titel, onClose, children }) {
+export default function Modal({ titel, onClose, children, initieleScroll = 0, onScrollChange }) {
   const sluitKnopRef = useRef(null);
   const vlakRef = useRef(null);
 
   useEffect(() => {
     sluitKnopRef.current?.focus();
+    if (initieleScroll) vlakRef.current.scrollTop = initieleScroll;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: initieleScroll is een eenmalige seed-waarde, geen doorlopende sync.
   }, []);
 
   useEffect(() => {
@@ -39,7 +41,14 @@ export default function Modal({ titel, onClose, children }) {
 
   return (
     <div className="modal-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal-vlak" ref={vlakRef} role="dialog" aria-modal="true" aria-label={titel}>
+      <div
+        className="modal-vlak"
+        ref={vlakRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={titel}
+        onScroll={onScrollChange ? (e) => onScrollChange(e.currentTarget.scrollTop) : undefined}
+      >
         <div className="modal-kop">
           <div className="modal-titel">{titel}</div>
           <button ref={sluitKnopRef} className="modal-sluit" onClick={onClose} aria-label="Sluiten">

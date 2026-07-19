@@ -13,7 +13,7 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function AppHeader({ auth }) {
+export default function AppHeader({ auth, setPagina }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [toonAccount, setToonAccount] = useState(false);
@@ -21,10 +21,10 @@ export default function AppHeader({ auth }) {
 
   return (
     <header className="app-header">
-      <div className="app-brand">
+      <button type="button" className="app-brand" onClick={() => setPagina?.('snelkeuze')} aria-label="Naar snelkeuze">
         <span className="app-brand-dot" aria-hidden="true" />
         LifeCore
-      </div>
+      </button>
       <div className="app-header-acties">
         {toonSync && (
           <div className="app-sync">
