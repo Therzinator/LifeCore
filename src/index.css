@@ -20,7 +20,7 @@ body {
   padding-bottom: calc(84px + env(safe-area-inset-bottom));
 }
 
-button, input, textarea { font-family: inherit; }
+button, input, textarea { font-family: inherit; color: inherit; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px;
