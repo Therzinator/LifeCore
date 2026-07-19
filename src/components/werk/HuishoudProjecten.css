@@ -64,3 +64,5 @@
 
 .hhp-stap-invoer { display: flex; gap: var(--space-xs); margin-top: 4px; }
 .hhp-stap-invoer .ti-veld { flex: 1; min-width: 0; }
+
+.hhp-stappen-hint { margin: 4px 0 0; }

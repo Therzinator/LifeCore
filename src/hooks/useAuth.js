@@ -50,5 +50,26 @@ export function useAuth() {
     return { error: error?.message ?? null };
   }, []);
 
-  return { user, laden, ingelogd: Boolean(user), login, signup, logout, bijwerkenAccount, enabled: SUPABASE_ENABLED };
+  // Wachtwoord wijzigen vereist het huidige wachtwoord — supabase-js'
+  // updateUser() accepteert geen huidig wachtwoord ter verificatie, dus
+  // her-authenticeren we eerst expliciet met signInWithPassword. Zonder deze
+  // check kon iemand met een reeds-ingelogde sessie (bv. een vergeten
+  // ingelogd apparaat) het wachtwoord overnemen zonder het oude te kennen.
+  const wachtwoordWijzigen = useCallback(async (huidigWachtwoord, nieuwWachtwoord) => {
+    const sb = sbClient();
+    if (!sb) return { error: 'Supabase is niet geconfigureerd' };
+    if (!user?.email) return { error: 'Geen ingelogde gebruiker' };
+    const { error: verifyError } = await sb.auth.signInWithPassword({
+      email: user.email,
+      password: huidigWachtwoord,
+    });
+    if (verifyError) return { error: 'Huidig wachtwoord is onjuist' };
+    const { error } = await sb.auth.updateUser({ password: nieuwWachtwoord });
+    return { error: error?.message ?? null };
+  }, [user]);
+
+  return {
+    user, laden, ingelogd: Boolean(user), login, signup, logout,
+    bijwerkenAccount, wachtwoordWijzigen, enabled: SUPABASE_ENABLED,
+  };
 }

@@ -63,7 +63,7 @@ function deadlineTekst(dagen) {
 // los, derde niveau onder project -> klusje. Bewust 'Stappen' genoemd i.p.v.
 // 'Subklusjes': die term is al in gebruik voor de klusjes van het project
 // zelf (zie NieuwProjectForm hierboven), dit voorkomt naamsverwarring.
-function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onVerwijderen }) {
+function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onZetUren, onVerwijderen }) {
   const [tekst, setTekst] = useState('');
 
   function voegToe() {
@@ -80,6 +80,11 @@ function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onV
             {s.afgerond ? '✓' : ''}
           </button>
           <span className={`hh-tekst ${s.afgerond ? 'gedaan' : ''}`}>{s.tekst}</span>
+          <div className="hhp-uren-ctrl">
+            <button className="wt-mini-btn" onClick={() => onZetUren(projectId, klusjeId, s.id, (s.duurUren ?? 0.5) - 0.25)}>−</button>
+            <span className="hhp-uren-val">{s.duurUren ?? 0.5}u</span>
+            <button className="wt-mini-btn" onClick={() => onZetUren(projectId, klusjeId, s.id, (s.duurUren ?? 0.5) + 0.25)}>+</button>
+          </div>
           <button className="hh-verwijder" onClick={() => onVerwijderen(projectId, klusjeId, s.id)}>✕</button>
         </div>
       ))}
@@ -93,13 +98,18 @@ function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onV
         />
         <button type="button" className="btn btn-g btn-sm" onClick={voegToe} disabled={!tekst.trim()}>+ Stap</button>
       </div>
+      {stappen.length > 0 && (
+        <p className="ti-hint hhp-stappen-hint">
+          Totale duur van dit klusje ({stappen.reduce((som, s) => som + (s.duurUren ?? 0.5), 0)}u) volgt nu uit de stappen hierboven.
+        </p>
+      )}
     </div>
   );
 }
 
 function ProjectKaart({
   project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
-  onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onVerwijderStap,
+  onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
 }) {
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
 
@@ -161,8 +171,10 @@ function ProjectKaart({
                       {item.tekst}
                       {isWerk && <span className="hhp-werk-badge"> · werk</span>}
                     </span>
-                    {isWerk ? (
-                      <span className="hhp-uren-val">{item.geschatteUren}u</span>
+                    {isWerk || stappen.length > 0 ? (
+                      <span className="hhp-uren-val" title={stappen.length > 0 ? 'Som van de duur van de stappen' : undefined}>
+                        {item.geschatteUren}u
+                      </span>
                     ) : (
                       <div className="hhp-uren-ctrl">
                         <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 0.5)}>−</button>
@@ -196,6 +208,7 @@ function ProjectKaart({
                       stappen={stappen}
                       onToevoegen={onVoegStapToe}
                       onToggle={onToggleStap}
+                      onZetUren={onZetStapUren}
                       onVerwijderen={onVerwijderStap}
                     />
                   )}
@@ -244,6 +257,7 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
           onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
           onVoegStapToe={projecten.voegSubklusjeToe}
           onToggleStap={projecten.toggleSubklusje}
+          onZetStapUren={projecten.zetStapUren}
           onVerwijderStap={projecten.verwijderSubklusje}
         />
       ))}

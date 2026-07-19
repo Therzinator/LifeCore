@@ -1,3 +1,5 @@
+.pim-tabs { margin-bottom: var(--space-md); }
+
 .pim-gelukt {
   font-size: var(--font-size-sm);
   color: var(--accent);

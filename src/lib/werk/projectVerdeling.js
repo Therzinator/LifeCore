@@ -31,6 +31,19 @@ export function dagenTotDeadline(deadlineDatumKey, vandaagDatumKey) {
   return Math.round(datumKeyNaarUtcDagen(deadlineDatumKey) - datumKeyNaarUtcDagen(vandaagDatumKey));
 }
 
+// Stappen (zie StappenLijst in HuishoudProjecten.jsx) hebben elk hun eigen
+// duur; een klusje met stappen krijgt geen losse, los-staande geschatteUren
+// meer — de som van zijn stappen bepaalt de totale duur. Zonder stappen
+// blijft het bestaande, handmatig ingestelde geschatteUren gelden.
+export function berekenGeschatteUren(klusje) {
+  const stappen = klusje.subklusjes ?? [];
+  if (stappen.length === 0) return klusje.geschatteUren ?? 1;
+  // Stappen van vóór dit veld (of zonder expliciete duur) tellen als 0.5u —
+  // dezelfde default als een nieuwe stap — i.p.v. 0, zodat oudere, nog
+  // ongewijzigde stappen niet stilzwijgend de totale duur naar 0 trekken.
+  return stappen.reduce((som, s) => som + (s.duurUren ?? 0.5), 0);
+}
+
 export function verdeelKlusjesOverMaanden(klusjes, aantalMaanden, startMaand) {
   const maanden = Array.from({ length: Math.max(1, aantalMaanden) }, (_, i) => ({
     maand: maandOffset(startMaand, i),

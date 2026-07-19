@@ -1,5 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline } from './projectVerdeling.js';
+import {
+  verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline, berekenGeschatteUren,
+} from './projectVerdeling.js';
+
+describe('berekenGeschatteUren', () => {
+  it('gebruikt het handmatig ingestelde geschatteUren zonder stappen', () => {
+    expect(berekenGeschatteUren({ geschatteUren: 3, subklusjes: [] })).toBe(3);
+    expect(berekenGeschatteUren({ subklusjes: [] })).toBe(1);
+  });
+
+  it('telt de duur van de stappen op als er stappen zijn, ongeacht geschatteUren', () => {
+    const klusje = {
+      geschatteUren: 5,
+      subklusjes: [{ id: 'a', duurUren: 1 }, { id: 'b', duurUren: 0.5 }],
+    };
+    expect(berekenGeschatteUren(klusje)).toBe(1.5);
+  });
+
+  it('valt terug op 0.5u per stap zonder eigen duurUren', () => {
+    const klusje = { subklusjes: [{ id: 'a' }, { id: 'b', duurUren: 1 }] };
+    expect(berekenGeschatteUren(klusje)).toBe(1.5);
+  });
+});
 
 describe('verdeelKlusjesOverMaanden', () => {
   it('verdeelt gelijke klusjes zo gelijkmatig mogelijk over de maanden', () => {

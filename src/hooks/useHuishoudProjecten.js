@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
-import { verdeelKlusjesOverMaanden } from '../lib/werk/projectVerdeling.js';
+import { verdeelKlusjesOverMaanden, berekenGeschatteUren } from '../lib/werk/projectVerdeling.js';
 
 function leegRecord() {
   return nieuwRecord({ projecten: [] });
@@ -33,6 +33,18 @@ function bijwerkKlusje(projecten, projectId, klusjeId, updater) {
     const klusjes = p.klusjes.map((k) => (k.id === klusjeId ? updater(k) : k));
     return { ...p, klusjes };
   });
+}
+
+// Zoals bijwerkKlusje, maar voor wijzigingen aan de stappen van een klusje —
+// herberekent daarna geschatteUren uit de stappen (zie berekenGeschatteUren)
+// en herverdeelt het project opnieuw, want een gewijzigde duur kan de
+// maandindeling verschuiven.
+function bijwerkStappen(projecten, projectId, klusjeId, updater) {
+  const bijgewerkt = bijwerkKlusje(projecten, projectId, klusjeId, (k) => {
+    const nieuw = updater(k);
+    return { ...nieuw, geschatteUren: berekenGeschatteUren(nieuw) };
+  });
+  return bijgewerkt.map((p) => (p.id === projectId ? herverdeel(p) : p));
 }
 
 export function useHuishoudProjecten() {
@@ -113,17 +125,19 @@ export function useHuishoudProjecten() {
     });
   }, []);
 
-  // Subklusjes — een klusje verder opdelen in kleinere stukjes voor extra
-  // grote taken. Blijven puur een breakdown binnen het klusje: ze tellen
-  // niet mee in de maandverdeling (die blijft op het klusje als geheel
-  // draaien) en het klusje zelf blijft los, handmatig afvinkbaar — geen
-  // automatische 'alle subklusjes af = klusje af'-koppeling, dat zou een
-  // verrassende bijwerking zijn voor wie het klusje zelf al had afgevinkt.
-  const voegSubklusjeToe = useCallback((projectId, klusjeId, tekst) => {
+  // Subklusjes ("stappen" in de UI) — een klusje verder opdelen in kleinere
+  // stukjes voor extra grote taken. Elke stap draagt zijn eigen duurUren;
+  // zodra een klusje stappen heeft, is zijn geschatteUren niet langer los
+  // instelbaar maar de som van die stappen (zie berekenGeschatteUren), en
+  // telt dus wél mee in de maandverdeling. Het klusje zelf blijft los,
+  // handmatig afvinkbaar — geen automatische 'alle stappen af = klusje
+  // af'-koppeling, dat zou een verrassende bijwerking zijn voor wie het
+  // klusje zelf al had afgevinkt.
+  const voegSubklusjeToe = useCallback((projectId, klusjeId, tekst, duurUren = 0.5) => {
     setRecordState((huidig) => {
-      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({
+      const projecten = bijwerkStappen(huidig.projecten, projectId, klusjeId, (k) => ({
         ...k,
-        subklusjes: [...(k.subklusjes ?? []), { id: nieuweId('skl'), tekst, afgerond: false, afgerondOp: null }],
+        subklusjes: [...(k.subklusjes ?? []), { id: nieuweId('skl'), tekst, duurUren, afgerond: false, afgerondOp: null }],
       }));
       const bijgewerkt = nieuwRecord({ projecten });
       schrijfLokaal('huishoud_projecten', bijgewerkt);
@@ -147,9 +161,23 @@ export function useHuishoudProjecten() {
     });
   }, []);
 
+  const zetStapUren = useCallback((projectId, klusjeId, subklusjeId, duurUren) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkStappen(huidig.projecten, projectId, klusjeId, (k) => ({
+        ...k,
+        subklusjes: (k.subklusjes ?? []).map((s) => (
+          s.id === subklusjeId ? { ...s, duurUren: Math.max(0.25, duurUren) } : s
+        )),
+      }));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const verwijderSubklusje = useCallback((projectId, klusjeId, subklusjeId) => {
     setRecordState((huidig) => {
-      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({
+      const projecten = bijwerkStappen(huidig.projecten, projectId, klusjeId, (k) => ({
         ...k,
         subklusjes: (k.subklusjes ?? []).filter((s) => s.id !== subklusjeId),
       }));
@@ -169,6 +197,7 @@ export function useHuishoudProjecten() {
     verwijderProject,
     voegSubklusjeToe,
     toggleSubklusje,
+    zetStapUren,
     verwijderSubklusje,
   };
 }
