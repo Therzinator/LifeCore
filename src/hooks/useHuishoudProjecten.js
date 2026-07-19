@@ -53,11 +53,11 @@ export function useHuishoudProjecten() {
   const voegProjectToe = useCallback((naam, aantalMaanden, klusjeTeksten, deadline = null) => {
     setRecordState((huidig) => {
       const klusjes = klusjeTeksten.map((tekst) => ({
-        id: nieuweId('kl'), tekst, geschatteUren: 1, afgerond: false, afgerondOp: null, subklusjes: [],
+        id: nieuweId('kl'), tekst, geschatteUren: 1, afgerond: false, afgerondOp: null, subklusjes: [], vereistKlusjeId: null,
       }));
       const nieuw = herverdeel({
         id: nieuweId('proj'), naam, aantalMaanden, startMaand: huidigeMaandKey(), deadline,
-        aangemaaktOp: new Date().toISOString(), klusjes,
+        aangemaaktOp: new Date().toISOString(), klusjes, werkvoorbereiding: [],
       });
       const projecten = [...(huidig.projecten ?? []), nieuw];
       const bijgewerkt = nieuwRecord({ projecten });
@@ -109,8 +109,68 @@ export function useHuishoudProjecten() {
     setRecordState((huidig) => {
       const projecten = huidig.projecten.map((p) => {
         if (p.id !== projectId) return p;
-        return herverdeel({ ...p, klusjes: p.klusjes.filter((k) => k.id !== klusjeId) });
+        // Klusjes die dit klusje als vereiste hadden, verliezen die koppeling
+        // — anders zou hun 'vereistKlusjeId' naar niets meer verwijzen.
+        const klusjes = p.klusjes
+          .filter((k) => k.id !== klusjeId)
+          .map((k) => (k.vereistKlusjeId === klusjeId ? { ...k, vereistKlusjeId: null } : k));
+        return herverdeel({ ...p, klusjes });
       });
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  // Taakvolgorde — een klusje kan pas 'op te pakken' zijn als een ander
+  // klusje uit hetzelfde project al is afgerond. Blokkeert bewust NIET het
+  // handmatig afvinken zelf (geen paternalistische lock op de checkbox) —
+  // het wordt alleen gebruikt om de Agenda-suggesties (Klusjes-dag) te
+  // filteren, zodat de app geen klusje voorstelt waarvan de vereiste nog
+  // openstaat. vereistKlusjeId=null betekent 'geen vereiste'.
+  const zetVereistKlusje = useCallback((projectId, klusjeId, vereistKlusjeId) => {
+    setRecordState((huidig) => {
+      const projecten = bijwerkKlusje(huidig.projecten, projectId, klusjeId, (k) => ({ ...k, vereistKlusjeId }));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  // Werkvoorbereiding — een losse checklist per PROJECT (niet per klusje)
+  // voor bv. bouwmarkt-materiaal en zaagmaten, met een simpele check erbij.
+  // Zelfde vorm als de stappen-checklist bij een klusje, maar dan één
+  // niveau hoger; telt niet mee in de maandverdeling of geschatteUren.
+  const voegWerkvoorbereidingToe = useCallback((projectId, tekst) => {
+    setRecordState((huidig) => {
+      const projecten = huidig.projecten.map((p) => (p.id === projectId ? {
+        ...p,
+        werkvoorbereiding: [...(p.werkvoorbereiding ?? []), { id: nieuweId('wv'), tekst, afgerond: false }],
+      } : p));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  const toggleWerkvoorbereiding = useCallback((projectId, itemId) => {
+    setRecordState((huidig) => {
+      const projecten = huidig.projecten.map((p) => (p.id === projectId ? {
+        ...p,
+        werkvoorbereiding: (p.werkvoorbereiding ?? []).map((w) => (w.id === itemId ? { ...w, afgerond: !w.afgerond } : w)),
+      } : p));
+      const bijgewerkt = nieuwRecord({ projecten });
+      schrijfLokaal('huishoud_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  const verwijderWerkvoorbereiding = useCallback((projectId, itemId) => {
+    setRecordState((huidig) => {
+      const projecten = huidig.projecten.map((p) => (p.id === projectId ? {
+        ...p,
+        werkvoorbereiding: (p.werkvoorbereiding ?? []).filter((w) => w.id !== itemId),
+      } : p));
       const bijgewerkt = nieuwRecord({ projecten });
       schrijfLokaal('huishoud_projecten', bijgewerkt);
       return bijgewerkt;
@@ -199,5 +259,9 @@ export function useHuishoudProjecten() {
     toggleSubklusje,
     zetStapUren,
     verwijderSubklusje,
+    zetVereistKlusje,
+    voegWerkvoorbereidingToe,
+    toggleWerkvoorbereiding,
+    verwijderWerkvoorbereiding,
   };
 }

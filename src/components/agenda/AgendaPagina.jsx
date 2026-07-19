@@ -3,6 +3,7 @@ import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { isGeblokkeerd } from '../../lib/werk/projectVerdeling.js';
 import { instantiesInBereik, pasTijdAan } from '../../lib/agenda/agendaBlokken.js';
 import { weekDatums } from '../../lib/agenda/kalenderRooster.js';
 import { maandagVan, datumKey } from '../../utils/datum.js';
@@ -64,7 +65,10 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const huishoudProjecten = useHuishoudProjecten();
   const openKlusjes = huishoudProjecten.projecten
     .flatMap((p) => p.klusjes
-      .filter((k) => !k.afgerond)
+      // Een klusje met een nog-openstaande vereiste (taakvolgorde, zie
+      // isGeblokkeerd) is niet 'op te pakken' — de app moet geen suggestie
+      // doen die in de praktijk nog niet uitgevoerd kan worden.
+      .filter((k) => !k.afgerond && !isGeblokkeerd(k, p.klusjes))
       .map((k) => ({ id: k.id, projectNaam: p.naam, tekst: k.tekst, geschatteUren: k.geschatteUren ?? 1 })))
     .sort((a, b) => b.geschatteUren - a.geschatteUren);
 

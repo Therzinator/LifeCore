@@ -31,6 +31,17 @@ export function dagenTotDeadline(deadlineDatumKey, vandaagDatumKey) {
   return Math.round(datumKeyNaarUtcDagen(deadlineDatumKey) - datumKeyNaarUtcDagen(vandaagDatumKey));
 }
 
+// Taakvolgorde: een klusje met een vereistKlusjeId is pas 'op te pakken'
+// zodra dat andere klusje (uit hetzelfde project) is afgerond. Een vereiste
+// die niet meer bestaat (verwijderd) telt niet als blokkade — zie ook de
+// opruim-stap in useHuishoudProjecten.verwijderKlusje, die dit in de
+// praktijk al voorkomt door de referentie meteen te wissen.
+export function isGeblokkeerd(klusje, alleKlusjesVanProject) {
+  if (!klusje.vereistKlusjeId) return false;
+  const vereiste = alleKlusjesVanProject.find((k) => k.id === klusje.vereistKlusjeId);
+  return Boolean(vereiste && !vereiste.afgerond);
+}
+
 // Stappen (zie StappenLijst in HuishoudProjecten.jsx) hebben elk hun eigen
 // duur; een klusje met stappen krijgt geen losse, los-staande geschatteUren
 // meer — de som van zijn stappen bepaalt de totale duur. Zonder stappen

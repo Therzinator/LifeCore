@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
-import { projectMaandOverzicht, maandLabel, dagenTotDeadline } from '../../lib/werk/projectVerdeling.js';
+import { projectMaandOverzicht, maandLabel, dagenTotDeadline, isGeblokkeerd } from '../../lib/werk/projectVerdeling.js';
 import { vandaagKey } from '../../utils/datum.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
+import WerkvoorbereidingLijst from './WerkvoorbereidingLijst.jsx';
 import './HuishoudProjecten.css';
 
 function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
@@ -59,6 +60,48 @@ function deadlineTekst(dagen) {
   return `Deadline was ${verstreken} ${verstreken === 1 ? 'dag' : 'dagen'} geleden.`;
 }
 
+// Gedebouncede, lokaal-bijgehouden uren-invoer. Zonder dit springt het
+// bewerkte item bij ELKE losse klik/toetsaanslag naar een andere
+// maand-groep: de LPT-maandverdeling (verdeelKlusjesOverMaanden) wordt live
+// herberekend uit geschatteUren bij elke render (nodig voor de
+// werktaken-koppeling, zie projectMaandOverzicht — kan niet zomaar op de
+// bewaarde klusje.maand vertrouwen). Door de commit (onCommit, die
+// uiteindelijk de herverdeling triggert) te debouncen i.p.v. bij elke klik
+// meteen te schrijven, blijft het item op zijn plek staan terwijl je aan
+// het plussen/typen bent — de herindeling settelt pas als je stopt.
+const UREN_COMMIT_DEBOUNCE_MS = 500;
+
+function UrenVeld({ waarde, stap, onCommit }) {
+  const [lokaal, setLokaal] = useState(waarde);
+  const timerRef = useRef(null);
+
+  useEffect(() => { setLokaal(waarde); }, [waarde]);
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  function plan(nieuweWaarde) {
+    const geklemd = Math.max(stap, nieuweWaarde);
+    setLokaal(geklemd);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onCommit(geklemd), UREN_COMMIT_DEBOUNCE_MS);
+  }
+
+  return (
+    <div className="hhp-uren-ctrl">
+      <button type="button" className="wt-mini-btn" onClick={() => plan(lokaal - stap)}>−</button>
+      <input
+        type="number"
+        className="hhp-uren-input"
+        value={lokaal}
+        min={stap}
+        step={stap}
+        onChange={(e) => plan(parseFloat(e.target.value) || stap)}
+        aria-label="Geschatte uren"
+      />
+      <button type="button" className="wt-mini-btn" onClick={() => plan(lokaal + stap)}>+</button>
+    </div>
+  );
+}
+
 // Stapjes waarin een (extra groot) klusje verder opgeknipt kan worden — een
 // los, derde niveau onder project -> klusje. Bewust 'Stappen' genoemd i.p.v.
 // 'Subklusjes': die term is al in gebruik voor de klusjes van het project
@@ -80,11 +123,11 @@ function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onZ
             {s.afgerond ? '✓' : ''}
           </button>
           <span className={`hh-tekst ${s.afgerond ? 'gedaan' : ''}`}>{s.tekst}</span>
-          <div className="hhp-uren-ctrl">
-            <button className="wt-mini-btn" onClick={() => onZetUren(projectId, klusjeId, s.id, (s.duurUren ?? 0.5) - 0.25)}>−</button>
-            <span className="hhp-uren-val">{s.duurUren ?? 0.5}u</span>
-            <button className="wt-mini-btn" onClick={() => onZetUren(projectId, klusjeId, s.id, (s.duurUren ?? 0.5) + 0.25)}>+</button>
-          </div>
+          <UrenVeld
+            waarde={s.duurUren ?? 0.5}
+            stap={0.25}
+            onCommit={(w) => onZetUren(projectId, klusjeId, s.id, w)}
+          />
           <button className="hh-verwijder" onClick={() => onVerwijderen(projectId, klusjeId, s.id)}>✕</button>
         </div>
       ))}
@@ -107,11 +150,33 @@ function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onZ
   );
 }
 
+// "Taak kan pas na" — dropdown met de andere klusjes van hetzelfde project.
+// Geen cirkel-detectie (A vereist B, B vereist A) — bewust simpel, in het
+// ergste geval krijgt geen van beide een Agenda-suggestie, wat de
+// gebruiker zelf meteen kan herstellen door de vereiste weer los te koppelen.
+function VereisteKiezer({ projectId, klusje, andereKlusjes, onZet }) {
+  return (
+    <div className="ti-veld-grp hhp-vereiste">
+      <label className="ti-lbl">Taak kan pas na</label>
+      <select
+        className="ti-veld"
+        value={klusje.vereistKlusjeId ?? ''}
+        onChange={(e) => onZet(projectId, klusje.id, e.target.value || null)}
+      >
+        <option value="">— geen vereiste —</option>
+        {andereKlusjes.map((k) => <option key={k.id} value={k.id}>{k.tekst}</option>)}
+      </select>
+    </div>
+  );
+}
+
 function ProjectKaart({
   project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
   onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
+  onZetVereiste, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
 }) {
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
+  const [toonWerkvoorbereiding, setToonWerkvoorbereiding] = useState(false);
 
   const alleItems = [...project.klusjes, ...gekoppeldeWerktaken.map((t) => ({ afgerond: t.klaar }))];
   const afgerond = alleItems.filter((i) => i.afgerond).length;
@@ -132,8 +197,25 @@ function ProjectKaart({
     <div className="card">
       <div className="hhp-kop">
         <div className="td-label">{project.naam}</div>
+        <button
+          type="button"
+          className={`btn btn-sm ${toonWerkvoorbereiding ? 'btn-p' : 'btn-g'}`}
+          onClick={() => setToonWerkvoorbereiding((w) => !w)}
+        >
+          🛠 Werkvoorbereiding
+        </button>
         <button className="hh-verwijder" onClick={() => onVerwijderProject(project.id)}>✕</button>
       </div>
+
+      {toonWerkvoorbereiding && (
+        <WerkvoorbereidingLijst
+          projectId={project.id}
+          items={project.werkvoorbereiding ?? []}
+          onToevoegen={onVoegWerkvoorbereidingToe}
+          onToggle={onToggleWerkvoorbereiding}
+          onVerwijderen={onVerwijderWerkvoorbereiding}
+        />
+      )}
       <div className="hhp-voortgang-track"><div className="hhp-voortgang-fill" style={{ width: `${pct}%` }} /></div>
       <div className="hhp-voortgang-lbl">{afgerond}/{totaal} klusjes ({pct}%)</div>
 
@@ -170,25 +252,23 @@ function ProjectKaart({
                     <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
                       {item.tekst}
                       {isWerk && <span className="hhp-werk-badge"> · werk</span>}
+                      {!isWerk && isGeblokkeerd(item, project.klusjes) && (
+                        <span
+                          className="hhp-geblokkeerd"
+                          title={`Wacht op: ${project.klusjes.find((k) => k.id === item.vereistKlusjeId)?.tekst ?? ''}`}
+                        > ⛔</span>
+                      )}
                     </span>
                     {isWerk || stappen.length > 0 ? (
                       <span className="hhp-uren-val" title={stappen.length > 0 ? 'Som van de duur van de stappen' : undefined}>
                         {item.geschatteUren}u
                       </span>
                     ) : (
-                      <div className="hhp-uren-ctrl">
-                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 1)}>−</button>
-                        <input
-                          type="number"
-                          className="hhp-uren-input"
-                          value={item.geschatteUren}
-                          min="0.5"
-                          step="0.5"
-                          onChange={(e) => onZetUren(project.id, item.id, parseFloat(e.target.value) || 0.5)}
-                          aria-label="Geschatte uren"
-                        />
-                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 1)}>+</button>
-                      </div>
+                      <UrenVeld
+                        waarde={item.geschatteUren}
+                        stap={1}
+                        onCommit={(w) => onZetUren(project.id, item.id, w)}
+                      />
                     )}
                     {!isWerk && (
                       <button
@@ -210,15 +290,23 @@ function ProjectKaart({
                   </div>
 
                   {!isWerk && isUitgeklapt && (
-                    <StappenLijst
-                      projectId={project.id}
-                      klusjeId={item.id}
-                      stappen={stappen}
-                      onToevoegen={onVoegStapToe}
-                      onToggle={onToggleStap}
-                      onZetUren={onZetStapUren}
-                      onVerwijderen={onVerwijderStap}
-                    />
+                    <div className="hhp-details">
+                      <VereisteKiezer
+                        projectId={project.id}
+                        klusje={item}
+                        andereKlusjes={project.klusjes.filter((k) => k.id !== item.id)}
+                        onZet={onZetVereiste}
+                      />
+                      <StappenLijst
+                        projectId={project.id}
+                        klusjeId={item.id}
+                        stappen={stappen}
+                        onToevoegen={onVoegStapToe}
+                        onToggle={onToggleStap}
+                        onZetUren={onZetStapUren}
+                        onVerwijderen={onVerwijderStap}
+                      />
+                    </div>
                   )}
                 </div>
               );
@@ -267,6 +355,10 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
           onToggleStap={projecten.toggleSubklusje}
           onZetStapUren={projecten.zetStapUren}
           onVerwijderStap={projecten.verwijderSubklusje}
+          onZetVereiste={projecten.zetVereistKlusje}
+          onVoegWerkvoorbereidingToe={projecten.voegWerkvoorbereidingToe}
+          onToggleWerkvoorbereiding={projecten.toggleWerkvoorbereiding}
+          onVerwijderWerkvoorbereiding={projecten.verwijderWerkvoorbereiding}
         />
       ))}
 

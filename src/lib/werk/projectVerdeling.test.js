@@ -1,7 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import {
-  verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline, berekenGeschatteUren,
+  verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline, berekenGeschatteUren, isGeblokkeerd,
 } from './projectVerdeling.js';
+
+describe('isGeblokkeerd', () => {
+  const klusjes = [
+    { id: 'a', afgerond: false },
+    { id: 'b', afgerond: true },
+  ];
+
+  it('is niet geblokkeerd zonder vereiste', () => {
+    expect(isGeblokkeerd({ id: 'c', vereistKlusjeId: null }, klusjes)).toBe(false);
+  });
+
+  it('is geblokkeerd als de vereiste nog niet is afgerond', () => {
+    expect(isGeblokkeerd({ id: 'c', vereistKlusjeId: 'a' }, klusjes)).toBe(true);
+  });
+
+  it('is niet geblokkeerd als de vereiste al is afgerond', () => {
+    expect(isGeblokkeerd({ id: 'c', vereistKlusjeId: 'b' }, klusjes)).toBe(false);
+  });
+
+  it('is niet geblokkeerd als de vereiste niet meer bestaat', () => {
+    expect(isGeblokkeerd({ id: 'c', vereistKlusjeId: 'weg' }, klusjes)).toBe(false);
+  });
+});
 
 describe('berekenGeschatteUren', () => {
   it('gebruikt het handmatig ingestelde geschatteUren zonder stappen', () => {
