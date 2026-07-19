@@ -177,9 +177,17 @@ function ProjectKaart({
                       </span>
                     ) : (
                       <div className="hhp-uren-ctrl">
-                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 0.5)}>−</button>
-                        <span className="hhp-uren-val">{item.geschatteUren}u</span>
-                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 0.5)}>+</button>
+                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 1)}>−</button>
+                        <input
+                          type="number"
+                          className="hhp-uren-input"
+                          value={item.geschatteUren}
+                          min="0.5"
+                          step="0.5"
+                          onChange={(e) => onZetUren(project.id, item.id, parseFloat(e.target.value) || 0.5)}
+                          aria-label="Geschatte uren"
+                        />
+                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 1)}>+</button>
                       </div>
                     )}
                     {!isWerk && (

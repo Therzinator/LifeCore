@@ -21,6 +21,17 @@
 
 .hhp-uren-ctrl { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .hhp-uren-val { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); min-width: 28px; text-align: center; }
+.hhp-uren-input {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--txt);
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  width: 44px;
+  text-align: center;
+  padding: 2px 0;
+}
 
 .hhp-werk-badge { color: var(--accent-mid); font-size: var(--font-size-xs); }
 
