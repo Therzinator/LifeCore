@@ -15,6 +15,7 @@ export default function AgendaDag({
   datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
   openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
   openHuishoudTaken = [], onVoegHuishoudTaakToe,
+  toonMeditatieSuggestie = false, onVoegMeditatieToe,
 }) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
@@ -49,6 +50,19 @@ export default function AgendaDag({
           {dagSignalen.map((s) => (
             <span key={s.id} className="ag-signaal-chip">{TYPE_ICOON[s.type] ?? '•'} {s.tekst}</span>
           ))}
+        </div>
+      )}
+
+      {toonMeditatieSuggestie && onVoegMeditatieToe && (
+        <div className="ag-suggesties">
+          <div className="ti-lbl">Moment voor jezelf</div>
+          <p className="ti-hint">Nog geen rustmoment gepland vandaag — een korte meditatie kan helpen bij piekeren.</p>
+          <div className="hh-lijst">
+            <div className="hh-item">
+              <span className="hh-tekst">🧘 Mediteren</span>
+              <button className="btn btn-g btn-sm" onClick={onVoegMeditatieToe}>+ Toevoegen</button>
+            </div>
+          </div>
         </div>
       )}
 

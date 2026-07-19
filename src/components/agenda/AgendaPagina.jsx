@@ -167,6 +167,28 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
     toonToast(`"${taak.tekst}" toegevoegd aan de Agenda`, 'ok');
   }
 
+  // Dagelijkse mediteer-suggestie — geen wekelijks schema of project nodig
+  // zoals de andere suggesties hierboven, gewoon elke dag opnieuw aangeboden
+  // zolang er nog geen blok voor die dag staat (bronId per datum). Bedoeld
+  // om de regie over een terugkerende gewoonte te ondersteunen: de suggestie
+  // verdwijnt zodra 'm ingepland is, en komt vanzelf terug de volgende dag.
+  const meditatieBronId = `meditatie_${referentieDatum}`;
+  const toonMeditatieSuggestie = !isAlToegevoegd(meditatieBronId);
+
+  function voegMeditatieAlsBlokToe() {
+    const starttijd = '10:00';
+    const eindtijd = pasTijdAan(starttijd, 10);
+    const nieuwBlok = {
+      titel: 'Mediteren', type: 'ontspanning', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: meditatieBronId,
+    };
+    if (heeftOverlap(blokken.blokken, nieuwBlok)) {
+      toonToast(`${starttijd}–${eindtijd} is al bezet — pas het tijdvak handmatig aan via "+ Blok toevoegen".`, 'wn');
+      return;
+    }
+    blokken.voegToe(nieuwBlok);
+    toonToast('Mediteren toegevoegd aan de Agenda', 'ok');
+  }
+
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
 
   function navigeer(richting) {
@@ -260,6 +282,8 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             onVoegTrainingToe={voegTrainingAlsBlokToe}
             openHuishoudTaken={openHuishoudTaken}
             onVoegHuishoudTaakToe={voegHuishoudTaakAlsBlokToe}
+            toonMeditatieSuggestie={toonMeditatieSuggestie}
+            onVoegMeditatieToe={voegMeditatieAlsBlokToe}
           />
         )}
       </div>

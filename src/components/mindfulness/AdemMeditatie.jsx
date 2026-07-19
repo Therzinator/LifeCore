@@ -31,9 +31,10 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
 
   const totaleSeconden = duurMinuten * 60;
   const klaar = gestart && elapsed >= totaleSeconden;
+  const resterendTotaal = Math.max(totaleSeconden - elapsed, 0);
 
   useMeditatieAudioSpeler(meditatieAudioRef, {
-    actief: gestart && !klaar, audioAan, pad: MEDITATIE_AUDIO_PAD[duurMinuten],
+    actief: gestart && !klaar, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal,
   });
 
   useEffect(() => {
@@ -49,7 +50,6 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   }, [klaar, geluidFragment]);
 
   const fase = gestart && !klaar ? faseOpTijdstip(elapsed) : null;
-  const resterendTotaal = Math.max(totaleSeconden - elapsed, 0);
 
   useEffect(() => {
     if (!handsFree || !fase) return;
