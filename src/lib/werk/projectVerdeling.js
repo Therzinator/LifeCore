@@ -17,6 +17,20 @@ export function maandLabel(maandKey) {
   return datum.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
 }
 
+function datumKeyNaarUtcDagen(datumKeyStr) {
+  const [jaar, maand, dag] = datumKeyStr.split('-').map(Number);
+  return Date.UTC(jaar, maand - 1, dag) / (1000 * 60 * 60 * 24);
+}
+
+// Beide data zijn 'YYYY-MM-DD'-sleutels (zie utils/datum.js datumKey) —
+// vergelijken via Date.UTC-dagen i.p.v. new Date(iso) - new Date(iso)
+// voorkomt dat een DST-overgang tussen de twee data het aantal dagen met 1
+// laat verschieten.
+export function dagenTotDeadline(deadlineDatumKey, vandaagDatumKey) {
+  if (!deadlineDatumKey) return null;
+  return Math.round(datumKeyNaarUtcDagen(deadlineDatumKey) - datumKeyNaarUtcDagen(vandaagDatumKey));
+}
+
 export function verdeelKlusjesOverMaanden(klusjes, aantalMaanden, startMaand) {
   const maanden = Array.from({ length: Math.max(1, aantalMaanden) }, (_, i) => ({
     maand: maandOffset(startMaand, i),

@@ -25,3 +25,42 @@
 .hhp-werk-badge { color: var(--accent-mid); font-size: var(--font-size-xs); }
 
 .hhp-form { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+.hhp-deadline-rij {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-sm);
+}
+.hhp-deadline-input.ti-veld { width: auto; flex-shrink: 0; }
+.hhp-deadline-lbl { font-size: var(--font-size-xs); color: var(--txt-muted); }
+.hhp-deadline-lbl.verlopen { color: var(--warn); }
+
+.hhp-stappen-toggle {
+  flex-shrink: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-mono);
+  padding: 3px 6px;
+  min-width: 22px;
+}
+.hhp-stappen-toggle:hover { background: var(--bg-3); }
+
+.hhp-stappen {
+  margin: 0 0 var(--space-sm) 34px;
+  padding-left: var(--space-sm);
+  border-left: 2px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hhp-stap-item { display: flex; align-items: center; gap: var(--space-sm); padding: 4px 0; }
+
+.hhp-stap-invoer { display: flex; gap: var(--space-xs); margin-top: 4px; }
+.hhp-stap-invoer .ti-veld { flex: 1; }

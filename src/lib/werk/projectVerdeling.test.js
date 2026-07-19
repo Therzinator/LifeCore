@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel } from './projectVerdeling.js';
+import { verdeelKlusjesOverMaanden, groepeerPerMaand, maandLabel, dagenTotDeadline } from './projectVerdeling.js';
 
 describe('verdeelKlusjesOverMaanden', () => {
   it('verdeelt gelijke klusjes zo gelijkmatig mogelijk over de maanden', () => {
@@ -49,5 +49,29 @@ describe('maandLabel', () => {
   it('formatteert een maand-key als leesbare Nederlandse tekst', () => {
     expect(maandLabel('2026-03')).toMatch(/maart/i);
     expect(maandLabel('2026-03')).toContain('2026');
+  });
+});
+
+describe('dagenTotDeadline', () => {
+  it('geeft null zonder deadline', () => {
+    expect(dagenTotDeadline(null, '2026-07-19')).toBeNull();
+  });
+
+  it('telt dagen tot een toekomstige deadline', () => {
+    expect(dagenTotDeadline('2026-07-29', '2026-07-19')).toBe(10);
+  });
+
+  it('geeft 0 op de deadline zelf', () => {
+    expect(dagenTotDeadline('2026-07-19', '2026-07-19')).toBe(0);
+  });
+
+  it('geeft een negatief getal voor een verlopen deadline', () => {
+    expect(dagenTotDeadline('2026-07-10', '2026-07-19')).toBe(-9);
+  });
+
+  it('telt correct over een jaargrens en een DST-overgang heen', () => {
+    expect(dagenTotDeadline('2027-01-01', '2026-12-30')).toBe(2);
+    // 2026-10-25 -> 2026-11-01: bevat de NL-DST-overgang (laatste zondag oktober).
+    expect(dagenTotDeadline('2026-11-01', '2026-10-25')).toBe(7);
   });
 });

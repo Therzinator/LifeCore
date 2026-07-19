@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
-import { projectMaandOverzicht, maandLabel } from '../../lib/werk/projectVerdeling.js';
+import { projectMaandOverzicht, maandLabel, dagenTotDeadline } from '../../lib/werk/projectVerdeling.js';
+import { vandaagKey } from '../../utils/datum.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './HuishoudProjecten.css';
 
@@ -8,12 +9,13 @@ function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
   const [naam, setNaam] = useState('');
   const [aantalMaanden, setAantalMaanden] = useState(3);
   const [klusjesTekst, setKlusjesTekst] = useState('');
+  const [deadline, setDeadline] = useState('');
 
   function submit(e) {
     e.preventDefault();
     const klusjes = parseSpraakTekst(klusjesTekst);
     if (!naam.trim() || klusjes.length === 0) return;
-    onToevoegen(naam.trim(), aantalMaanden, klusjes);
+    onToevoegen(naam.trim(), aantalMaanden, klusjes, deadline || null);
   }
 
   return (
@@ -28,6 +30,10 @@ function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
           id="hhp-maanden" type="number" className="ti-veld" min="1" max="24"
           value={aantalMaanden} onChange={(e) => setAantalMaanden(parseInt(e.target.value) || 1)}
         />
+      </div>
+      <div className="ti-veld-grp">
+        <label className="ti-lbl" htmlFor="hhp-deadline">Deadline (optioneel)</label>
+        <input id="hhp-deadline" type="date" className="ti-veld" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
       </div>
       <div className="ti-veld-grp">
         <label className="ti-lbl">Subklusjes (één per regel, komma of &quot;en&quot;)</label>
@@ -45,15 +51,72 @@ function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
   );
 }
 
+function deadlineTekst(dagen) {
+  if (dagen === null) return null;
+  if (dagen > 0) return `Nog ${dagen} ${dagen === 1 ? 'dag' : 'dagen'} tot de deadline.`;
+  if (dagen === 0) return 'Vandaag is de deadline.';
+  const verstreken = Math.abs(dagen);
+  return `Deadline was ${verstreken} ${verstreken === 1 ? 'dag' : 'dagen'} geleden.`;
+}
+
+// Stapjes waarin een (extra groot) klusje verder opgeknipt kan worden — een
+// los, derde niveau onder project -> klusje. Bewust 'Stappen' genoemd i.p.v.
+// 'Subklusjes': die term is al in gebruik voor de klusjes van het project
+// zelf (zie NieuwProjectForm hierboven), dit voorkomt naamsverwarring.
+function StappenLijst({ projectId, klusjeId, stappen, onToevoegen, onToggle, onVerwijderen }) {
+  const [tekst, setTekst] = useState('');
+
+  function voegToe() {
+    if (!tekst.trim()) return;
+    onToevoegen(projectId, klusjeId, tekst.trim());
+    setTekst('');
+  }
+
+  return (
+    <div className="hhp-stappen">
+      {stappen.map((s) => (
+        <div className="hhp-stap-item" key={s.id}>
+          <button className={`hh-check ${s.afgerond ? 'gedaan' : ''}`} onClick={() => onToggle(projectId, klusjeId, s.id)}>
+            {s.afgerond ? '✓' : ''}
+          </button>
+          <span className={`hh-tekst ${s.afgerond ? 'gedaan' : ''}`}>{s.tekst}</span>
+          <button className="hh-verwijder" onClick={() => onVerwijderen(projectId, klusjeId, s.id)}>✕</button>
+        </div>
+      ))}
+      <div className="hhp-stap-invoer">
+        <input
+          className="ti-veld"
+          value={tekst}
+          onChange={(e) => setTekst(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); voegToe(); } }}
+          placeholder="Nieuwe stap..."
+        />
+        <button type="button" className="btn btn-g btn-sm" onClick={voegToe} disabled={!tekst.trim()}>+ Stap</button>
+      </div>
+    </div>
+  );
+}
+
 function ProjectKaart({
-  project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject,
-  onToggleWerktaak, onOntkoppelWerktaak,
+  project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
+  onToggleWerktaak, onOntkoppelWerktaak, onVoegStapToe, onToggleStap, onVerwijderStap,
 }) {
+  const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
+
   const alleItems = [...project.klusjes, ...gekoppeldeWerktaken.map((t) => ({ afgerond: t.klaar }))];
   const afgerond = alleItems.filter((i) => i.afgerond).length;
   const totaal = alleItems.length;
   const pct = totaal ? Math.round((afgerond / totaal) * 100) : 0;
   const perMaand = projectMaandOverzicht(project.klusjes, gekoppeldeWerktaken, project.aantalMaanden, project.startMaand);
+  const dagen = dagenTotDeadline(project.deadline, vandaagKey());
+
+  function wisselUitgeklapt(id) {
+    setUitgeklapt((huidig) => {
+      const nieuw = new Set(huidig);
+      if (nieuw.has(id)) nieuw.delete(id); else nieuw.add(id);
+      return nieuw;
+    });
+  }
 
   return (
     <div className="card">
@@ -64,39 +127,78 @@ function ProjectKaart({
       <div className="hhp-voortgang-track"><div className="hhp-voortgang-fill" style={{ width: `${pct}%` }} /></div>
       <div className="hhp-voortgang-lbl">{afgerond}/{totaal} klusjes ({pct}%)</div>
 
+      <div className="hhp-deadline-rij">
+        <input
+          type="date"
+          className="ti-veld hhp-deadline-input"
+          value={project.deadline ?? ''}
+          onChange={(e) => onZetDeadline(project.id, e.target.value || null)}
+          aria-label="Deadline"
+        />
+        {dagen !== null && (
+          <span className={`hhp-deadline-lbl ${dagen < 0 ? 'verlopen' : ''}`}>{deadlineTekst(dagen)}</span>
+        )}
+      </div>
+
       {perMaand.map(([maand, items]) => (
         <div key={maand} className="hhp-maand">
           <div className="hhp-maand-titel">{maandLabel(maand)}</div>
           <div className="hh-lijst">
             {items.map((item) => {
               const isWerk = item.bron === 'werk';
+              const stappen = item.subklusjes ?? [];
+              const isUitgeklapt = uitgeklapt.has(item.id);
               return (
-                <div className="hh-item" key={item.id}>
-                  <button
-                    className={`hh-check ${item.afgerond ? 'gedaan' : ''}`}
-                    onClick={() => (isWerk ? onToggleWerktaak(item.id) : onToggleKlusje(project.id, item.id))}
-                  >
-                    {item.afgerond ? '✓' : ''}
-                  </button>
-                  <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
-                    {item.tekst}
-                    {isWerk && <span className="hhp-werk-badge"> · werk</span>}
-                  </span>
-                  {isWerk ? (
-                    <span className="hhp-uren-val">{item.geschatteUren}u</span>
-                  ) : (
-                    <div className="hhp-uren-ctrl">
-                      <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 0.5)}>−</button>
+                <div key={item.id}>
+                  <div className="hh-item">
+                    <button
+                      className={`hh-check ${item.afgerond ? 'gedaan' : ''}`}
+                      onClick={() => (isWerk ? onToggleWerktaak(item.id) : onToggleKlusje(project.id, item.id))}
+                    >
+                      {item.afgerond ? '✓' : ''}
+                    </button>
+                    <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
+                      {item.tekst}
+                      {isWerk && <span className="hhp-werk-badge"> · werk</span>}
+                    </span>
+                    {isWerk ? (
                       <span className="hhp-uren-val">{item.geschatteUren}u</span>
-                      <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 0.5)}>+</button>
-                    </div>
+                    ) : (
+                      <div className="hhp-uren-ctrl">
+                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 0.5)}>−</button>
+                        <span className="hhp-uren-val">{item.geschatteUren}u</span>
+                        <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 0.5)}>+</button>
+                      </div>
+                    )}
+                    {!isWerk && (
+                      <button
+                        type="button"
+                        className="hhp-stappen-toggle"
+                        onClick={() => wisselUitgeklapt(item.id)}
+                        aria-label="Stappen tonen of verbergen"
+                        title="In stappen opdelen"
+                      >
+                        {stappen.length > 0 ? `${stappen.filter((s) => s.afgerond).length}/${stappen.length}` : '+'}
+                      </button>
+                    )}
+                    <button
+                      className="hh-verwijder"
+                      onClick={() => (isWerk ? onOntkoppelWerktaak(item.id) : onVerwijderKlusje(project.id, item.id))}
+                      aria-label={isWerk ? 'Ontkoppel van project' : 'Verwijder klusje'}
+                      title={isWerk ? 'Ontkoppel van project (taak blijft bestaan in Werktaken)' : undefined}
+                    >✕</button>
+                  </div>
+
+                  {!isWerk && isUitgeklapt && (
+                    <StappenLijst
+                      projectId={project.id}
+                      klusjeId={item.id}
+                      stappen={stappen}
+                      onToevoegen={onVoegStapToe}
+                      onToggle={onToggleStap}
+                      onVerwijderen={onVerwijderStap}
+                    />
                   )}
-                  <button
-                    className="hh-verwijder"
-                    onClick={() => (isWerk ? onOntkoppelWerktaak(item.id) : onVerwijderKlusje(project.id, item.id))}
-                    aria-label={isWerk ? 'Ontkoppel van project' : 'Verwijder klusje'}
-                    title={isWerk ? 'Ontkoppel van project (taak blijft bestaan in Werktaken)' : undefined}
-                  >✕</button>
                 </div>
               );
             })}
@@ -110,8 +212,8 @@ function ProjectKaart({
 export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
   const [toonForm, setToonForm] = useState(false);
 
-  function toevoegen(naam, aantalMaanden, klusjes) {
-    projecten.voegProjectToe(naam, aantalMaanden, klusjes);
+  function toevoegen(naam, aantalMaanden, klusjes, deadline) {
+    projecten.voegProjectToe(naam, aantalMaanden, klusjes, deadline);
     setToonForm(false);
     toonToast(`Project "${naam}" aangemaakt met ${klusjes.length} klusjes`, 'ok');
   }
@@ -137,8 +239,12 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
           onZetUren={projecten.zetGeschatteUren}
           onVerwijderKlusje={projecten.verwijderKlusje}
           onVerwijderProject={projecten.verwijderProject}
+          onZetDeadline={projecten.zetDeadline}
           onToggleWerktaak={werkTaken.toggleKlaar}
           onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
+          onVoegStapToe={projecten.voegSubklusjeToe}
+          onToggleStap={projecten.toggleSubklusje}
+          onVerwijderStap={projecten.verwijderSubklusje}
         />
       ))}
 

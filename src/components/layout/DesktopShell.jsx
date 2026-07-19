@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { leesLokaal, schrijfLokaal } from '../../lib/storage/lokaal.js';
-import { MODULE_ICONEN, IconChevron, IconInstellingen, IconAccount } from '../ui/ModuleIconen.jsx';
+import { MODULE_ICONEN, IconChevron, IconInstellingen, IconAccount, IconSnelkeuze } from '../ui/ModuleIconen.jsx';
 import { MODULES, MODULE_VOLGORDE } from '../../lib/nav/modules.js';
 import AccountModal from '../ui/AccountModal.jsx';
 import Modal from '../ui/Modal.jsx';
@@ -69,6 +69,15 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
           title={ingeklapt ? 'Zijbalk uitklappen' : 'Zijbalk inklappen'}
         >
           <IconChevron className={`ds-zijbalk-toggle-icoon ${ingeklapt ? '' : 'gedraaid'}`} />
+        </button>
+        <button
+          type="button"
+          className={`ds-nav-item ${pagina === 'snelkeuze' ? 'actief' : ''}`}
+          onClick={() => setPagina('snelkeuze')}
+          title={ingeklapt ? 'Start' : undefined}
+        >
+          <IconSnelkeuze className="ds-nav-icoon" />
+          <span className="ds-nav-label">Start</span>
         </button>
         {MODULE_VOLGORDE.map((id) => {
           const Icoon = MODULE_ICONEN[id];

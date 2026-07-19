@@ -100,17 +100,18 @@ export default function App() {
   }
 
   if (isDesktop) {
-    // Snelkeuze bestaat alleen als mobiel startscherm — op desktop toont de
-    // zijbalk alle modules altijd, dus valt een 'snelkeuze'-pagina terug op
-    // de eerste module.
-    const desktopPagina = pagina === 'snelkeuze' ? 'ochtend' : pagina;
+    // Snelkeuze is ook op desktop bereikbaar (via de 'Start'-knop bovenaan de
+    // zijbalk of het logo) — toont daar hetzelfde vandaag-/weekoverzicht als
+    // op mobiel, i.p.v. altijd geforceerd op de eerste module te starten.
     return (
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <InstallBanner />
-        <DesktopShell pagina={desktopPagina} setPagina={setPagina} auth={auth}>
-          <ErrorBoundary key={desktopPagina}>
-            {renderModule(desktopPagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
+        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth}>
+          <ErrorBoundary key={pagina}>
+            {pagina === 'snelkeuze'
+              ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />
+              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
