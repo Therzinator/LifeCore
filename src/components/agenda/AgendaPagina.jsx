@@ -55,14 +55,15 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const blokken = useAgendaBlokken();
   const { overrides: dagTypeOverrides, zetOverride: zetDagTypeOverride } = useDagTypeOverrides();
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
-  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides, huishoudenId);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
 
-  // Alleen-lezen tweede instantie — zelfde precedent als de dubbele
-  // useDagTypeOverrides-instantie (zie useAgendaSignalen.js): deze pagina
-  // heeft de open-klusjeslijst nodig voor de Klusjes-dag-suggesties, los van
-  // wat useAgendaSignalen zelf al intern gebruikt voor huishoudProjectSignalen.
+  // Eén instantie, gedeeld tussen useAgendaSignalen (huishoudProjectSignalen)
+  // en de Klusjes-dag-suggesties hieronder — voorheen twee losse instanties
+  // (zelfde precedent als de dubbele useDagTypeOverrides-instantie), maar
+  // die botsten allebei op hetzelfde Supabase Realtime-kanaal voor
+  // hetzelfde huishouden en crashten de hele pagina (zie kluslijstGedeeld.js).
   const huishoudProjecten = useHuishoudProjecten(huishoudenId);
+  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten);
   const openKlusjes = huishoudProjecten.projecten
     .flatMap((p) => {
       // De vereiste van een klusje kan tegenwoordig ook een STAP van een

@@ -1,6 +1,7 @@
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
+import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { instantiesInBereik } from '../../lib/agenda/agendaBlokken.js';
 import { TYPE_ICOON } from '../agenda/agendaWeergave.js';
 import { datumKey } from '../../utils/datum.js';
@@ -10,11 +11,12 @@ import './VandaagOverzicht.css';
 // zie docs/AGENDA.md §5, optie A) — zodat een dag met afspraken/blokken
 // niet wegvalt bij hyperfocus, zonder de extra complexiteit van
 // service-worker-push, VAPID-sleutels en een achtergrond-verstuurcomponent.
-export default function VandaagOverzicht({ onOpenAgenda }) {
+export default function VandaagOverzicht({ onOpenAgenda, huishoudenId }) {
   const vandaag = datumKey();
   const blokken = useAgendaBlokken();
   const { overrides: dagTypeOverrides } = useDagTypeOverrides();
-  const { signalen } = useAgendaSignalen(vandaag, vandaag, dagTypeOverrides);
+  const huishoudProjecten = useHuishoudProjecten(huishoudenId);
+  const { signalen } = useAgendaSignalen(vandaag, vandaag, dagTypeOverrides, huishoudProjecten.projecten);
   const blokInstanties = instantiesInBereik(blokken.blokken, vandaag, vandaag);
 
   const items = [

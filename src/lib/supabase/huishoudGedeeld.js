@@ -1,4 +1,4 @@
-import { sbClient } from './client.js';
+import { sbClient, uniekKanaalId } from './client.js';
 
 // Db-rij -> hetzelfde platte object dat de lokale blob-modus gebruikte.
 export function rijNaarTaak(rij) {
@@ -206,7 +206,7 @@ export function abonneerOpTaken(huishoudenId, onWijziging) {
   if (!sb) return () => {};
 
   const channel = sb
-    .channel(`huishoud_taken:${huishoudenId}`)
+    .channel(`huishoud_taken:${huishoudenId}:${uniekKanaalId()}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'huishoud_taken', filter: `huishouden_id=eq.${huishoudenId}` },
@@ -223,7 +223,7 @@ export function abonneerOpWeekschema(huishoudenId, onWijziging) {
   if (!sb) return () => {};
 
   const channel = sb
-    .channel(`huishoud_weekschema:${huishoudenId}`)
+    .channel(`huishoud_weekschema:${huishoudenId}:${uniekKanaalId()}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'huishoud_weekschema', filter: `huishouden_id=eq.${huishoudenId}` },

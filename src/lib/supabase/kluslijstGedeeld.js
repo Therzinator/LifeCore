@@ -1,4 +1,4 @@
-import { sbClient } from './client.js';
+import { sbClient, uniekKanaalId } from './client.js';
 
 // Db-rij (snake_case) -> hetzelfde platte project-object dat de lokale
 // blob-modus altijd al gebruikte (camelCase) — zo hoeft geen enkele
@@ -111,7 +111,7 @@ export function abonneerOpProjecten(huishoudenId, onWijziging) {
   if (!sb) return () => {};
 
   const channel = sb
-    .channel(`kluslijst_projecten:${huishoudenId}`)
+    .channel(`kluslijst_projecten:${huishoudenId}:${uniekKanaalId()}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'kluslijst_projecten', filter: `huishouden_id=eq.${huishoudenId}` },

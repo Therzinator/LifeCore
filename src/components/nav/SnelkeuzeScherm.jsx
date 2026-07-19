@@ -15,7 +15,7 @@ export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag, actieveModule
         <div className="sk-subtitel">Kies een module om te beginnen</div>
       </div>
 
-      <VandaagOverzicht onOpenAgenda={() => onKies('agenda')} />
+      <VandaagOverzicht onOpenAgenda={() => onKies('agenda')} huishoudenId={huishoudenId} />
       <WeekOverzicht onKiesDag={onKiesAgendaDag} />
       <HuishoudVandaagOverzicht onOpenThuis={() => onKies('thuis')} huishoudenId={huishoudenId} />
 
