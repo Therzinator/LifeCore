@@ -5,10 +5,12 @@ import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { useOntspullen } from '../../hooks/useOntspullen.js';
 import { useBoodschappen } from '../../hooks/useBoodschappen.js';
+import { useGerechten } from '../../hooks/useGerechten.js';
 import HuishoudTaken from '../werk/HuishoudTaken.jsx';
 import HuishoudProjecten from '../werk/HuishoudProjecten.jsx';
 import Ontspullen from '../werk/Ontspullen.jsx';
 import Boodschappen from '../werk/Boodschappen.jsx';
+import Gerechten from '../werk/Gerechten.jsx';
 import './ThuisPagina.css';
 
 const TABS = [
@@ -16,6 +18,7 @@ const TABS = [
   { id: 'kluslijst', label: 'Kluslijst' },
   { id: 'ontspullen', label: 'Ontspullen' },
   { id: 'boodschappen', label: 'Boodschappen' },
+  { id: 'gerechten', label: 'Gerechten' },
 ];
 
 // Huishouden, Kluslijst, Ontspullen en Boodschappen — voorheen tabbladen
@@ -31,6 +34,7 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
   const weekschema = useHuishoudWeekschema(huishoudenId);
   const ontspullen = useOntspullen(huishoudenId, userId);
   const boodschappen = useBoodschappen(huishoudenId, userId);
+  const gerechten = useGerechten(huishoudenId, userId);
   const [tab, setTab] = useState('huishouden');
 
   return (
@@ -56,6 +60,7 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
         )}
         {tab === 'ontspullen' && <Ontspullen ontspullen={ontspullen} toonToast={toonToast} />}
         {tab === 'boodschappen' && <Boodschappen boodschappen={boodschappen} toonToast={toonToast} />}
+        {tab === 'gerechten' && <Gerechten gerechten={gerechten} boodschappen={boodschappen} toonToast={toonToast} />}
       </div>
     </div>
   );
