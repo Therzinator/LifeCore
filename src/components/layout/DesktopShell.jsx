@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { leesLokaal, schrijfLokaal } from '../../lib/storage/lokaal.js';
-import { MODULE_ICONEN, IconChevron, IconInstellingen, IconAccount, IconSnelkeuze } from '../ui/ModuleIconen.jsx';
+import { MODULE_ICONEN, IconChevron, IconAccount, IconSnelkeuze } from '../ui/ModuleIconen.jsx';
 import { MODULES, MODULE_VOLGORDE } from '../../lib/nav/modules.js';
-import AccountModal from '../ui/AccountModal.jsx';
 import Modal from '../ui/Modal.jsx';
 import ProfielInstellingenModal from '../ui/ProfielInstellingenModal.jsx';
 import './DesktopShell.css';
@@ -19,7 +18,6 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [ingeklapt, setIngeklapt] = useState(() => leesLokaal('zijbalk_ingeklapt', false));
-  const [toonAccount, setToonAccount] = useState(false);
   const [toonProfiel, setToonProfiel] = useState(false);
 
   function wisselZijbalk() {
@@ -46,14 +44,9 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
               </button>
             </div>
           )}
-          {auth?.enabled && (
-            <button className="ds-instellingen-btn" onClick={() => setToonAccount(true)} aria-label="Account">
-              <IconAccount className="ds-instellingen-icoon" />
-            </button>
-          )}
           <div className="ds-instellingen-groep">
-            <button className="ds-instellingen-btn" onClick={() => setToonProfiel(true)} aria-label="Instellingen">
-              <IconInstellingen className="ds-instellingen-icoon" />
+            <button className="ds-instellingen-btn" onClick={() => setToonProfiel(true)} aria-label="Account">
+              <IconAccount className="ds-instellingen-icoon" />
             </button>
             <span className="ds-versie">{__APP_VERSION__}</span>
           </div>
@@ -99,10 +92,9 @@ export default function DesktopShell({ pagina, setPagina, auth, children }) {
 
       <main className="ds-content">{children}</main>
 
-      {toonAccount && <AccountModal auth={auth} onClose={() => setToonAccount(false)} />}
       {toonProfiel && (
-        <Modal titel="Profiel-instellingen" onClose={() => setToonProfiel(false)}>
-          <ProfielInstellingenModal />
+        <Modal titel="Profiel & account" onClose={() => setToonProfiel(false)}>
+          <ProfielInstellingenModal auth={auth} onUitgelogd={() => setToonProfiel(false)} />
         </Modal>
       )}
     </div>

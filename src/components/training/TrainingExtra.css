@@ -1,11 +1,10 @@
 .te-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   background: var(--bg-3);
   border-radius: var(--r-sm);
   padding: 3px;
-  max-width: 100%;
-  overflow-x: auto;
   margin-bottom: var(--space-md);
 }
 .te-tab {

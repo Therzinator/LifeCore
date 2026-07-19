@@ -30,9 +30,10 @@
 }
 .aa-shutdown-box.gedaan { border-color: var(--accent); background: var(--accent-dim); }
 
-.aa-stemming-rij { display: flex; gap: var(--space-xs); }
+.aa-stemming-rij { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 .aa-stemming {
   flex: 1;
+  min-width: 44px;
   padding: var(--space-sm);
   border-radius: var(--r-sm);
   border: 1px solid var(--border-2);

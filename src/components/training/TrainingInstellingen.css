@@ -20,8 +20,8 @@
 }
 .ti-veld:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }
 
-.ti-rij { display: flex; gap: var(--space-sm); }
-.ti-rij .ti-veld-grp { flex: 1; }
+.ti-rij { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+.ti-rij .ti-veld-grp { flex: 1; min-width: 120px; }
 
 .ti-toggle-rij {
   display: flex;

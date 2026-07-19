@@ -60,7 +60,7 @@
 }
 .ad-taak-check.gedaan { background: var(--accent-dim); border-color: var(--accent); }
 
-.ad-taak-tekst { flex: 1; font-size: var(--font-size-sm); }
+.ad-taak-tekst { flex: 1; min-width: 0; font-size: var(--font-size-sm); overflow-wrap: break-word; }
 .ad-taak-tekst.gedaan { opacity: .5; text-decoration: line-through; }
 
 .ad-taak-verwijder {

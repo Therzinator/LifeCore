@@ -22,7 +22,7 @@
 .tap-check:hover { background: var(--accent-dim); }
 .tap-check.gedaan { background: var(--accent-dim); border-color: var(--accent); }
 
-.tap-tekst { flex: 1; font-size: var(--font-size-sm); }
+.tap-tekst { flex: 1; min-width: 0; font-size: var(--font-size-sm); overflow-wrap: break-word; }
 .tap-tekst.gedaan { opacity: .6; }
 .tap-domein { color: var(--txt-muted); font-size: var(--font-size-xs); }
 

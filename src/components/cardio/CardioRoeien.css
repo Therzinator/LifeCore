@@ -43,7 +43,7 @@
   flex-shrink: 0;
 }
 
-.cro-inhoud { flex: 1; }
+.cro-inhoud { flex: 1; min-width: 0; }
 .cro-fase-rij { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 2px; }
 .cro-fase { font-size: var(--font-size-sm); font-weight: 600; }
 .cro-duur {

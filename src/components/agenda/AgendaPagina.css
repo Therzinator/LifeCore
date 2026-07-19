@@ -104,5 +104,5 @@
 /* Blok-formulier */
 .ag-blok-form { display: flex; flex-direction: column; gap: var(--space-sm); }
 .ag-herhaling-rij { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-size-sm); }
-.ag-tijd-ctrl { display: flex; align-items: center; gap: 4px; }
-.ag-tijd-ctrl .ti-veld { flex: 1; min-width: 0; }
+.ag-tijd-ctrl { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.ag-tijd-ctrl .ti-veld { flex: 1; min-width: 84px; }

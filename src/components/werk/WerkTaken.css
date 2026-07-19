@@ -33,7 +33,7 @@
 }
 .wt-check:hover { background: var(--accent-dim); }
 
-.wt-tekst { flex: 1; font-size: var(--font-size-sm); }
+.wt-tekst { flex: 1; min-width: 0; font-size: var(--font-size-sm); overflow-wrap: break-word; }
 .wt-categorie { color: var(--txt-muted); font-size: var(--font-size-xs); }
 
 .wt-focus-ctrl { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }

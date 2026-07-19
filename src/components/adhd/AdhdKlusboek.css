@@ -11,8 +11,8 @@
   outline: none;
 }
 .ak-veld:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }
-.ak-veld:not(.ak-veld-min) { flex: 1; }
-.ak-veld-min { width: 70px; }
+.ak-veld:not(.ak-veld-min) { flex: 1; min-width: 0; }
+.ak-veld-min { width: 70px; flex-shrink: 0; }
 
 .ak-lijst { display: flex; flex-direction: column; }
 
@@ -25,8 +25,8 @@
 }
 .ak-item:last-child { border-bottom: none; }
 
-.ak-item-info { flex: 1; }
-.ak-item-naam { font-size: var(--font-size-sm); font-weight: 500; }
+.ak-item-info { flex: 1; min-width: 0; }
+.ak-item-naam { font-size: var(--font-size-sm); font-weight: 500; overflow-wrap: break-word; }
 .ak-item-min { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-faint); }
 
 .ak-verwijder {

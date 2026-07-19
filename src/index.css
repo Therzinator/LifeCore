@@ -71,8 +71,9 @@ button, input, textarea { font-family: inherit; color: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--space-sm);
+  min-width: 0;
 }
-.ml { font-size: var(--font-size-xs); color: var(--txt-faint); letter-spacing: .04em; margin-bottom: 4px; }
+.ml { font-size: var(--font-size-xs); color: var(--txt-faint); letter-spacing: .04em; margin-bottom: 4px; overflow-wrap: break-word; }
 .mv { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: 700; line-height: 1.2; }
 .mu { font-size: var(--font-size-sm); color: var(--txt-muted); }
 .ms { font-size: var(--font-size-xs); color: var(--txt-faint); margin-top: 3px; }

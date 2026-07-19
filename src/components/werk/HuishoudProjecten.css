@@ -63,4 +63,4 @@
 .hhp-stap-item { display: flex; align-items: center; gap: var(--space-sm); padding: 4px 0; }
 
 .hhp-stap-invoer { display: flex; gap: var(--space-xs); margin-top: 4px; }
-.hhp-stap-invoer .ti-veld { flex: 1; }
+.hhp-stap-invoer .ti-veld { flex: 1; min-width: 0; }

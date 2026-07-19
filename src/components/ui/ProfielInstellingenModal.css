@@ -1,4 +1,4 @@
-.am-gelukt {
+.pim-gelukt {
   font-size: var(--font-size-sm);
   color: var(--accent);
   background: var(--accent-dim);
@@ -7,7 +7,7 @@
   margin-bottom: var(--space-sm);
 }
 
-.am-uitloggen {
+.pim-uitloggen {
   width: 100%;
   margin-top: var(--space-md);
   padding-top: var(--space-md);
@@ -19,4 +19,4 @@
   cursor: pointer;
   font-size: var(--font-size-sm);
 }
-.am-uitloggen:hover { opacity: .8; }
+.pim-uitloggen:hover { opacity: .8; }

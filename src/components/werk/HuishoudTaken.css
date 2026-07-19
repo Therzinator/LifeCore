@@ -23,7 +23,7 @@
 }
 .hh-check.gedaan { background: var(--accent-dim); border-color: var(--accent); }
 
-.hh-tekst { flex: 1; font-size: var(--font-size-sm); }
+.hh-tekst { flex: 1; min-width: 0; font-size: var(--font-size-sm); overflow-wrap: break-word; }
 .hh-tekst.gedaan { opacity: .5; text-decoration: line-through; }
 
 .hh-verwijder {

@@ -35,6 +35,6 @@
 .sb-item:hover .sb-item-titel { color: var(--accent); }
 
 .sb-item-icoon { font-size: var(--font-size-xl); flex-shrink: 0; }
-.sb-item-info { flex: 1; }
+.sb-item-info { flex: 1; min-width: 0; }
 .sb-item-titel { display: block; font-size: var(--font-size-base); font-weight: 600; transition: var(--tx); }
 .sb-item-meta { display: block; font-size: var(--font-size-xs); color: var(--txt-faint); margin-top: 2px; }
