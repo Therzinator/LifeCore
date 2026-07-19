@@ -1,7 +1,13 @@
+import { useState } from 'react';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import { volgendeGewicht, isNieuwePR } from '../../lib/training/progressie.js';
+import { MOBILITEIT_OEFENINGEN } from '../../lib/training/mobiliteit.js';
+import { oefeningMetAfbeeldingPerId } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import SchijvenWeergave from './SchijvenWeergave.jsx';
 import RustTimer from './RustTimer.jsx';
+import OefeningPopup from '../ui/OefeningPopup.jsx';
+import Modal from '../ui/Modal.jsx';
+import OefeningDetail from '../ui/OefeningDetail.jsx';
 import './TrainingSessie.css';
 
 function metAangepastGewicht(lijst, i, si, delta) {
@@ -61,6 +67,8 @@ export default function TrainingSessie({
 }) {
   const { oefeningen, extras = [] } = training;
   const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
+  const [detailId, setDetailId] = useState(null);
+  const detailOefening = detailId ? oefeningMetAfbeeldingPerId(detailId) : null;
 
   const hoofdKlaar = oefeningen.every((o) => o.werk.every(Boolean));
   const extraKlaar = !extras.length || extras.every((e) => e.werk.every(Boolean));
@@ -201,6 +209,11 @@ export default function TrainingSessie({
             <div className="ts-warmup-detail">Heupen · schouders · wervelkolom · enkels</div>
           </span>
         </button>
+        <div className="ts-mobiliteit-lijst">
+          {MOBILITEIT_OEFENINGEN.map((oef) => (
+            <OefeningPopup key={oef.id} oefening={oef} />
+          ))}
+        </div>
       </div>
 
       <div className="ts-hele-training">
@@ -220,10 +233,11 @@ export default function TrainingSessie({
         return (
           <div className="ts-oefening" key={oef.id}>
             <div className="ts-oefening-kop">
-              <div className="ts-oefening-naam">
+              <button type="button" className="ts-oefening-naam ts-oefening-naam-btn" onClick={() => setDetailId(oef.id)}>
                 {oef.naam}
                 {isPR && <span className="ts-pr">PR</span>}
-              </div>
+                <span className="ts-oefening-info">ⓘ</span>
+              </button>
               <div className="ts-oefening-sub">
                 <span className="ts-oefening-spier">{oef.spier}</span>
                 <span>{oef.sets} × {oef.reps} werksets</span>
@@ -332,6 +346,12 @@ export default function TrainingSessie({
       </div>
 
       <RustTimer timer={rustTimer} />
+
+      {detailOefening && (
+        <Modal titel={detailOefening.naam} onClose={() => setDetailId(null)}>
+          <OefeningDetail oefening={detailOefening} />
+        </Modal>
+      )}
     </div>
   );
 }

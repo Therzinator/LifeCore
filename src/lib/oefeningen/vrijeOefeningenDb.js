@@ -247,3 +247,14 @@ export function volledigeBibliotheekLijst() {
 export function extraOefeningMetAfbeelding(oef) {
   return metAfbeelding(oef, EXTRA_OVERRIDES);
 }
+
+// Zoekt een OEFENINGEN_BIBLIOTHEEK-entry op id en verrijkt 'm met
+// afbeelding/kort/uitleg — gebruikt door TrainingSessie.jsx om tijdens de
+// actieve training (Training A/B, werksets) per hoofdoefening dezelfde
+// uitleg+foto-popup te tonen als TrainingExtra al voor de accessoire-
+// oefeningen doet. null als het id niet in de bibliotheek voorkomt (kan bij
+// een volledig eigen, handmatig ingevoerde oefening).
+export function oefeningMetAfbeeldingPerId(id) {
+  const oef = OEFENINGEN_BIBLIOTHEEK.find((o) => o.id === id);
+  return oef ? metAfbeelding(oef, BIBLIOTHEEK_OVERRIDES) : null;
+}
