@@ -32,9 +32,13 @@ export default function StapAfronden({ dagdata, toonToast }) {
         {blokkenVandaag.length > 0 && (
           <div className="hh-lijst">
             {blokkenVandaag.map((b) => (
-              <div className="hh-item" key={`${b.id}-${b.datum}`}>
-                <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
-                <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
+              <div className="ag-blok-item" key={`${b.id}-${b.datum}`}>
+                <div className="ag-blok-titel-rij">
+                  <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
+                </div>
+                <div className="ag-blok-acties-rij">
+                  <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                </div>
               </div>
             ))}
           </div>

@@ -167,16 +167,20 @@ export default function AgendaDag({
         {dagBlokken.map((b) => {
           const moduleVoorBlok = BLOK_TYPE_MODULE[b.type];
           return (
-            <div className="hh-item" key={`${b.id}-${b.datum}`}>
-              <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
-              <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
-              {moduleVoorBlok && onNavigeer && (
-                <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
-              )}
-              {onBewerkBlok && (
-                <button className="btn btn-g btn-sm" onClick={() => onBewerkBlok(b)} aria-label="Blok bewerken">✏️</button>
-              )}
-              <button className="hh-verwijder" onClick={() => onVerwijderBlok(b.id)}>✕</button>
+            <div className="ag-blok-item" key={`${b.id}-${b.datum}`}>
+              <div className="ag-blok-titel-rij">
+                <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
+              </div>
+              <div className="ag-blok-acties-rij">
+                <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                {moduleVoorBlok && onNavigeer && (
+                  <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
+                )}
+                {onBewerkBlok && (
+                  <button className="btn btn-g btn-sm" onClick={() => onBewerkBlok(b)} aria-label="Blok bewerken">✏️</button>
+                )}
+                <button className="hh-verwijder" onClick={() => onVerwijderBlok(b.id)}>✕</button>
+              </div>
             </div>
           );
         })}

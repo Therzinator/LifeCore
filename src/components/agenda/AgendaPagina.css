@@ -107,6 +107,26 @@
 .ag-suggesties-wrap .bd-inklap-knop { margin-bottom: var(--space-xs); }
 .ag-suggesties-wrap .ag-suggesties:last-child { margin-bottom: 0; }
 
+/* Geplande blokken (dagweergave): icoon+titel op de bovenste regel, tijd +
+   acties (Start sessie/bewerken/verwijderen) op de regel(s) daaronder — op
+   smalle schermen perste dat voorheen allemaal op één rij, wat de titel tot
+   een piepklein stukje ruimte dwong. */
+.ag-blok-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.ag-blok-item:last-child { border-bottom: none; }
+.ag-blok-titel-rij { display: flex; align-items: center; }
+.ag-blok-acties-rij {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
 /* Blok-formulier */
 .ag-blok-form { display: flex; flex-direction: column; gap: var(--space-sm); }
 .ag-herhaling-rij { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-size-sm); }
