@@ -144,7 +144,22 @@ const TABS = [
   { id: 'account', label: 'Account & privacy' },
 ];
 
-export default function ProfielInstellingenModal({ auth, onUitgelogd }) {
+function AppSectie({ appUpdate }) {
+  return (
+    <div className="card">
+      <div className="td-label">App</div>
+      <p className="ti-hint">
+        Huidige versie: {__APP_VERSION__}. Een nieuwe versie wordt niet altijd automatisch opgepikt
+        (vooral op mobiel) — forceer de nieuwste versie als de app verouderd aanvoelt.
+      </p>
+      <button type="button" className="btn btn-g btn-full" onClick={appUpdate.forceerNieuwsteVersie}>
+        Nieuwste versie forceren
+      </button>
+    </div>
+  );
+}
+
+export default function ProfielInstellingenModal({ auth, appUpdate, onUitgelogd }) {
   const { profiel, bewaar } = usePersoonsProfiel();
   const { thema, setThema } = useThemaVoorkeur();
   const [tab, setTab] = useState('profiel');
@@ -251,6 +266,8 @@ export default function ProfielInstellingenModal({ auth, onUitgelogd }) {
       )}
 
       {tab === 'account' && heeftAccountTab && <AccountSectie auth={auth} onUitgelogd={onUitgelogd} />}
+
+      {appUpdate && <AppSectie appUpdate={appUpdate} />}
     </div>
   );
 }

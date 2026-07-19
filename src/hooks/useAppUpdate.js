@@ -42,5 +42,29 @@ export function useAppUpdate() {
 
   const negeren = useCallback(() => setNieuweVersieBeschikbaar(false), [setNieuweVersieBeschikbaar]);
 
-  return { nieuweVersieBeschikbaar, bijwerken, negeren };
+  // Handmatige noodgreep voor als de gewone update-detectie (needRefresh via
+  // Workbox) niet aanslaat — vooral op mobiel bleek dit inconsistent, want
+  // die detectie leunt op een wachtende service worker die de browser zelf
+  // op zijn eigen moment activeert. In plaats van te vertrouwen op die
+  // detectie, verwijderen we de service worker(s) en de cache-storage
+  // rechtstreeks en herladen we — daarna kan de browser alleen nog de
+  // nieuwste, verse assets ophalen.
+  const forceerNieuwsteVersie = useCallback(async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registraties = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registraties.map((r) => r.unregister()));
+      }
+      if ('caches' in window) {
+        const sleutels = await caches.keys();
+        await Promise.all(sleutels.map((sleutel) => caches.delete(sleutel)));
+      }
+    } catch (e) {
+      console.error('Kon nieuwste versie niet forceren', e);
+    } finally {
+      window.location.reload();
+    }
+  }, []);
+
+  return { nieuweVersieBeschikbaar, bijwerken, negeren, forceerNieuwsteVersie };
 }

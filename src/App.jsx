@@ -107,7 +107,7 @@ export default function App() {
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <InstallBanner />
-        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth}>
+        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth} appUpdate={appUpdate}>
           <ErrorBoundary key={pagina}>
             {pagina === 'snelkeuze'
               ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />
@@ -122,7 +122,7 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} setPagina={setPagina} />
+      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />}

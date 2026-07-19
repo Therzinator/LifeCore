@@ -51,11 +51,16 @@ export async function pullSleutel(userId, sleutel) {
   return data;
 }
 
+// gewijzigd geeft aan of er lokaal data is overschreven met een nieuwere
+// cloud-versie (bv. van een ander apparaat) — de aanroeper (useSync) herlaadt
+// dan de pagina, want elke feature-hook leest localStorage alleen bij mount
+// en zou anders de overgenomen cloud-data niet tonen.
 export async function synchroniseerAlles(userId) {
   const sb = sbClient();
-  if (!sb) return { ok: false };
+  if (!sb) return { ok: false, gewijzigd: false };
 
   let gelukt = true;
+  let gewijzigd = false;
 
   for (const sleutel of lokaleSleutels()) {
     let lokaleData;
@@ -80,8 +85,9 @@ export async function synchroniseerAlles(userId) {
       gelukt = (await pushSleutel(userId, sleutel, lokaleData)) && gelukt;
     } else {
       localStorage.setItem(PREFIX + sleutel, JSON.stringify(remote.data));
+      gewijzigd = true;
     }
   }
 
-  return { ok: gelukt };
+  return { ok: gelukt, gewijzigd };
 }
