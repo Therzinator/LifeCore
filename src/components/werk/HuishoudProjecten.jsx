@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
-import { groepeerPerMaand, maandLabel } from '../../lib/werk/projectVerdeling.js';
+import { projectMaandOverzicht, maandLabel } from '../../lib/werk/projectVerdeling.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './HuishoudProjecten.css';
 
@@ -45,11 +45,15 @@ function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
   );
 }
 
-function ProjectKaart({ project, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject }) {
-  const afgerond = project.klusjes.filter((k) => k.afgerond).length;
-  const totaal = project.klusjes.length;
+function ProjectKaart({
+  project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject,
+  onToggleWerktaak, onOntkoppelWerktaak,
+}) {
+  const alleItems = [...project.klusjes, ...gekoppeldeWerktaken.map((t) => ({ afgerond: t.klaar }))];
+  const afgerond = alleItems.filter((i) => i.afgerond).length;
+  const totaal = alleItems.length;
   const pct = totaal ? Math.round((afgerond / totaal) * 100) : 0;
-  const perMaand = groepeerPerMaand(project.klusjes);
+  const perMaand = projectMaandOverzicht(project.klusjes, gekoppeldeWerktaken, project.aantalMaanden, project.startMaand);
 
   return (
     <div className="card">
@@ -60,24 +64,42 @@ function ProjectKaart({ project, onToggleKlusje, onZetUren, onVerwijderKlusje, o
       <div className="hhp-voortgang-track"><div className="hhp-voortgang-fill" style={{ width: `${pct}%` }} /></div>
       <div className="hhp-voortgang-lbl">{afgerond}/{totaal} klusjes ({pct}%)</div>
 
-      {perMaand.map(([maand, klusjes]) => (
+      {perMaand.map(([maand, items]) => (
         <div key={maand} className="hhp-maand">
           <div className="hhp-maand-titel">{maandLabel(maand)}</div>
           <div className="hh-lijst">
-            {klusjes.map((k) => (
-              <div className="hh-item" key={k.id}>
-                <button className={`hh-check ${k.afgerond ? 'gedaan' : ''}`} onClick={() => onToggleKlusje(project.id, k.id)}>
-                  {k.afgerond ? '✓' : ''}
-                </button>
-                <span className={`hh-tekst ${k.afgerond ? 'gedaan' : ''}`}>{k.tekst}</span>
-                <div className="hhp-uren-ctrl">
-                  <button className="wt-mini-btn" onClick={() => onZetUren(project.id, k.id, k.geschatteUren - 0.5)}>−</button>
-                  <span className="hhp-uren-val">{k.geschatteUren}u</span>
-                  <button className="wt-mini-btn" onClick={() => onZetUren(project.id, k.id, k.geschatteUren + 0.5)}>+</button>
+            {items.map((item) => {
+              const isWerk = item.bron === 'werk';
+              return (
+                <div className="hh-item" key={item.id}>
+                  <button
+                    className={`hh-check ${item.afgerond ? 'gedaan' : ''}`}
+                    onClick={() => (isWerk ? onToggleWerktaak(item.id) : onToggleKlusje(project.id, item.id))}
+                  >
+                    {item.afgerond ? '✓' : ''}
+                  </button>
+                  <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
+                    {item.tekst}
+                    {isWerk && <span className="hhp-werk-badge"> · werk</span>}
+                  </span>
+                  {isWerk ? (
+                    <span className="hhp-uren-val">{item.geschatteUren}u</span>
+                  ) : (
+                    <div className="hhp-uren-ctrl">
+                      <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren - 0.5)}>−</button>
+                      <span className="hhp-uren-val">{item.geschatteUren}u</span>
+                      <button className="wt-mini-btn" onClick={() => onZetUren(project.id, item.id, item.geschatteUren + 0.5)}>+</button>
+                    </div>
+                  )}
+                  <button
+                    className="hh-verwijder"
+                    onClick={() => (isWerk ? onOntkoppelWerktaak(item.id) : onVerwijderKlusje(project.id, item.id))}
+                    aria-label={isWerk ? 'Ontkoppel van project' : 'Verwijder klusje'}
+                    title={isWerk ? 'Ontkoppel van project (taak blijft bestaan in Werktaken)' : undefined}
+                  >✕</button>
                 </div>
-                <button className="hh-verwijder" onClick={() => onVerwijderKlusje(project.id, k.id)}>✕</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
@@ -85,7 +107,7 @@ function ProjectKaart({ project, onToggleKlusje, onZetUren, onVerwijderKlusje, o
   );
 }
 
-export default function HuishoudProjecten({ projecten, toonToast }) {
+export default function HuishoudProjecten({ projecten, werkTaken, toonToast }) {
   const [toonForm, setToonForm] = useState(false);
 
   function toevoegen(naam, aantalMaanden, klusjes) {
@@ -110,10 +132,13 @@ export default function HuishoudProjecten({ projecten, toonToast }) {
         <ProjectKaart
           key={project.id}
           project={project}
+          gekoppeldeWerktaken={werkTaken.alleTaken.filter((t) => t.projectId === project.id)}
           onToggleKlusje={projecten.toggleKlusje}
           onZetUren={projecten.zetGeschatteUren}
           onVerwijderKlusje={projecten.verwijderKlusje}
           onVerwijderProject={projecten.verwijderProject}
+          onToggleWerktaak={werkTaken.toggleKlaar}
+          onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
         />
       ))}
 

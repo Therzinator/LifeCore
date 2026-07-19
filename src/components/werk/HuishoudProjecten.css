@@ -22,4 +22,6 @@
 .hhp-uren-ctrl { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .hhp-uren-val { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); min-width: 28px; text-align: center; }
 
+.hhp-werk-badge { color: var(--accent-mid); font-size: var(--font-size-xs); }
+
 .hhp-form { display: flex; flex-direction: column; gap: var(--space-sm); }

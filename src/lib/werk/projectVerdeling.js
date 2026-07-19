@@ -42,3 +42,33 @@ export function groepeerPerMaand(klusjes) {
   });
   return Object.entries(perMaand).sort(([a], [b]) => a.localeCompare(b));
 }
+
+// Zet een werktaak om naar een klusje-vormig item — focusMinuten (bedoeld
+// als 'hoeveel tijd kost deze taak', al gebruikt door de focus-timer in
+// Werktaken) hergebruikt als geschatteUren voor de maandverdeling, zodat er
+// geen los, tweede 'hoe zwaar is dit'-veld nodig is. Zonder focusMinuten
+// wordt 1 uur aangenomen, gelijk aan het klusjes-default.
+function werktaakAlsItem(taak) {
+  return {
+    id: taak.id,
+    tekst: taak.tekst,
+    geschatteUren: (taak.focusMinuten || 60) / 60,
+    afgerond: taak.klaar,
+    afgerondOp: taak.afgerondOp,
+    bron: 'werk',
+  };
+}
+
+// Combineert de klusjes van een project met de aan dat project gekoppelde
+// werktaken tot één, samen over de maanden verdeelde en gegroepeerde lijst
+// — voor de projectweergave in Kluslijst. Wordt bij elke render vers
+// berekend (net als herverdeel() in useHuishoudProjecten na een mutatie)
+// i.p.v. de maand-toewijzing op de werktaak zelf te bewaren: werktaken
+// leven in een aparte store (useWerkTaken), dus een bewaarde toewijzing zou
+// bij elke wijziging aan weerskanten los van elkaar kunnen gaan lopen.
+export function projectMaandOverzicht(klusjes, gekoppeldeWerktaken, aantalMaanden, startMaand) {
+  const huishoudItems = klusjes.map((k) => ({ ...k, bron: 'huishouden' }));
+  const werkItems = gekoppeldeWerktaken.map(werktaakAlsItem);
+  const verdeeld = verdeelKlusjesOverMaanden([...huishoudItems, ...werkItems], aantalMaanden, startMaand);
+  return groepeerPerMaand(verdeeld);
+}

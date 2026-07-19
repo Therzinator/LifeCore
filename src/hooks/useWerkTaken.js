@@ -17,10 +17,10 @@ function nieuweId(prefix) {
 export function useWerkTaken() {
   const [record, setRecordState] = useState(() => leesLokaal('werk_taken', leegRecord()));
 
-  const voegMeerdereToe = useCallback((teksten, focusMinuten = null, categorie = null) => {
+  const voegMeerdereToe = useCallback((teksten, focusMinuten = null, categorie = null, projectId = null) => {
     setRecordState((huidig) => {
       const nieuwe = teksten.map((tekst) => ({
-        id: nieuweId('wt'), tekst, focusMinuten, categorie, klaar: false, aangemaaktOp: vandaagKey(), afgerondOp: null,
+        id: nieuweId('wt'), tekst, focusMinuten, categorie, projectId, klaar: false, aangemaaktOp: vandaagKey(), afgerondOp: null,
       }));
       const taken = [...(huidig.taken ?? []), ...nieuwe];
       const bijgewerkt = nieuwRecord({ taken });
@@ -59,8 +59,19 @@ export function useWerkTaken() {
     });
   }, []);
 
+  // Koppelt (of ontkoppelt met projectId=null) een werktaak aan een
+  // Kluslijst-project — zie useHuishoudProjecten voor het project zelf.
+  const zetProject = useCallback((id, projectId) => {
+    setRecordState((huidig) => {
+      const taken = huidig.taken.map((t) => (t.id === id ? { ...t, projectId } : t));
+      const bijgewerkt = nieuwRecord({ taken });
+      schrijfLokaal('werk_taken', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const alleTaken = record.taken ?? [];
   const openstaand = alleTaken.filter((t) => !t.klaar);
 
-  return { alleTaken, openstaand, voegMeerdereToe, toggleKlaar, zetFocusMinuten, verwijder };
+  return { alleTaken, openstaand, voegMeerdereToe, toggleKlaar, zetFocusMinuten, zetProject, verwijder };
 }

@@ -44,9 +44,13 @@ export default function WerkPagina({ toonToast }) {
       </div>
 
       <div className="card">
-        {tab === 'werk' && <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} />}
+        {tab === 'werk' && (
+          <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} huishoudProjecten={huishoudProjecten} />
+        )}
         {tab === 'huishouden' && <HuishoudTaken huishoudTaken={huishoudTaken} toonToast={toonToast} />}
-        {tab === 'kluslijst' && <HuishoudProjecten projecten={huishoudProjecten} toonToast={toonToast} />}
+        {tab === 'kluslijst' && (
+          <HuishoudProjecten projecten={huishoudProjecten} werkTaken={werkTaken} toonToast={toonToast} />
+        )}
       </div>
     </div>
   );

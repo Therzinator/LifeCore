@@ -4,16 +4,18 @@ import { werkLabels } from '../../lib/werk/labels.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './WerkTaken.css';
 
-export default function WerkTaken({ werkTaken, toonToast, instellingen }) {
+export default function WerkTaken({ werkTaken, toonToast, instellingen, huishoudProjecten }) {
   const [invoer, setInvoer] = useState('');
   const [categorie, setCategorie] = useState(instellingen.categorieen[0] ?? null);
+  const [projectId, setProjectId] = useState('');
   const labels = werkLabels(instellingen.oldambtModus);
   const vandaagIsWerkdag = instellingen.werkdagen.includes(new Date().getDay() === 0 ? 7 : new Date().getDay());
+  const projecten = huishoudProjecten?.projecten ?? [];
 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
     if (teksten.length === 0) { toonToast('Geen taken gevonden in de tekst', 'wn'); return; }
-    werkTaken.voegMeerdereToe(teksten, null, categorie);
+    werkTaken.voegMeerdereToe(teksten, null, categorie, projectId || null);
     setInvoer('');
     toonToast(`${teksten.length} taak/taken toegevoegd`, 'ok');
   }
@@ -34,6 +36,15 @@ export default function WerkTaken({ werkTaken, toonToast, instellingen }) {
             </select>
           </div>
         )}
+        {projecten.length > 0 && (
+          <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
+            <label className="ti-lbl" htmlFor="wt-project">Project (optioneel, Kluslijst)</label>
+            <select id="wt-project" className="ti-veld" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+              <option value="">Geen project</option>
+              {projecten.map((p) => <option key={p.id} value={p.id}>{p.naam}</option>)}
+            </select>
+          </div>
+        )}
         <button className="btn btn-p btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={takenToevoegen}>
           Taken toevoegen
         </button>
@@ -43,18 +54,36 @@ export default function WerkTaken({ werkTaken, toonToast, instellingen }) {
         <div className="td-label">Openstaand ({werkTaken.openstaand.length})</div>
         {werkTaken.openstaand.length === 0 && <p className="of-stap-tekst">Niets openstaand — goed bezig.</p>}
         <div className="wt-lijst">
-          {werkTaken.openstaand.map((t) => (
-            <div className="wt-item" key={t.id}>
-              <button className="wt-check" onClick={() => werkTaken.toggleKlaar(t.id)} aria-label="Markeer als afgerond">○</button>
-              <span className="wt-tekst">{t.tekst}{t.categorie ? <span className="wt-categorie"> · {t.categorie}</span> : null}</span>
-              <div className="wt-focus-ctrl">
-                <button className="wt-mini-btn" onClick={() => werkTaken.zetFocusMinuten(t.id, Math.max(0, (t.focusMinuten || 0) - 15))}>−</button>
-                <span className="wt-focus-val">{t.focusMinuten ? `${t.focusMinuten}m` : '—'}</span>
-                <button className="wt-mini-btn" onClick={() => werkTaken.zetFocusMinuten(t.id, (t.focusMinuten || 0) + 15)}>+</button>
+          {werkTaken.openstaand.map((t) => {
+            const project = projecten.find((p) => p.id === t.projectId);
+            return (
+              <div className="wt-item" key={t.id}>
+                <button className="wt-check" onClick={() => werkTaken.toggleKlaar(t.id)} aria-label="Markeer als afgerond">○</button>
+                <span className="wt-tekst">
+                  {t.tekst}
+                  {t.categorie ? <span className="wt-categorie"> · {t.categorie}</span> : null}
+                  {project ? <span className="wt-categorie"> · {project.naam}</span> : null}
+                </span>
+                <div className="wt-focus-ctrl">
+                  <button className="wt-mini-btn" onClick={() => werkTaken.zetFocusMinuten(t.id, Math.max(0, (t.focusMinuten || 0) - 15))}>−</button>
+                  <span className="wt-focus-val">{t.focusMinuten ? `${t.focusMinuten}m` : '—'}</span>
+                  <button className="wt-mini-btn" onClick={() => werkTaken.zetFocusMinuten(t.id, (t.focusMinuten || 0) + 15)}>+</button>
+                </div>
+                {projecten.length > 0 && (
+                  <select
+                    className="wt-project-select"
+                    value={t.projectId ?? ''}
+                    onChange={(e) => werkTaken.zetProject(t.id, e.target.value || null)}
+                    aria-label="Koppel aan project"
+                  >
+                    <option value="">Geen project</option>
+                    {projecten.map((p) => <option key={p.id} value={p.id}>{p.naam}</option>)}
+                  </select>
+                )}
+                <button className="wt-verwijder" onClick={() => werkTaken.verwijder(t.id)}>✕</button>
               </div>
-              <button className="wt-verwijder" onClick={() => werkTaken.verwijder(t.id)}>✕</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

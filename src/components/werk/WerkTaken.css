@@ -3,11 +3,23 @@
 .wt-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-sm);
   padding: var(--space-sm) 0;
   border-bottom: 1px solid var(--border);
 }
 .wt-item:last-child { border-bottom: none; }
+
+.wt-project-select {
+  flex-shrink: 0;
+  max-width: 120px;
+  font-size: var(--font-size-xs);
+  background: var(--bg-2);
+  color: var(--txt-muted);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 3px 4px;
+}
 
 .wt-check {
   width: 24px; height: 24px;
