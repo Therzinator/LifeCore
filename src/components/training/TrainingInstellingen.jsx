@@ -61,6 +61,28 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
       </div>
 
       <div className="card">
+        <div className="td-label">Voorkeurstijden lift-/cardio-dag (Agenda)</div>
+        <p className="ti-hint">
+          Op een liftdag of cardiodag stelt de Agenda deze tijden voor als je een blok inplant — het liefst
+          vroeg in de ochtend, met een alternatief later op de dag voor als de ochtend niet lukt.
+        </p>
+        <div className="ti-rij">
+          <div className="ti-veld-grp">
+            <label className="ti-lbl" htmlFor="ti-tijd-ochtend">Ochtend</label>
+            <input id="ti-tijd-ochtend" type="time" className="ti-veld" value={instellingen.voorkeurTijdOchtend} onChange={veld('voorkeurTijdOchtend')} />
+          </div>
+          <div className="ti-veld-grp">
+            <label className="ti-lbl" htmlFor="ti-tijd-middag">Middag</label>
+            <input id="ti-tijd-middag" type="time" className="ti-veld" value={instellingen.voorkeurTijdMiddag} onChange={veld('voorkeurTijdMiddag')} />
+          </div>
+          <div className="ti-veld-grp">
+            <label className="ti-lbl" htmlFor="ti-tijd-avond">Avond</label>
+            <input id="ti-tijd-avond" type="time" className="ti-veld" value={instellingen.voorkeurTijdAvond} onChange={veld('voorkeurTijdAvond')} />
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
         <div className="td-label">Eenheid</div>
         <div className="ti-rij">
           <button

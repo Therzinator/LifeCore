@@ -88,6 +88,20 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
     toonToast(`"${klusje.tekst}" toegevoegd aan de Agenda`, 'ok');
   }
 
+  // Lift/cardio-suggestie als blok inplannen op de gekozen tijd (ochtend/
+  // middag/avond, zie agendaSignalen.js) — 60 min voor lift (StrongLifts-
+  // sessie), 45 min voor cardio, zelfde duur-aanpak als de Kluslijst-
+  // suggestie hierboven (pasTijdAan).
+  function voegTrainingAlsBlokToe(signaal, starttijd) {
+    const isLift = signaal.type === 'lift';
+    const eindtijd = pasTijdAan(starttijd, isLift ? 60 : 45);
+    blokken.voegToe({
+      titel: isLift ? 'Training (lift)' : 'Cardio', type: isLift ? 'kracht' : 'cardio',
+      datum: signaal.datum, starttijd, eindtijd, herhaling: null,
+    });
+    toonToast(`${signaal.tekst} ingepland om ${starttijd}`, 'ok');
+  }
+
   const [jaar, maandNr] = referentieDatum.slice(0, 7).split('-').map(Number);
 
   function navigeer(richting) {
@@ -155,6 +169,7 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             onNavigeer={onNavigeer}
             openKlusjes={openKlusjes}
             onVoegKlusjeToe={voegKlusjeAlsBlokToe}
+            onVoegTrainingToe={voegTrainingAlsBlokToe}
           />
         )}
       </div>

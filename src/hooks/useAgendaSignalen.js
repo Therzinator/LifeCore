@@ -1,6 +1,7 @@
 import { useWelzijnInstellingen } from './useWelzijnInstellingen.js';
 import { useVragenlijstGeschiedenis } from './useVragenlijstGeschiedenis.js';
 import { useWerkInstellingen } from './useWerkInstellingen.js';
+import { useTrainingInstellingen } from './useTrainingInstellingen.js';
 import {
   trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
 } from '../lib/agenda/agendaSignalen.js';
@@ -21,9 +22,16 @@ export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}
   const { instellingen: welzijnInstellingen } = useWelzijnInstellingen();
   const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
   const { instellingen: werkInstellingen } = useWerkInstellingen();
+  const { instellingen: trainingInstellingen } = useTrainingInstellingen();
+
+  const voorkeurTijden = {
+    ochtend: trainingInstellingen.voorkeurTijdOchtend,
+    middag: trainingInstellingen.voorkeurTijdMiddag,
+    avond: trainingInstellingen.voorkeurTijdAvond,
+  };
 
   const signalen = [
-    ...trainingCardioSignalen(bereikStart, bereikEind),
+    ...trainingCardioSignalen(bereikStart, bereikEind, voorkeurTijden),
     ...werkdagSignalen(bereikStart, bereikEind, werkInstellingen.werkdagen, dagTypeOverrides),
     ...klusjesDagSignalen(bereikStart, bereikEind, werkInstellingen.klusjesDag, dagTypeOverrides),
     ...huishoudProjectSignalen(huishoudProjecten, bereikStart, bereikEind),

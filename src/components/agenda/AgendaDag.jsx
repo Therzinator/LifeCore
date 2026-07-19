@@ -13,11 +13,12 @@ const DAGTYPE_OPTIES = [
 
 export default function AgendaDag({
   datum, blokInstanties, signalen, onVerwijderBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
-  openKlusjes = [], onVoegKlusjeToe,
+  openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
 }) {
   const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
   const isKlusjesDag = dagSignalen.some((s) => s.type === 'klusjesdag');
+  const trainingSignaal = dagSignalen.find((s) => s.type === 'lift' || s.type === 'cardio');
 
   return (
     <div>
@@ -44,6 +45,24 @@ export default function AgendaDag({
           {dagSignalen.map((s) => (
             <span key={s.id} className="ag-signaal-chip">{TYPE_ICOON[s.type] ?? '•'} {s.tekst}</span>
           ))}
+        </div>
+      )}
+
+      {trainingSignaal && onVoegTrainingToe && (
+        <div className="ag-suggesties">
+          <div className="ti-lbl">{trainingSignaal.tekst} — wanneer inplannen?</div>
+          <p className="ti-hint">Het liefst in de ochtend, kort na het ontbijt — lukt dat niet, dan later op de dag.</p>
+          <div className="ti-rij">
+            {trainingSignaal.tijdOpties.map((optie) => (
+              <button
+                key={optie.label}
+                type="button"
+                className="btn btn-g btn-sm"
+                style={{ flex: 1 }}
+                onClick={() => onVoegTrainingToe(trainingSignaal, optie.starttijd)}
+              >{optie.label} · {optie.starttijd}</button>
+            ))}
+          </div>
         </div>
       )}
 

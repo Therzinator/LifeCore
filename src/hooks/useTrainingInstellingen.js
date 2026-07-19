@@ -13,6 +13,12 @@ const STANDAARD = {
   programmaOvergangsdatum: null,
   geluidFragment: 'tweetonen',
   eenheid: 'kg',
+  // Voorkeurstijden voor de Agenda's lift/cardio-dag-suggesties (zie
+  // agendaSignalen.js trainingCardioSignalen) — 's ochtends het liefst, met
+  // een laatemiddag-/avond-alternatief voor als de ochtend niet lukt.
+  voorkeurTijdOchtend: '07:40',
+  voorkeurTijdMiddag: '16:00',
+  voorkeurTijdAvond: '20:00',
 };
 
 function standaardRecord() {

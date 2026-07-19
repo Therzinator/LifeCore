@@ -12,6 +12,14 @@ describe('trainingCardioSignalen', () => {
     expect(perType['2026-07-14']).toBe('cardio'); // di
     expect(perType['2026-07-19']).toBeUndefined(); // zo = rust, geen signaal
   });
+
+  it('geeft ochtend/middag/avond-tijdopties mee, standaard of aangepast', () => {
+    const standaard = trainingCardioSignalen('2026-07-13', '2026-07-13');
+    expect(standaard[0].tijdOpties.map((o) => o.starttijd)).toEqual(['07:40', '16:00', '20:00']);
+
+    const aangepast = trainingCardioSignalen('2026-07-13', '2026-07-13', { ochtend: '08:00', middag: '17:00', avond: '21:00' });
+    expect(aangepast[0].tijdOpties.map((o) => o.starttijd)).toEqual(['08:00', '17:00', '21:00']);
+  });
 });
 
 describe('werkdagSignalen', () => {

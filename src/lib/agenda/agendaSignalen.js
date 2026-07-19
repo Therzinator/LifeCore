@@ -21,15 +21,31 @@ function alleDatumsInBereik(bereikStart, bereikEind) {
   return datums;
 }
 
+const STANDAARD_VOORKEUR_TIJDEN = { ochtend: '07:40', middag: '16:00', avond: '20:00' };
+
 // Liftdagen/aanbevolen cardiodagen — hergebruikt patroon uit
 // lib/dagstructuur/weekoverzicht.js (WeekOverzicht-widget), maar dan voor
-// een willekeurig bereik i.p.v. alleen 'deze week'.
-export function trainingCardioSignalen(bereikStart, bereikEind) {
+// een willekeurig bereik i.p.v. alleen 'deze week'. Elk signaal krijgt
+// tijdOpties (ochtend/middag/avond, uit Training-instellingen) zodat de
+// Agenda-dagweergave meteen een 'als blok inplannen'-keuze kan tonen i.p.v.
+// alleen een tekst-label — het liefst vroeg in de ochtend (dicht bij het
+// ontbijt), met een alternatief later op de dag voor als dat niet lukt.
+export function trainingCardioSignalen(bereikStart, bereikEind, voorkeurTijden = STANDAARD_VOORKEUR_TIJDEN) {
+  const tijdOpties = [
+    { label: 'Ochtend', starttijd: voorkeurTijden.ochtend },
+    { label: 'Middag', starttijd: voorkeurTijden.middag },
+    { label: 'Avond', starttijd: voorkeurTijden.avond },
+  ];
+
   return alleDatumsInBereik(bereikStart, bereikEind)
     .map((datum) => {
       const dagIndex = dagIndexVan(datum);
-      if (LIFT_DAGEN.includes(dagIndex)) return { id: `training_${datum}`, bron: 'training', datum, tekst: 'Liftdag', type: 'lift' };
-      if (CARDIO_DAGEN.includes(dagIndex)) return { id: `cardio_${datum}`, bron: 'cardio', datum, tekst: 'Cardio (aanbevolen)', type: 'cardio' };
+      if (LIFT_DAGEN.includes(dagIndex)) {
+        return { id: `training_${datum}`, bron: 'training', datum, tekst: 'Liftdag', type: 'lift', tijdOpties };
+      }
+      if (CARDIO_DAGEN.includes(dagIndex)) {
+        return { id: `cardio_${datum}`, bron: 'cardio', datum, tekst: 'Cardio (aanbevolen)', type: 'cardio', tijdOpties };
+      }
       return null;
     })
     .filter(Boolean);
