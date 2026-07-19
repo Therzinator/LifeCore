@@ -1,7 +1,12 @@
 import { sbClient } from './client.js';
 import { PREFIX } from '../storage/lokaal.js';
 
-const NIET_SYNCEN = ['actieve_pagina', 'training_actief'];
+// 'actieve_pagina' is pure UI-navigatiestate (welk scherm nu open staat) —
+// hoort nooit tussen apparaten te synchroniseren. 'training_actief' stond
+// hier voorheen ook in, maar dat is echte trainingsvoortgang (welke oefening,
+// gewichten, welke sets al gedaan) die een gebruiker wél tussen apparaten
+// wil meenemen (bv. plannen op desktop, uitvoeren op mobiel in de gym).
+const NIET_SYNCEN = ['actieve_pagina'];
 
 function lokaleSleutels() {
   const sleutels = [];
@@ -13,6 +18,23 @@ function lokaleSleutels() {
     }
   }
   return sleutels;
+}
+
+// Alle sleutels die deze gebruiker ooit vanaf een willekeurig apparaat heeft
+// gesynchroniseerd — nodig naast lokaleSleutels() zodat een sleutel die op
+// DIT apparaat nog nooit lokaal bestaan heeft (bv. een module die hier nog
+// nooit geopend is, of een gloednieuw tweede apparaat) toch wordt opgehaald
+// i.p.v. simpelweg overgeslagen te worden.
+async function cloudSleutels(userId) {
+  const sb = sbClient();
+  if (!sb) return [];
+
+  const { data, error } = await sb.from('lifecore_data').select('sleutel').eq('user_id', userId);
+  if (error) {
+    console.error('Kon cloud-sleutellijst niet ophalen', error);
+    return [];
+  }
+  return data.map((r) => r.sleutel).filter((s) => !NIET_SYNCEN.includes(s));
 }
 
 export async function pushSleutel(userId, sleutel, data) {
@@ -62,19 +84,30 @@ export async function synchroniseerAlles(userId) {
   let gelukt = true;
   let gewijzigd = false;
 
-  for (const sleutel of lokaleSleutels()) {
-    let lokaleData;
+  const alleSleutels = new Set([...lokaleSleutels(), ...(await cloudSleutels(userId))]);
+
+  for (const sleutel of alleSleutels) {
+    let lokaleData = null;
     try {
-      lokaleData = JSON.parse(localStorage.getItem(PREFIX + sleutel));
+      const ruw = localStorage.getItem(PREFIX + sleutel);
+      lokaleData = ruw ? JSON.parse(ruw) : null;
     } catch {
-      continue;
+      lokaleData = null;
     }
-    if (!lokaleData) continue;
 
     const remote = await pullSleutel(userId, sleutel);
 
     if (!remote) {
-      gelukt = (await pushSleutel(userId, sleutel, lokaleData)) && gelukt;
+      if (lokaleData) gelukt = (await pushSleutel(userId, sleutel, lokaleData)) && gelukt;
+      continue;
+    }
+
+    // Sleutel bestaat alleen in de cloud (nog nooit lokaal op dit apparaat
+    // aangeraakt, bv. een module die hier nog nooit geopend is, of een
+    // gloednieuw apparaat) — gewoon overnemen, niets om te vergelijken.
+    if (!lokaleData) {
+      localStorage.setItem(PREFIX + sleutel, JSON.stringify(remote.data));
+      gewijzigd = true;
       continue;
     }
 
