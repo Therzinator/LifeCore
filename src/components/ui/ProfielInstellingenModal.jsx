@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useThemaVoorkeur } from '../../hooks/useThemaVoorkeur.js';
+import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
 import './ProfielInstellingenModal.css';
 
 const THEMA_OPTIES = [
@@ -139,10 +140,44 @@ function AccountSectie({ auth, onUitgelogd }) {
   );
 }
 
-const TABS = [
+const BASIS_TABS = [
   { id: 'profiel', label: 'Profiel' },
-  { id: 'account', label: 'Account & privacy' },
+  { id: 'modules', label: 'Modules' },
 ];
+
+function ModulesSectie({ moduleVoorkeuren }) {
+  const { actieveModules, zetActieveModules } = moduleVoorkeuren;
+
+  function wissel(id) {
+    const nieuw = actieveModules.includes(id)
+      ? actieveModules.filter((m) => m !== id)
+      : [...actieveModules, id];
+    zetActieveModules(nieuw);
+  }
+
+  return (
+    <div className="card">
+      <div className="td-label">Modules</div>
+      <p className="ti-hint">Welke onderdelen wil je in de navigatie zien? Uitzetten verwijdert geen data — je kunt alles hier weer aanzetten.</p>
+      {MODULE_CATEGORIEEN.map((cat) => (
+        <div key={cat.id} className="ti-veld-grp">
+          <label className="ti-lbl">{cat.titel}</label>
+          <div className="ti-rij">
+            {cat.modules.map((id) => (
+              <button
+                key={id}
+                type="button"
+                className={`btn btn-sm ${actieveModules.includes(id) ? 'btn-p' : 'btn-g'}`}
+                style={{ flex: 1 }}
+                onClick={() => wissel(id)}
+              >{MODULES[id].label}</button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function AppSectie({ appUpdate }) {
   return (
@@ -159,17 +194,17 @@ function AppSectie({ appUpdate }) {
   );
 }
 
-export default function ProfielInstellingenModal({ auth, appUpdate, onUitgelogd }) {
+export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorkeuren, onUitgelogd }) {
   const { profiel, bewaar } = usePersoonsProfiel();
   const { thema, setThema } = useThemaVoorkeur();
   const [tab, setTab] = useState('profiel');
   const heeftAccountTab = Boolean(auth?.enabled && auth?.ingelogd);
+  const tabs = heeftAccountTab ? [...BASIS_TABS, { id: 'account', label: 'Account & privacy' }] : BASIS_TABS;
 
   return (
     <div>
-      {heeftAccountTab && (
-        <div className="ti-rij pim-tabs">
-          {TABS.map((t) => (
+      <div className="ti-rij pim-tabs">
+          {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -180,8 +215,7 @@ export default function ProfielInstellingenModal({ auth, appUpdate, onUitgelogd 
               {t.label}
             </button>
           ))}
-        </div>
-      )}
+      </div>
 
       {tab === 'profiel' && (
         <>
@@ -264,6 +298,8 @@ export default function ProfielInstellingenModal({ auth, appUpdate, onUitgelogd 
           </div>
         </>
       )}
+
+      {tab === 'modules' && <ModulesSectie moduleVoorkeuren={moduleVoorkeuren} />}
 
       {tab === 'account' && heeftAccountTab && <AccountSectie auth={auth} onUitgelogd={onUitgelogd} />}
 

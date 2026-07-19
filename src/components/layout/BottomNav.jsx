@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { MODULE_ICONEN, IconSnelkeuze, IconChevron, IconInstellingen } from '../ui/ModuleIconen.jsx';
-import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
+import { MODULES, gefilterdeCategorieen } from '../../lib/nav/modules.js';
 import './BottomNav.css';
 
-export default function BottomNav({ pagina, setPagina }) {
+export default function BottomNav({ pagina, setPagina, actieveModules }) {
   const [uitgeklapt, setUitgeklapt] = useState(false);
+  const categorieen = gefilterdeCategorieen(actieveModules);
 
   // pagina is niet altijd een module-id — bv. 'snelkeuze' en 'instellingen'
   // zijn losse schermen zonder eigen entry in MODULE_ICONEN. Zonder fallback
@@ -35,7 +36,7 @@ export default function BottomNav({ pagina, setPagina }) {
               </button>
             </div>
 
-            {MODULE_CATEGORIEEN.map((categorie) => (
+            {categorieen.map((categorie) => (
               <div className="bn-paneel-categorie" key={categorie.id}>
                 <div className="bn-paneel-categorie-titel">{categorie.titel}</div>
                 <div className="bn-grid">

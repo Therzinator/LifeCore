@@ -18,10 +18,13 @@ import WerkPagina from './components/werk/WerkPagina.jsx';
 import AgendaPagina from './components/agenda/AgendaPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
+import ModuleWizard from './components/onboarding/ModuleWizard.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
+import { useModuleVoorkeuren } from './hooks/useModuleVoorkeuren.js';
+import { MODULES, MODULE_CATEGORIEEN } from './lib/nav/modules.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
 function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum) {
@@ -55,6 +58,7 @@ export default function App() {
   const auth = useAuth();
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
+  const moduleVoorkeuren = useModuleVoorkeuren();
 
   // Zonder dit blijft de scrollpositie van de vorige module hangen (er is
   // geen geneste scroll-container, .app-main/.ds-content scrollen niet
@@ -105,6 +109,18 @@ export default function App() {
     );
   }
 
+  if (!moduleVoorkeuren.onboardingVoltooid) {
+    return (
+      <ModuleWizard
+        modules={MODULES}
+        categorieen={MODULE_CATEGORIEEN}
+        actieveModules={moduleVoorkeuren.actieveModules}
+        onWijzig={moduleVoorkeuren.zetActieveModules}
+        onVoltooien={moduleVoorkeuren.voltooiOnboarding}
+      />
+    );
+  }
+
   if (isDesktop) {
     // Snelkeuze is ook op desktop bereikbaar (via de 'Start'-knop bovenaan de
     // zijbalk of het logo) — toont daar hetzelfde vandaag-/weekoverzicht als
@@ -113,10 +129,10 @@ export default function App() {
       <>
         <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
         <InstallBanner />
-        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth} appUpdate={appUpdate}>
+        <DesktopShell pagina={pagina} setPagina={setPagina} auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren}>
           <ErrorBoundary key={pagina}>
             {pagina === 'snelkeuze'
-              ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />
+              ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />
               : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
           </ErrorBoundary>
         </DesktopShell>
@@ -128,14 +144,14 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} />
+      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
-          {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} />}
+          {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />}
           {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null))}
         </main>
       </ErrorBoundary>
-      <BottomNav pagina={pagina} setPagina={setPagina} />
+      <BottomNav pagina={pagina} setPagina={setPagina} actieveModules={moduleVoorkeuren.actieveModules} />
       <Toast toasts={toasts} />
     </>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSync } from '../../hooks/useSync.js';
 import { leesLokaal, schrijfLokaal } from '../../lib/storage/lokaal.js';
 import { MODULE_ICONEN, IconChevron, IconAccount, IconSnelkeuze } from '../ui/ModuleIconen.jsx';
-import { MODULES, MODULE_VOLGORDE } from '../../lib/nav/modules.js';
+import { MODULES, gefilterdeVolgorde } from '../../lib/nav/modules.js';
 import Modal from '../ui/Modal.jsx';
 import ProfielInstellingenModal from '../ui/ProfielInstellingenModal.jsx';
 import './DesktopShell.css';
@@ -14,11 +14,12 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function DesktopShell({ pagina, setPagina, auth, appUpdate, children }) {
+export default function DesktopShell({ pagina, setPagina, auth, appUpdate, moduleVoorkeuren, children }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [ingeklapt, setIngeklapt] = useState(() => leesLokaal('zijbalk_ingeklapt', false));
   const [toonProfiel, setToonProfiel] = useState(false);
+  const moduleVolgorde = gefilterdeVolgorde(moduleVoorkeuren.actieveModules);
 
   function wisselZijbalk() {
     setIngeklapt((huidig) => {
@@ -72,7 +73,7 @@ export default function DesktopShell({ pagina, setPagina, auth, appUpdate, child
           <IconSnelkeuze className="ds-nav-icoon" />
           <span className="ds-nav-label">Start</span>
         </button>
-        {MODULE_VOLGORDE.map((id) => {
+        {moduleVolgorde.map((id) => {
           const Icoon = MODULE_ICONEN[id];
           const label = MODULES[id].label;
           return (
@@ -94,7 +95,7 @@ export default function DesktopShell({ pagina, setPagina, auth, appUpdate, child
 
       {toonProfiel && (
         <Modal titel="Profiel & account" onClose={() => setToonProfiel(false)}>
-          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} onUitgelogd={() => setToonProfiel(false)} />
+          <ProfielInstellingenModal auth={auth} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} onUitgelogd={() => setToonProfiel(false)} />
         </Modal>
       )}
     </div>

@@ -2,10 +2,12 @@ import { MODULE_ICONEN } from '../ui/ModuleIconen.jsx';
 import WeekOverzicht from '../ui/WeekOverzicht.jsx';
 import VandaagOverzicht from '../ui/VandaagOverzicht.jsx';
 import HuishoudVandaagOverzicht from '../ui/HuishoudVandaagOverzicht.jsx';
-import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
+import { MODULES, gefilterdeCategorieen } from '../../lib/nav/modules.js';
 import './SnelkeuzeScherm.css';
 
-export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag }) {
+export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag, actieveModules }) {
+  const categorieen = gefilterdeCategorieen(actieveModules);
+
   return (
     <div className="sk-wrap" role="region" aria-label="Snelkeuze">
       <div className="sk-header">
@@ -17,7 +19,7 @@ export default function SnelkeuzeScherm({ onKies, onKiesAgendaDag }) {
       <WeekOverzicht onKiesDag={onKiesAgendaDag} />
       <HuishoudVandaagOverzicht onOpenWerk={() => onKies('werk')} />
 
-      {MODULE_CATEGORIEEN.map((categorie) => (
+      {categorieen.map((categorie) => (
         <div className="sk-categorie" key={categorie.id}>
           <div className="sk-categorie-titel">{categorie.titel}</div>
           <div className="sk-grid">

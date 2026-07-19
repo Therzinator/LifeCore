@@ -27,3 +27,18 @@ export const MODULE_CATEGORIEEN = [
   { id: 'geest', titel: 'Rust & geest', modules: ['waarden', 'welzijn', 'mindfulness'] },
   { id: 'overzicht', titel: 'Overzicht', modules: ['dashboard'] },
 ];
+
+// Gefilterde varianten voor de onboarding-wizard-keuze (useModuleVoorkeuren)
+// — undefined/null actieveModules (nog niets ingesteld) toont gewoon alles,
+// zodat bestaande installaties zonder voorkeur geen enkele module verliezen.
+export function gefilterdeCategorieen(actieveModules) {
+  if (!actieveModules) return MODULE_CATEGORIEEN;
+  return MODULE_CATEGORIEEN
+    .map((cat) => ({ ...cat, modules: cat.modules.filter((id) => actieveModules.includes(id)) }))
+    .filter((cat) => cat.modules.length > 0);
+}
+
+export function gefilterdeVolgorde(actieveModules) {
+  if (!actieveModules) return MODULE_VOLGORDE;
+  return MODULE_VOLGORDE.filter((id) => actieveModules.includes(id));
+}
