@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useThemaVoorkeur } from '../../hooks/useThemaVoorkeur.js';
+import { useHuishouden } from '../../hooks/useHuishouden.js';
 import { MODULES, MODULE_CATEGORIEEN } from '../../lib/nav/modules.js';
 import './ProfielInstellingenModal.css';
 
@@ -125,6 +126,130 @@ function WachtwoordSectie({ auth }) {
   );
 }
 
+function HuishoudenSectie({ auth }) {
+  const huishouden = useHuishouden(auth.user?.id, auth.user?.email);
+  const [naam, setNaam] = useState('');
+  const [email, setEmail] = useState('');
+  const [nieuweLink, setNieuweLink] = useState(null);
+  const [gekopieerd, setGekopieerd] = useState(false);
+
+  if (huishouden.laden) {
+    return <div className="card"><p className="ti-hint">Laden...</p></div>;
+  }
+
+  if (!huishouden.huishouden) {
+    return (
+      <div className="card">
+        <div className="td-label">Huishouden</div>
+        <p className="ti-hint">
+          Maak een huishouden aan om straks samen met je partner Kluslijst-projecten en het
+          huishoudschema te gebruiken.
+        </p>
+        <div className="ti-veld-grp">
+          <label className="ti-lbl" htmlFor="hs-naam">Naam</label>
+          <input
+            id="hs-naam"
+            className="ti-veld"
+            value={naam}
+            onChange={(e) => setNaam(e.target.value)}
+            placeholder="bijv. Familie Klop"
+          />
+        </div>
+        <button
+          className="btn btn-p btn-full"
+          disabled={!naam.trim()}
+          onClick={async () => { await huishouden.maakAan(naam.trim()); setNaam(''); }}
+        >
+          Huishouden aanmaken
+        </button>
+      </div>
+    );
+  }
+
+  const mijnLid = huishouden.leden.find((l) => l.user_id === auth.user?.id);
+  const openUitnodigingen = huishouden.uitnodigingen.filter((u) => u.status === 'open');
+
+  async function uitnodigen(e) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    const uitnodiging = await huishouden.nodigUit(email.trim());
+    setEmail('');
+    setGekopieerd(false);
+    if (uitnodiging) setNieuweLink(`${window.location.origin}?uitnodiging=${uitnodiging.token}`);
+  }
+
+  function kopieer(link) {
+    navigator.clipboard?.writeText(link);
+    setGekopieerd(true);
+    setTimeout(() => setGekopieerd(false), 2000);
+  }
+
+  return (
+    <div className="card">
+      <div className="td-label">{huishouden.huishouden.naam}</div>
+
+      <label className="ti-lbl">Leden</label>
+      <div className="hh-lijst">
+        {huishouden.leden.map((lid) => (
+          <div className="hh-item" key={lid.id}>
+            <span className="hh-tekst">
+              {lid.lid_email}
+              {lid.rol === 'eigenaar' && <span className="hhp-werk-badge"> · eigenaar</span>}
+            </span>
+            {(lid.user_id === auth.user?.id || mijnLid?.rol === 'eigenaar') && (
+              <button
+                className="hh-verwijder"
+                onClick={() => huishouden.verwijderLid(lid.id)}
+                title={lid.user_id === auth.user?.id ? 'Huishouden verlaten' : 'Verwijderen'}
+              >✕</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <label className="ti-lbl" style={{ marginTop: 'var(--space-md)' }}>Partner uitnodigen</label>
+      <form onSubmit={uitnodigen} className="ti-rij">
+        <input
+          className="ti-veld"
+          style={{ flex: 1 }}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="e-mailadres"
+          required
+        />
+        <button className="btn btn-p btn-sm" type="submit">Uitnodigen</button>
+      </form>
+
+      {nieuweLink && (
+        <div className="pim-gelukt">
+          <p style={{ marginBottom: 'var(--space-xs)' }}>Deel deze link (bv. via WhatsApp of e-mail):</p>
+          <div className="ti-rij">
+            <input className="ti-veld" style={{ flex: 1 }} readOnly value={nieuweLink} onFocus={(e) => e.target.select()} />
+            <button type="button" className="btn btn-g btn-sm" onClick={() => kopieer(nieuweLink)}>
+              {gekopieerd ? 'Gekopieerd!' : 'Kopieer'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {openUitnodigingen.length > 0 && (
+        <>
+          <label className="ti-lbl" style={{ marginTop: 'var(--space-md)' }}>Openstaande uitnodigingen</label>
+          <div className="hh-lijst">
+            {openUitnodigingen.map((u) => (
+              <div className="hh-item" key={u.id}>
+                <span className="hh-tekst">{u.uitgenodigd_email}</span>
+                <button className="btn btn-g btn-sm" onClick={() => huishouden.trekIn(u.id)}>Intrekken</button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function AccountSectie({ auth, onUitgelogd }) {
   return (
     <div>
@@ -199,7 +324,9 @@ export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorke
   const { thema, setThema } = useThemaVoorkeur();
   const [tab, setTab] = useState('profiel');
   const heeftAccountTab = Boolean(auth?.enabled && auth?.ingelogd);
-  const tabs = heeftAccountTab ? [...BASIS_TABS, { id: 'account', label: 'Account & privacy' }] : BASIS_TABS;
+  const tabs = heeftAccountTab
+    ? [...BASIS_TABS, { id: 'huishouden', label: 'Huishouden' }, { id: 'account', label: 'Account & privacy' }]
+    : BASIS_TABS;
 
   return (
     <div>
@@ -300,6 +427,8 @@ export default function ProfielInstellingenModal({ auth, appUpdate, moduleVoorke
       )}
 
       {tab === 'modules' && <ModulesSectie moduleVoorkeuren={moduleVoorkeuren} />}
+
+      {tab === 'huishouden' && heeftAccountTab && <HuishoudenSectie auth={auth} />}
 
       {tab === 'account' && heeftAccountTab && <AccountSectie auth={auth} onUitgelogd={onUitgelogd} />}
 

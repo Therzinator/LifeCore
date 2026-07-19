@@ -19,6 +19,7 @@ import AgendaPagina from './components/agenda/AgendaPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
 import ModuleWizard from './components/onboarding/ModuleWizard.jsx';
+import UitnodigingAccepteren from './components/huishouden/UitnodigingAccepteren.jsx';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
@@ -59,6 +60,16 @@ export default function App() {
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
   const moduleVoorkeuren = useModuleVoorkeuren();
+  const [uitnodigingToken, setUitnodigingToken] = useState(
+    () => new URLSearchParams(window.location.search).get('uitnodiging'),
+  );
+
+  function wisUitnodigingUitUrl() {
+    setUitnodigingToken(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('uitnodiging');
+    window.history.replaceState({}, '', url);
+  }
 
   // Zonder dit blijft de scrollpositie van de vorige module hangen (er is
   // geen geneste scroll-container, .app-main/.ds-content scrollen niet
@@ -107,6 +118,10 @@ export default function App() {
         <InlogScherm login={auth.login} signup={auth.signup} />
       </>
     );
+  }
+
+  if (uitnodigingToken && auth.ingelogd) {
+    return <UitnodigingAccepteren token={uitnodigingToken} user={auth.user} onKlaar={wisUitnodigingUitUrl} />;
   }
 
   if (!moduleVoorkeuren.onboardingVoltooid) {
