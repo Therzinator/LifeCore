@@ -19,7 +19,7 @@ import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 // aan blijkt. Niet verwarren met BullsEyeTarget.jsx (het waardenkompas) —
 // dat is een ander, al gebouwd instrument.
 
-export default function WaardenPagina() {
+export default function WaardenPagina({ voorgeladenZorg, onVoorgeladenZorgGeconsumeerd }) {
   const dagdata = useDagdata();
   const { profiel, setKernwaarden } = useWaardenprofiel();
   const { instellingen, bewaar } = useWaardenInstellingen();
@@ -61,7 +61,7 @@ export default function WaardenPagina() {
       </div>
 
       <div className="card">
-        <DefusieOefening />
+        <DefusieOefening voorgeladenGedachte={voorgeladenZorg} onGeconsumeerd={onVoorgeladenZorgGeconsumeerd} />
       </div>
     </div>
   );

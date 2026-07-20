@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { clusterBrainDump } from '../../lib/ochtend/brainCluster.js';
+import { useWerkTaken } from '../../hooks/useWerkTaken.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './StapBrainDump.css';
 
-export default function StapBrainDump({ dagdata, volgende, vorige, overslaan }) {
+export default function StapBrainDump({ dagdata, volgende, vorige, overslaan, toonToast, onNaarDefusie }) {
   const [tekst, setTekst] = useState(dagdata.dag.brainDump ?? '');
   const [toonUitleg, setToonUitleg] = useState(false);
+  const [toegevoegdAanWerk, setToegevoegdAanWerk] = useState(() => new Set());
+  const werkTaken = useWerkTaken();
 
   const clusters = clusterBrainDump(tekst);
   const heeftClusters = clusters.zorgen.length || clusters.taken.length || clusters.ideeen.length;
@@ -14,6 +17,12 @@ export default function StapBrainDump({ dagdata, volgende, vorige, overslaan }) 
   function ga() {
     dagdata.setBrainDump(tekst);
     volgende();
+  }
+
+  function voegTaakToeAanWerk(zin) {
+    werkTaken.voegMeerdereToe([zin]);
+    setToegevoegdAanWerk((huidig) => new Set(huidig).add(zin));
+    toonToast?.('Toegevoegd aan Werk-taken');
   }
 
   return (
@@ -43,13 +52,35 @@ export default function StapBrainDump({ dagdata, volgende, vorige, overslaan }) 
           {clusters.zorgen.length > 0 && (
             <div className="bd-cluster-item bd-cluster-zorgen">
               <div className="bd-cluster-lbl">Zorgen / onrust</div>
-              {clusters.zorgen.join(' · ')}
+              {clusters.zorgen.map((zin) => (
+                <div key={zin} className="bd-cluster-regel">
+                  <span className="bd-cluster-zin">{zin}</span>
+                  <button type="button" className="bd-actie-btn" onClick={() => onNaarDefusie?.(zin)}>
+                    Zet los →
+                  </button>
+                </div>
+              ))}
             </div>
           )}
           {clusters.taken.length > 0 && (
             <div className="bd-cluster-item bd-cluster-taken">
               <div className="bd-cluster-lbl">Taken</div>
-              {clusters.taken.join(' · ')}
+              {clusters.taken.map((zin) => {
+                const toegevoegd = toegevoegdAanWerk.has(zin);
+                return (
+                  <div key={zin} className="bd-cluster-regel">
+                    <span className="bd-cluster-zin">{zin}</span>
+                    <button
+                      type="button"
+                      className={`bd-actie-btn ${toegevoegd ? 'gedaan' : ''}`}
+                      disabled={toegevoegd}
+                      onClick={() => voegTaakToeAanWerk(zin)}
+                    >
+                      {toegevoegd ? '✓ Toegevoegd' : '→ Werk'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
           {clusters.ideeen.length > 0 && (

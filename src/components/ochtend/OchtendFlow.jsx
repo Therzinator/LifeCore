@@ -14,7 +14,7 @@ import OchtendInstellingen from './OchtendInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './OchtendFlow.css';
 
-export default function OchtendFlow({ toonToast }) {
+export default function OchtendFlow({ toonToast, onNaarDefusie }) {
   const dagdata = useDagdata();
   const { instellingen, bewaar: bewaarInstellingen } = useOchtendInstellingen();
   const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow(instellingen);
@@ -40,7 +40,7 @@ export default function OchtendFlow({ toonToast }) {
       {stapNaam === 'activering' && (
         <StapActivering {...gedeeld} geluidFragment={instellingen.geluidFragment} trainingsherinnering={trainingsherinnering?.tekst} />
       )}
-      {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} />}
+      {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} onNaarDefusie={onNaarDefusie} />}
       {stapNaam === 'dagfocus' && <StapDagfocus {...gedeeld} />}
       {stapNaam === 'afronden' && <StapAfronden {...gedeeld} />}
     </div>

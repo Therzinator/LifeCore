@@ -40,3 +40,34 @@
   color: var(--txt-muted);
   margin-bottom: 4px;
 }
+
+.bd-cluster-regel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 4px 0;
+}
+.bd-cluster-regel + .bd-cluster-regel { border-top: 1px solid var(--border); }
+
+.bd-cluster-zin { flex: 1; min-width: 0; color: var(--txt); }
+
+.bd-actie-btn {
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-3);
+  color: var(--txt);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bd-actie-btn:hover { background: var(--accent-dim); border-color: var(--accent-mid); }
+.bd-actie-btn.gedaan {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+  cursor: default;
+}

@@ -30,10 +30,16 @@ import { useHuishouden } from './hooks/useHuishouden.js';
 import { MODULES, MODULE_CATEGORIEEN } from './lib/nav/modules.js';
 import { leesLokaal, schrijfLokaal } from './lib/storage/lokaal.js';
 
-function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum, userId, huishoudenId) {
+function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAgendaInitieleDatum, userId, huishoudenId, naarWaardenMetZorg, waardenVoorgeladenZorg, wisWaardenVoorgeladenZorg) {
   switch (paginaId) {
-    case 'ochtend': return <OchtendFlow toonToast={toonToast} />;
-    case 'waarden': return <WaardenPagina />;
+    case 'ochtend': return <OchtendFlow toonToast={toonToast} onNaarDefusie={naarWaardenMetZorg} />;
+    case 'waarden':
+      return (
+        <WaardenPagina
+          voorgeladenZorg={waardenVoorgeladenZorg}
+          onVoorgeladenZorgGeconsumeerd={wisWaardenVoorgeladenZorg}
+        />
+      );
     case 'welzijn': return <WelzijnPagina />;
     case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
     case 'training': return <TrainingPagina toonToast={toonToast} />;
@@ -59,6 +65,7 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
 export default function App() {
   const [pagina, setPaginaState] = useState(() => leesLokaal('actieve_pagina', 'snelkeuze'));
   const [agendaInitieleDatum, setAgendaInitieleDatum] = useState(null);
+  const [waardenVoorgeladenZorg, setWaardenVoorgeladenZorg] = useState(null);
   const { toasts, toonToast } = useToast();
   const auth = useAuth();
   const isDesktop = useIsDesktop();
@@ -94,6 +101,13 @@ export default function App() {
   function naarAgendaDag(datum) {
     setAgendaInitieleDatum(datum);
     setPagina('agenda');
+  }
+
+  // Ochtend-braindump 'zorgen'-cluster -> direct doorzetten naar de
+  // Defusie-oefening (Waarden), zelfde opzet als naarAgendaDag hierboven.
+  function naarWaardenMetZorg(zin) {
+    setWaardenVoorgeladenZorg(zin);
+    setPagina('waarden');
   }
 
   function setPagina(nieuwePagina) {
@@ -162,7 +176,7 @@ export default function App() {
           <ErrorBoundary key={pagina}>
             {pagina === 'snelkeuze'
               ? <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} huishoudenId={huishoudenId} />
-              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId)}
+              : renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId, naarWaardenMetZorg, waardenVoorgeladenZorg, () => setWaardenVoorgeladenZorg(null))}
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
@@ -177,7 +191,7 @@ export default function App() {
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />}
-          {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId)}
+          {renderModule(pagina, toonToast, setPagina, agendaInitieleDatum, () => setAgendaInitieleDatum(null), auth.user?.id, huishoudenId, naarWaardenMetZorg, waardenVoorgeladenZorg, () => setWaardenVoorgeladenZorg(null))}
         </main>
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} actieveModules={moduleVoorkeuren.actieveModules} />

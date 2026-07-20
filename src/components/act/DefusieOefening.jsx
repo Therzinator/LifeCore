@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { defusieStappen, DEFUSIE_TECHNIEKEN } from '../../lib/act/defusie.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './DefusieOefening.css';
 
-export default function DefusieOefening() {
-  const [gedachte, setGedachte] = useState('');
+export default function DefusieOefening({ voorgeladenGedachte, onGeconsumeerd }) {
+  const [gedachte, setGedachte] = useState(() => voorgeladenGedachte ?? '');
+
+  useEffect(() => {
+    if (voorgeladenGedachte) onGeconsumeerd?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij mount: seed vanuit de ochtend-braindump is eenmalig, latere invoer loopt via lokale state.
+  }, []);
   const [techniek, setTechniek] = useState(DEFUSIE_TECHNIEKEN[0].id);
   const [stappen, setStappen] = useState([]);
   const [stapIndex, setStapIndex] = useState(0);
