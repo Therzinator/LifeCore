@@ -155,6 +155,16 @@ export function IconAgenda(props) {
   );
 }
 
+export function IconNotitie(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <path d="M5 4a2 2 0 0 1 2-2h7l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M14 2v4a1 1 0 0 0 1 1h4" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M8 12.5h8M8 16.5h5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconChevron(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" {...props}>

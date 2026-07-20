@@ -3,6 +3,7 @@ import { useSync } from '../../hooks/useSync.js';
 import { IconAccount } from '../ui/ModuleIconen.jsx';
 import Modal from '../ui/Modal.jsx';
 import ProfielInstellingenModal from '../ui/ProfielInstellingenModal.jsx';
+import NotitiesKnop from '../ui/NotitiesKnop.jsx';
 import './AppHeader.css';
 
 const STATUS_LABEL = {
@@ -12,7 +13,7 @@ const STATUS_LABEL = {
   mislukt: 'Mislukt',
 };
 
-export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren, huishouden }) {
+export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren, huishouden, pagina }) {
   const sync = useSync(auth?.user?.id);
   const toonSync = auth?.enabled && auth?.ingelogd;
   const [toonProfiel, setToonProfiel] = useState(false);
@@ -32,6 +33,7 @@ export default function AppHeader({ auth, setPagina, appUpdate, moduleVoorkeuren
             </button>
           </div>
         )}
+        <NotitiesKnop huidigeModule={pagina} />
         <div className="app-instellingen-groep">
           <button className="app-instellingen-btn" onClick={() => setToonProfiel(true)} aria-label="Account">
             <IconAccount className="app-instellingen-icoon" />

@@ -5,6 +5,7 @@ import { MODULE_ICONEN, IconChevron, IconAccount, IconSnelkeuze } from '../ui/Mo
 import { MODULES, gefilterdeVolgorde } from '../../lib/nav/modules.js';
 import Modal from '../ui/Modal.jsx';
 import ProfielInstellingenModal from '../ui/ProfielInstellingenModal.jsx';
+import NotitiesKnop from '../ui/NotitiesKnop.jsx';
 import './DesktopShell.css';
 
 const STATUS_LABEL = {
@@ -45,6 +46,7 @@ export default function DesktopShell({ pagina, setPagina, auth, appUpdate, modul
               </button>
             </div>
           )}
+          <NotitiesKnop huidigeModule={pagina} />
           <div className="ds-instellingen-groep">
             <button className="ds-instellingen-btn" onClick={() => setToonProfiel(true)} aria-label="Account">
               <IconAccount className="ds-instellingen-icoon" />

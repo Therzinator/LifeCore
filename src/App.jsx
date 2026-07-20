@@ -187,7 +187,7 @@ export default function App() {
   return (
     <>
       <UpdateBanner actief={appUpdate.nieuweVersieBeschikbaar} onBijwerken={appUpdate.bijwerken} onNegeren={appUpdate.negeren} />
-      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden} />
+      <AppHeader auth={auth} setPagina={setPagina} appUpdate={appUpdate} moduleVoorkeuren={moduleVoorkeuren} huishouden={huishouden} pagina={pagina} />
       <ErrorBoundary key={pagina}>
         <main className="app-main">
           {pagina === 'snelkeuze' && <SnelkeuzeScherm onKies={setPagina} onKiesAgendaDag={naarAgendaDag} actieveModules={moduleVoorkeuren.actieveModules} />}
