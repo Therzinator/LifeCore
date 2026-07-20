@@ -3,6 +3,12 @@ import { speelFragment } from '../lib/geluid/fragmenten.js';
 
 const MAX_SECONDEN = 600;
 
+// navigator.vibrate bestaat alleen op Chrome/Android — stilletjes een no-op
+// op iOS Safari (nooit ondersteund, ook niet als geïnstalleerde PWA).
+function trilBijEindeTimer() {
+  navigator.vibrate?.([200, 100, 200]);
+}
+
 export function useRustTimer(geluidFragment) {
   const [resterend, setResterend] = useState(0);
   const [totaal, setTotaal] = useState(0);
@@ -27,6 +33,7 @@ export function useRustTimer(geluidFragment) {
           intervalRef.current = null;
           setActief(false);
           speelFragment(geluidFragment);
+          trilBijEindeTimer();
           return 0;
         }
         return r - 1;

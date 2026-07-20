@@ -1,7 +1,17 @@
 const STANG_RECHT_STD = 20;
 const STANG_CURL_STD = 10;
 
-export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap = 2.5, instStangen = {}) {
+// Standaardwaarden voor de opbouwsets (ramp-up naar het werkgewicht) — een
+// gebruiker kan dit via Training-instellingen naar eigen voorkeur aanpassen
+// (zie useTrainingInstellingen.js), dit blijft de fallback voor oudere,
+// lokaal opgeslagen instellingen die het veld nog niet kennen.
+export const OPBOUW_STAPPEN_STANDAARD = [
+  { pct: 40, reps: 5 },
+  { pct: 60, reps: 3 },
+  { pct: 80, reps: 2 },
+];
+
+export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap = 2.5, instStangen = {}, opbouwStappen = OPBOUW_STAPPEN_STANDAARD) {
   const stangGewicht = stangType === 'curl'
     ? (instStangen.stangCurl ?? STANG_CURL_STD)
     : (instStangen.stangRecht ?? STANG_RECHT_STD);
@@ -9,9 +19,11 @@ export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap 
 
   const kandidaten = [
     { label: 'Lege stang', gewicht: stangGewicht, reps: 5 },
-    { label: '40%', gewicht: rond(werkgewicht * 0.4), reps: 5 },
-    { label: '60%', gewicht: rond(werkgewicht * 0.6), reps: 3 },
-    { label: '80%', gewicht: rond(werkgewicht * 0.8), reps: 2 },
+    ...opbouwStappen.map((stap) => ({
+      label: `${stap.pct}%`,
+      gewicht: rond(werkgewicht * (stap.pct / 100)),
+      reps: stap.reps,
+    })),
   ];
 
   const gezien = new Set();

@@ -45,6 +45,7 @@ export default function TrainingPagina({ toonToast }) {
   const persoonsProfiel = usePersoonsProfiel();
   const rustTimer = useRustTimer(instellingen.geluidFragment);
   const [tab, setTab] = useState('dashboard');
+  const [toonSessie, setToonSessie] = useState(true);
   useRegistreerSubstap(
     !profiel.profiel.profielNaam
       ? 'Kies startgewicht'
@@ -71,10 +72,11 @@ export default function TrainingPagina({ toonToast }) {
     );
   }
 
-  if (actieveTraining.training.letter) {
+  if (actieveTraining.training.letter && toonSessie) {
     return (
       <div className="of-wrap">
         <div className="card">
+          <button type="button" className="btn btn-text" onClick={() => setToonSessie(false)}>← Terug naar dashboard</button>
           <TrainingSessie
             training={actieveTraining.training}
             setOefeningen={actieveTraining.setOefeningen}
@@ -85,7 +87,7 @@ export default function TrainingPagina({ toonToast }) {
             setGewicht={profiel.setGewicht}
             rustTimer={rustTimer}
             toonToast={toonToast}
-            onAfgerond={() => { rustTimer.stop(); actieveTraining.wisTraining(); setTab('dashboard'); }}
+            onAfgerond={() => { rustTimer.stop(); actieveTraining.wisTraining(); setToonSessie(true); setTab('dashboard'); }}
           />
         </div>
       </div>
@@ -98,7 +100,7 @@ export default function TrainingPagina({ toonToast }) {
 
     const oefeningen = programma.programma[letter].map((oef) => {
       const gewicht = profiel.profiel.gewichten[oef.id] ?? 20;
-      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen).length;
+      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen).length;
       return {
         id: oef.id, naam: oef.naam, sets: oef.sets, reps: oef.reps, type: oef.type,
         stangType: oef.stangType, spier: oef.spier, increment: oef.increment ?? instellingen.gewichtStap,
@@ -126,6 +128,7 @@ export default function TrainingPagina({ toonToast }) {
     });
 
     actieveTraining.startTraining(letter, oefeningen, extras);
+    setToonSessie(true);
   }
 
   function resetAlles() {
@@ -140,6 +143,12 @@ export default function TrainingPagina({ toonToast }) {
 
   return (
     <div className="of-wrap">
+      {actieveTraining.training.letter && (
+        <div className="card tp-hervat-banner">
+          <span>Training {actieveTraining.training.letter} loopt nog — niet afgerond</span>
+          <button type="button" className="btn btn-p btn-sm" onClick={() => setToonSessie(true)}>Hervatten →</button>
+        </div>
+      )}
       <div className="mik-kop-rij">
         <div className="tp-tabs" style={{ flex: 1, minWidth: 0 }}>
           {TABS.map((t) => (

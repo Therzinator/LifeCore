@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { datumKey } from '../utils/datum.js';
+import { OPBOUW_STAPPEN_STANDAARD } from '../lib/training/opbouw.js';
 
 const STANDAARD = {
   programma: 'sl5x5',
@@ -10,6 +11,7 @@ const STANDAARD = {
   stangRecht: 20,
   stangCurl: 10,
   runKm: 25,
+  opbouwStappen: OPBOUW_STAPPEN_STANDAARD,
   programmaOvergangsdatum: null,
   geluidFragment: 'tweetonen',
   eenheid: 'kg',

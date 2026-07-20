@@ -26,3 +26,11 @@
   color: var(--accent);
   font-weight: 600;
 }
+
+.tp-hervat-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}

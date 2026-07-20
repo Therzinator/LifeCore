@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import { volgendeGewicht, isNieuwePR } from '../../lib/training/progressie.js';
 import { MOBILITEIT_OEFENINGEN } from '../../lib/training/mobiliteit.js';
-import { oefeningMetAfbeeldingPerId } from '../../lib/oefeningen/vrijeOefeningenDb.js';
+import { oefeningMetAfbeeldingPerId, extraOefeningMetAfbeelding } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import SchijvenWeergave from './SchijvenWeergave.jsx';
 import RustTimer from './RustTimer.jsx';
 import OefeningPopup from '../ui/OefeningPopup.jsx';
@@ -69,6 +69,10 @@ export default function TrainingSessie({
   const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
   const [detailId, setDetailId] = useState(null);
   const detailOefening = detailId ? oefeningMetAfbeeldingPerId(detailId) : null;
+  const [detailExtraId, setDetailExtraId] = useState(null);
+  const detailExtraOefening = detailExtraId
+    ? extraOefeningMetAfbeelding(extras.find((e) => e.id === detailExtraId))
+    : null;
   const [toonMobiliteit, setToonMobiliteit] = useState(false);
 
   const hoofdKlaar = oefeningen.every((o) => o.werk.every(Boolean));
@@ -233,7 +237,7 @@ export default function TrainingSessie({
       </div>
 
       {oefeningen.map((oef, oefIndex) => {
-        const opbouw = berekenOpbouwsets(oef.gewicht, oef.stangType, instellingen.gewichtStap, instStangen);
+        const opbouw = berekenOpbouwsets(oef.gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen);
         const isPR = isNieuwePR(oef.id, oef.gewicht, geschiedenis.sessies);
         const maxGew = Math.max(...oef.setGew);
 
@@ -309,7 +313,10 @@ export default function TrainingSessie({
           {extras.map((ext, ei) => (
             <div className="ts-oefening ts-oefening-extra" key={ext.id}>
               <div className="ts-oefening-kop">
-                <div className="ts-oefening-naam">{ext.naam}</div>
+                <button type="button" className="ts-oefening-naam ts-oefening-naam-btn" onClick={() => setDetailExtraId(ext.id)}>
+                  {ext.naam}
+                  <span className="ts-oefening-info">ⓘ</span>
+                </button>
                 <div className="ts-oefening-sub">
                   <span className="ts-oefening-spier">{ext.spier}</span>
                   <span>{ext.sets} × {ext.reps} werksets</span>
@@ -357,6 +364,12 @@ export default function TrainingSessie({
       {detailOefening && (
         <Modal titel={detailOefening.naam} onClose={() => setDetailId(null)}>
           <OefeningDetail oefening={detailOefening} />
+        </Modal>
+      )}
+
+      {detailExtraOefening && (
+        <Modal titel={detailExtraOefening.naam} onClose={() => setDetailExtraId(null)}>
+          <OefeningDetail oefening={detailExtraOefening} />
         </Modal>
       )}
     </div>

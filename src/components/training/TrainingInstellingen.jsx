@@ -6,6 +6,14 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
     return (e) => bewaar({ [key]: parse(e.target.value) });
   }
 
+  function pasOpbouwStap(i, key, parse) {
+    return (e) => {
+      const waarde = parse(e.target.value);
+      const stappen = instellingen.opbouwStappen.map((stap, idx) => (idx === i ? { ...stap, [key]: waarde } : stap));
+      bewaar({ opbouwStappen: stappen });
+    };
+  }
+
   function reset() {
     if (!window.confirm('Alle trainingsdata wissen? Dit is onomkeerbaar.')) return;
     onResetAlles();
@@ -137,6 +145,32 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           </select>
         </div>
         <p className="ti-hint">Beschikbare schijven: 1,25 · 2,5 · 5 · 10 · 20 kg per kant.</p>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Opbouwsets</div>
+        <p className="ti-hint">
+          De sets waarmee je opwarmt naar je werkgewicht — telkens een percentage van dat werkgewicht, met
+          een eigen aantal reps. Standaard 40/60/80% bij 5/3/2 reps.
+        </p>
+        {instellingen.opbouwStappen.map((stap, i) => (
+          <div className="ti-rij" key={i}>
+            <div className="ti-veld-grp">
+              <label className="ti-lbl" htmlFor={`ti-ob-pct-${i}`}>Stap {i + 1} — % van werkgewicht</label>
+              <input
+                id={`ti-ob-pct-${i}`} type="number" className="ti-veld" min="1" max="99" step="5"
+                value={stap.pct} onChange={pasOpbouwStap(i, 'pct', (v) => Math.min(99, Math.max(1, parseInt(v) || 1)))}
+              />
+            </div>
+            <div className="ti-veld-grp">
+              <label className="ti-lbl" htmlFor={`ti-ob-reps-${i}`}>Reps</label>
+              <input
+                id={`ti-ob-reps-${i}`} type="number" className="ti-veld" min="1" max="20" step="1"
+                value={stap.reps} onChange={pasOpbouwStap(i, 'reps', (v) => Math.max(1, parseInt(v) || 1))}
+              />
+            </div>
+          </div>
+        ))}
       </div>
 
       <button className="btn btn-danger btn-sm" onClick={reset}>Trainingsdata wissen</button>
