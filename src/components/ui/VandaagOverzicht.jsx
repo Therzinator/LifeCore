@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
@@ -12,6 +13,7 @@ import './VandaagOverzicht.css';
 // niet wegvalt bij hyperfocus, zonder de extra complexiteit van
 // service-worker-push, VAPID-sleutels en een achtergrond-verstuurcomponent.
 export default function VandaagOverzicht({ onOpenAgenda, huishoudenId }) {
+  const [uitgeklapt, setUitgeklapt] = useState(false);
   const vandaag = datumKey();
   const blokken = useAgendaBlokken();
   const { overrides: dagTypeOverrides } = useDagTypeOverrides();
@@ -24,21 +26,27 @@ export default function VandaagOverzicht({ onOpenAgenda, huishoudenId }) {
     ...signalen.map((s) => ({ id: s.id, tekst: s.tekst, type: s.type, tijd: null })),
   ].sort((a, b) => (a.tijd ?? '99:99').localeCompare(b.tijd ?? '99:99'));
 
+  const getoond = uitgeklapt ? items : items.slice(0, 4);
+
   return (
-    <button type="button" className="vo-wrap" onClick={onOpenAgenda}>
-      <div className="vo-titel">Vandaag</div>
+    <div className="vo-wrap">
+      <button type="button" className="vo-titel-knop" onClick={onOpenAgenda}>Vandaag</button>
       {items.length === 0 && <p className="vo-leeg">Niets gepland — rustige dag.</p>}
       {items.length > 0 && (
         <div className="vo-lijst">
-          {items.slice(0, 4).map((item) => (
+          {getoond.map((item) => (
             <span key={item.id} className="vo-item">
               {item.tijd && <span className="vo-item-tijd">{item.tijd}</span>}
               <span>{TYPE_ICOON[item.type] ?? '•'} {item.tekst}</span>
             </span>
           ))}
-          {items.length > 4 && <span className="vo-meer">+{items.length - 4} meer</span>}
+          {items.length > 4 && (
+            <button type="button" className="vo-meer" onClick={() => setUitgeklapt((v) => !v)}>
+              {uitgeklapt ? 'Toon minder ▲' : `+${items.length - 4} meer ▼`}
+            </button>
+          )}
         </div>
       )}
-    </button>
+    </div>
   );
 }

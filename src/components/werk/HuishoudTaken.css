@@ -36,6 +36,30 @@
 }
 .hh-verwijder:hover { color: var(--danger); }
 
+.hhp-uren-rij {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  flex-shrink: 0;
+}
+
+.hhp-uren-invoer {
+  width: 40px;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  text-align: center;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+.hhp-uren-invoer:focus { border-color: var(--accent-mid); color: var(--txt); outline: none; }
+
 .hhw-item {
   display: flex;
   flex-direction: column;

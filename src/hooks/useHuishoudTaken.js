@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { huidigePeriodeKey } from '../lib/werk/huishoudPeriode.js';
 import {
-  haalTaken, voegTakenToe as voegTakenToeGedeeld, verwijderTaak as verwijderTaakGedeeld,
+  haalTaken, voegTakenToe as voegTakenToeGedeeld, verwijderTaak as verwijderTaakGedeeld, pasUrenAan as pasUrenAanGedeeld,
   haalLog, toggleDezePeriode as toggleDezePeriodeGedeeld, abonneerOpTaken, rijNaarTaak, logRijenNaarMap,
 } from '../lib/supabase/huishoudGedeeld.js';
 
@@ -85,6 +85,20 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId, userId]);
 
+  const pasUrenAan = useCallback((id, geschatteUren) => {
+    if (huishoudenId) {
+      pasUrenAanGedeeld(id, geschatteUren);
+      return;
+    }
+
+    setRecordState((huidig) => {
+      const taken = huidig.taken.map((t) => (t.id === id ? { ...t, geschatteUren } : t));
+      const bijgewerkt = nieuwRecord({ ...huidig, taken });
+      schrijfLokaal('huishoud_taken', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
   const verwijder = useCallback((id) => {
     if (huishoudenId) {
       verwijderTaakGedeeld(id);
@@ -98,5 +112,5 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
-  return { taken: record.taken ?? [], log: record.log ?? {}, geladen, voegMeerdereToe, toggleDezePeriode, verwijder };
+  return { taken: record.taken ?? [], log: record.log ?? {}, geladen, voegMeerdereToe, toggleDezePeriode, pasUrenAan, verwijder };
 }

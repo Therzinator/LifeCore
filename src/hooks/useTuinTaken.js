@@ -43,11 +43,11 @@ export function useTuinTaken(huishoudenId = null, userId = null) {
     return () => { actief = false; stopAbonnement(); };
   }, [huishoudenId]);
 
-  const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null, geschatteUren = 0.5) => {
+  const voegMeerdereToe = useCallback((teksten, frequentie, intervalDagen = null, geschatteUren = 0.5, maandVanaf = null, maandTot = null) => {
     if (huishoudenId) {
       voegTakenToeGedeeld(teksten.map((tekst) => ({
         huishouden_id: huishoudenId, tekst, frequentie, interval_dagen: frequentie === 'aangepast' ? intervalDagen : null,
-        geschatte_uren: geschatteUren,
+        geschatte_uren: geschatteUren, maand_vanaf: maandVanaf, maand_tot: maandTot,
       })));
       return;
     }
@@ -55,6 +55,7 @@ export function useTuinTaken(huishoudenId = null, userId = null) {
     setRecordState((huidig) => {
       const nieuwe = teksten.map((tekst) => ({
         id: nieuweId(), tekst, frequentie, intervalDagen: frequentie === 'aangepast' ? intervalDagen : null, geschatteUren,
+        maandVanaf, maandTot,
       }));
       const bijgewerkt = nieuwRecord({ ...huidig, taken: [...(huidig.taken ?? []), ...nieuwe] });
       schrijfLokaal('tuin_taken', bijgewerkt);

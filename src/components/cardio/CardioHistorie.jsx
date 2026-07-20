@@ -31,8 +31,8 @@ export default function CardioHistorie({ sessies, onVerwijder, toonToast }) {
                 {TYPE_LABEL[s.type] || s.type}{s.niveau ? ` — ${s.niveau}` : ''}
               </div>
               <div className="ch-stats">
-                {s.duur} min
-                {s.afstand ? ` · ${s.afstand} km` : ''}
+                {s.duur}:{String(s.duurSeconden ?? 0).padStart(2, '0')} min
+                {s.afstand ? ` · ${s.afstand.toFixed(2)} km` : ''}
                 {s.tempo && tempoNaarSec(s.tempo) ? ` · ${tempoLabel(tempoNaarSec(s.tempo))}/km` : ''}
                 {s.hartslag ? ` · ${s.hartslag} bpm` : ''}
                 {s.rpe ? ` · RPE ${s.rpe}` : ''}

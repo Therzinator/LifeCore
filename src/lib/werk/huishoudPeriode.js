@@ -15,6 +15,17 @@ function aangepastKey(nu, intervalDagen) {
   return `elke${intervalDagen}d_${cyclus}`;
 }
 
+// Puur seizoensvenster-filter (1-12, beide inclusief) — beide null betekent
+// "heel jaar". Ondersteunt wrap-around (bv. maandVanaf: 11, maandTot: 2 voor
+// "november t/m februari") door bij vanaf > tot de OR-vorm te gebruiken
+// i.p.v. de normale AND-vorm.
+export function inSeizoen(maandVanaf, maandTot, nu = new Date()) {
+  if (maandVanaf == null || maandTot == null) return true;
+  const maand = nu.getMonth() + 1;
+  if (maandVanaf <= maandTot) return maand >= maandVanaf && maand <= maandTot;
+  return maand >= maandVanaf || maand <= maandTot;
+}
+
 export function huidigePeriodeKey(frequentie, nu = new Date(), intervalDagen = null) {
   if (frequentie === 'maand') return maandKey(nu);
   if (frequentie === 'aangepast' && intervalDagen > 0) return aangepastKey(nu, intervalDagen);

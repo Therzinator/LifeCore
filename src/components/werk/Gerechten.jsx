@@ -150,14 +150,34 @@ function GerechtDetails({ gerecht, boodschappen, toonToast }) {
 // i.p.v. hier een eigen instantie aan te maken: twee losse instanties voor
 // hetzelfde huishouden botsen op hetzelfde Supabase Realtime-kanaal (zie
 // AgendaPagina-geschiedenis).
+// Eén gerecht-rij + inklapbare details — gedeeld tussen de bibliotheek- en
+// de eigen-recepten-sectie, alleen de verwijderknop verschilt (curated
+// gerechten zijn read-only, eigen recepten niet).
+function GerechtRij({ gerecht, uitgeklapt, onWissel, onVerwijder, boodschappen, toonToast }) {
+  return (
+    <div>
+      <div className="hh-item">
+        <span className="hh-tekst" style={{ cursor: 'pointer' }} onClick={() => onWissel(gerecht.id)}>
+          {gerecht.naam}
+        </span>
+        <button type="button" className="hhp-stappen-toggle" onClick={() => onWissel(gerecht.id)} aria-label="Details tonen of verbergen">
+          {uitgeklapt ? '▲' : '▼'}
+        </button>
+        {onVerwijder && (
+          <button
+            className="hh-verwijder"
+            onClick={() => { if (window.confirm(`Gerecht "${gerecht.naam}" verwijderen?`)) onVerwijder(gerecht.id); }}
+          >✕</button>
+        )}
+      </div>
+      {uitgeklapt && <GerechtDetails gerecht={gerecht} boodschappen={boodschappen} toonToast={toonToast} />}
+    </div>
+  );
+}
+
 export default function Gerechten({ gerechten, boodschappen, toonToast }) {
   const [uitgeklapt, setUitgeklapt] = useState(null);
   const [toonForm, setToonForm] = useState(false);
-
-  const alleGerechten = [
-    ...CURATED_GERECHTEN.map((g) => ({ ...g, curated: true })),
-    ...gerechten.gerechten.map((g) => ({ ...g, curated: false })),
-  ];
 
   function opslaan(gerecht) {
     gerechten.maakGerecht(gerecht);
@@ -177,26 +197,38 @@ export default function Gerechten({ gerechten, boodschappen, toonToast }) {
         één keer, of los per item.
       </p>
 
+      <div className="td-label">Eigen recepten</div>
+      {gerechten.gerechten.length === 0 && (
+        <p className="of-stap-tekst" style={{ marginBottom: 'var(--space-sm)' }}>
+          Nog geen eigen recepten — voeg er hieronder een toe.
+        </p>
+      )}
+      <div className="hh-lijst" style={{ marginBottom: 'var(--space-md)' }}>
+        {gerechten.gerechten.map((g) => (
+          <GerechtRij
+            key={g.id}
+            gerecht={g}
+            uitgeklapt={uitgeklapt === g.id}
+            onWissel={wissel}
+            onVerwijder={gerechten.verwijderGerecht}
+            boodschappen={boodschappen}
+            toonToast={toonToast}
+          />
+        ))}
+      </div>
+
+      <div className="td-label">Bibliotheek</div>
       <div className="hh-lijst">
-        {alleGerechten.map((g) => (
-          <div key={g.id}>
-            <div className="hh-item">
-              <span className="hh-tekst" style={{ cursor: 'pointer' }} onClick={() => wissel(g.id)}>
-                {g.naam}
-                {g.curated && <span className="hhp-werk-badge"> · bibliotheek</span>}
-              </span>
-              <button type="button" className="hhp-stappen-toggle" onClick={() => wissel(g.id)} aria-label="Details tonen of verbergen">
-                {uitgeklapt === g.id ? '▲' : '▼'}
-              </button>
-              {!g.curated && (
-                <button
-                  className="hh-verwijder"
-                  onClick={() => { if (window.confirm(`Gerecht "${g.naam}" verwijderen?`)) gerechten.verwijderGerecht(g.id); }}
-                >✕</button>
-              )}
-            </div>
-            {uitgeklapt === g.id && <GerechtDetails gerecht={g} boodschappen={boodschappen} toonToast={toonToast} />}
-          </div>
+        {CURATED_GERECHTEN.map((g) => (
+          <GerechtRij
+            key={g.id}
+            gerecht={g}
+            uitgeklapt={uitgeklapt === g.id}
+            onWissel={wissel}
+            onVerwijder={null}
+            boodschappen={boodschappen}
+            toonToast={toonToast}
+          />
         ))}
       </div>
 

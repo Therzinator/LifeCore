@@ -1,0 +1,10 @@
+.tt-seizoen-rij {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+.tt-seizoen-rij .ti-veld { flex: 1; }
+.tt-seizoen-scheiding { color: var(--txt-faint); font-size: var(--font-size-sm); flex-shrink: 0; }
+
+.tt-buiten-seizoen { opacity: .5; }

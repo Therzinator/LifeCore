@@ -10,6 +10,17 @@ const FADE_SECONDEN = 10;
 const RAMP_MS = 900;
 const RAMP_STAP_MS = 50;
 
+// Een pad dat met '/' begint is een lokaal bestand uit public/ (bv. de
+// meegeleverde SFX-audio) — direct als URL bruikbaar. Alle andere paden zijn
+// Supabase-storage-keys (zie GELEIDE_ADEMHALING_AUDIO_PAD vs.
+// MEDITATIE_AUDIO_PAD in lib/geluid/meditatieAudio.js), die audioUrl() moet
+// resolven en die null teruggeven als Supabase niet geconfigureerd is.
+function resolveerUrl(pad) {
+  if (!pad) return null;
+  if (pad.startsWith('/')) return pad;
+  return audioUrl(pad);
+}
+
 function rampVolumeNaar(el, doelVolume, timerRef) {
   clearInterval(timerRef.current);
   const startVolume = el.volume;
@@ -63,7 +74,7 @@ export function useMeditatieAudioSpeler(audioRef, {
     clearInterval(rampTimerRef.current);
 
     if (actief && audioAan && pad) {
-      const url = audioUrl(pad);
+      const url = resolveerUrl(pad);
       const verseSessie = laatsteSessieRef.current !== sessieId;
       if (url && (el.src !== url || verseSessie)) {
         el.src = url;

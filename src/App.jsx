@@ -51,7 +51,6 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
       return (
         <AgendaPagina
           toonToast={toonToast}
-          onNavigeer={setPagina}
           initieleDatum={agendaInitieleDatum}
           onInitieleDatumGeconsumeerd={wisAgendaInitieleDatum}
           huishoudenId={huishoudenId}

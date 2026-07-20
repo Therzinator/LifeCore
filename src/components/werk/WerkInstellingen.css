@@ -1,0 +1,17 @@
+.wi-categorie-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wi-categorie-verwijder {
+  background: none;
+  border: none;
+  color: var(--txt-faint);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  padding: 0 4px;
+}
+.wi-categorie-verwijder:hover { color: var(--danger); }
+
+.wi-categorie-invoer { width: 140px; }

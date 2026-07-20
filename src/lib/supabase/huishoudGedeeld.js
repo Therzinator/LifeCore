@@ -57,6 +57,18 @@ export async function voegTakenToe(rijen) {
   return data;
 }
 
+export async function pasUrenAan(id, geschatteUren) {
+  const sb = sbClient();
+  if (!sb) return false;
+
+  const { error } = await sb.from('huishoud_taken').update({ geschatte_uren: geschatteUren }).eq('id', id);
+  if (error) {
+    console.error('Kon geschatte tijd niet aanpassen', error);
+    return false;
+  }
+  return true;
+}
+
 export async function verwijderTaak(id) {
   const sb = sbClient();
   if (!sb) return false;

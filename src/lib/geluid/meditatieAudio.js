@@ -17,3 +17,8 @@ export const MEDITATIE_AUDIO_PAD = 'ademmeditatie/meditatie.mp3';
 // achtergrond, zonder de duur-gebaseerde fade-out (zie
 // useMeditatieAudioSpeler.js — resterendSeconden blijft daar ongebruikt).
 export const OCHTEND_ADEMHALING_AUDIO_PAD = MEDITATIE_AUDIO_PAD;
+
+// Tweede geluidsoptie: een meegeleverd lokaal bestand (public/SFX/) i.p.v.
+// een Supabase-storage-pad — begint met '/' zodat useMeditatieAudioSpeler.js
+// 'm rechtstreeks als URL gebruikt in plaats van via audioUrl() te resolven.
+export const GELEIDE_ADEMHALING_AUDIO_PAD = '/SFX/Meditation_GuidedBreathing.mp3';

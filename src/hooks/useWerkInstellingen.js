@@ -37,6 +37,20 @@ export function useWerkInstellingen() {
     });
   }, []);
 
+  const hernoemCategorie = useCallback((oud, nieuw) => {
+    const schoon = nieuw.trim();
+    if (!schoon || schoon === oud) return;
+    setInstellingenState((huidig) => {
+      if (huidig.categorieen.includes(schoon)) return huidig;
+      const bijgewerkt = nieuwRecord({
+        ...huidig,
+        categorieen: huidig.categorieen.map((c) => (c === oud ? schoon : c)),
+      });
+      schrijfLokaal('werk_instellingen', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const verwijderCategorie = useCallback((naam) => {
     setInstellingenState((huidig) => {
       const bijgewerkt = nieuwRecord({ ...huidig, categorieen: huidig.categorieen.filter((c) => c !== naam) });
@@ -45,5 +59,5 @@ export function useWerkInstellingen() {
     });
   }, []);
 
-  return { instellingen, bewaar, voegCategorieToe, verwijderCategorie };
+  return { instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie };
 }

@@ -139,7 +139,17 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
-                <span className="hhp-uren-val">{t.geschatteUren}u</span>
+                <span className="hhp-uren-rij">
+                  <input
+                    type="number"
+                    className="hhp-uren-invoer"
+                    min="0.25"
+                    step="0.25"
+                    value={t.geschatteUren}
+                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                    aria-label={`Geschatte tijd voor ${t.tekst}`}
+                  />u
+                </span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
@@ -164,7 +174,17 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {klaar ? '✓' : ''}
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
-                <span className="hhp-uren-val">{t.geschatteUren}u</span>
+                <span className="hhp-uren-rij">
+                  <input
+                    type="number"
+                    className="hhp-uren-invoer"
+                    min="0.25"
+                    step="0.25"
+                    value={t.geschatteUren}
+                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                    aria-label={`Geschatte tijd voor ${t.tekst}`}
+                  />u
+                </span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
@@ -195,7 +215,17 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
                   {t.tekst}
                   <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
                 </span>
-                <span className="hhp-uren-val">{t.geschatteUren}u</span>
+                <span className="hhp-uren-rij">
+                  <input
+                    type="number"
+                    className="hhp-uren-invoer"
+                    min="0.25"
+                    step="0.25"
+                    value={t.geschatteUren}
+                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                    aria-label={`Geschatte tijd voor ${t.tekst}`}
+                  />u
+                </span>
                 <button
                   className="hh-verwijder"
                   onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}

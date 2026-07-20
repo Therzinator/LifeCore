@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TYPE_ICOON, BLOK_TYPE_MODULE } from './agendaWeergave.js';
+import { TYPE_ICOON } from './agendaWeergave.js';
 
 function datumLabel(datum) {
   return new Date(datum).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -13,7 +13,7 @@ const DAGTYPE_OPTIES = [
 ];
 
 export default function AgendaDag({
-  datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
+  datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride,
   afgerondLog = {}, onToggleAfgerond,
   openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
   openHuishoudTaken = [], onVoegHuishoudTaakToe,
@@ -166,7 +166,6 @@ export default function AgendaDag({
       <div className="hh-lijst">
         {dagBlokken.length === 0 && <p className="of-stap-tekst">Nog niets gepland.</p>}
         {dagBlokken.map((b) => {
-          const moduleVoorBlok = BLOK_TYPE_MODULE[b.type];
           const isAfgerond = Boolean(afgerondLog[b.id]?.[b.datum]);
           return (
             <div className={`ag-blok-item ${isAfgerond ? 'afgerond' : ''}`} key={`${b.id}-${b.datum}`}>
@@ -182,9 +181,6 @@ export default function AgendaDag({
                   >
                     {isAfgerond ? '✓ Gedaan' : 'Uitgevoerd'}
                   </button>
-                )}
-                {moduleVoorBlok && onNavigeer && (
-                  <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
                 )}
                 {onBewerkBlok && (
                   <button className="btn btn-g btn-sm" onClick={() => onBewerkBlok(b)} aria-label="Blok bewerken">✏️</button>

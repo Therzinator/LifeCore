@@ -10,10 +10,18 @@ describe('isGeldigeTraining', () => {
   it('is geldig voor het huidige, volledige oefening-formaat', () => {
     const training = {
       letter: 'A',
-      oefeningen: [{ id: 'squat', werk: [false, false], setGew: [45, 45], setReps: [5, 5] }],
+      oefeningen: [{ id: 'squat', werk: [false, false], setGew: [45, 45], setReps: [5, 5], ob: [null, null] }],
       extras: [{ id: 'row', werk: [false], setGew: [10], setReps: [10] }],
     };
     expect(isGeldigeTraining(training)).toBe(true);
+  });
+
+  it('is ongeldig als een hoofdoefening geen ob-veld heeft (opbouwsets)', () => {
+    const training = {
+      letter: 'A',
+      oefeningen: [{ id: 'squat', werk: [false], setGew: [45], setReps: [5] }],
+    };
+    expect(isGeldigeTraining(training)).toBe(false);
   });
 
   it('is ongeldig voor het oude formaat (afgevinkt i.p.v. werk/setGew/setReps)', () => {

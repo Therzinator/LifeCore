@@ -49,7 +49,7 @@ function bereikVoorWeergave(weergave, referentieDatum) {
   return { bereikStart: referentieDatum, bereikEind: referentieDatum };
 }
 
-export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onInitieleDatumGeconsumeerd, huishoudenId }) {
+export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatumGeconsumeerd, huishoudenId }) {
   const [weergave, setWeergave] = useState(() => (initieleDatum ? 'dag' : 'maand'));
   const [referentieDatum, setReferentieDatum] = useState(() => initieleDatum ?? vandaagIso());
   const [toonForm, setToonForm] = useState(false);
@@ -299,7 +299,6 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             onNieuwBlok={nieuwBlokFormOpenen}
             dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
             onZetDagTypeOverride={zetDagTypeOverride}
-            onNavigeer={onNavigeer}
             openKlusjes={openKlusjes}
             onVoegKlusjeToe={voegKlusjeAlsBlokToe}
             onVoegTrainingToe={voegTrainingAlsBlokToe}

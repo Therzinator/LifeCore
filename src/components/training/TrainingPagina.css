@@ -27,6 +27,15 @@
   font-weight: 600;
 }
 
+.tp-sessie-kop-acties {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.tp-annuleer-knop { color: var(--danger); }
+
 .tp-hervat-banner {
   display: flex;
   align-items: center;

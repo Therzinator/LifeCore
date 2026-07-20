@@ -36,6 +36,10 @@
 }
 .cr-veld:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }
 
+.cr-duur-rij { display: flex; align-items: center; gap: var(--space-xs); }
+.cr-duur-rij .cr-veld { min-width: 0; }
+.cr-duur-scheiding { color: var(--txt-faint); font-weight: 600; flex-shrink: 0; }
+
 .cr-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

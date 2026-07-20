@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/mindfulness/meditatie.js';
 import { speelFragment } from '../../lib/geluid/fragmenten.js';
-import { MEDITATIE_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
+import { MEDITATIE_AUDIO_PAD, GELEIDE_ADEMHALING_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
 import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
 import { useMeditatieAudioSpeler } from '../../hooks/useMeditatieAudioSpeler.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
@@ -11,6 +11,12 @@ import './AdemMeditatie.css';
 
 const FASE_LABEL = { inademen: 'Adem in', uitademen: 'Adem uit' };
 const DUUR_OPTIES = [3, 5, 10];
+const GELUID_OPTIES = [
+  { id: 'geen', label: '🔇 Geen' },
+  { id: 'instrumenteel', label: '🎵 Instrumenteel' },
+  { id: 'geleid', label: '🗣 Geleide ademhaling' },
+];
+const GELUID_PAD = { instrumenteel: MEDITATIE_AUDIO_PAD, geleid: GELEIDE_ADEMHALING_AUDIO_PAD };
 
 function schaalVoorFase(fase) {
   const voortgang = fase.secondenInFase / fase.duurFase;
@@ -25,7 +31,7 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
-  const [audioAan, setAudioAan] = useState(false);
+  const [geluidKeuze, setGeluidKeuze] = useState('geen');
   const intervalRef = useRef(null);
   const geluidGespeeldRef = useRef(false);
   const meditatieAudioRef = useRef(null);
@@ -37,7 +43,11 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
   const voortgangPct = (elapsed / totaleSeconden) * 100;
 
   useMeditatieAudioSpeler(meditatieAudioRef, {
-    actief: gestart && !klaar && !gepauzeerd, audioAan, pad: MEDITATIE_AUDIO_PAD, resterendSeconden: resterendTotaal, sessieId,
+    actief: gestart && !klaar && !gepauzeerd,
+    audioAan: geluidKeuze !== 'geen',
+    pad: GELUID_PAD[geluidKeuze],
+    resterendSeconden: resterendTotaal,
+    sessieId,
   });
 
   useEffect(() => {
@@ -89,14 +99,19 @@ export default function AdemMeditatie({ geluidFragment, onKlaar }) {
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            className={`btn btn-sm ${audioAan ? 'btn-p' : 'btn-g'}`}
-            style={{ marginBottom: 'var(--space-sm)' }}
-            onClick={() => setAudioAan((v) => !v)}
-          >
-            {audioAan ? '🔊 Meditatie-audio aan' : '🔇 Meditatie-audio uit'}
-          </button>
+          <div className="ti-rij" style={{ marginBottom: 'var(--space-sm)' }}>
+            {GELUID_OPTIES.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                className={`btn btn-sm ${geluidKeuze === o.id ? 'btn-p' : 'btn-g'}`}
+                style={{ flex: 1 }}
+                onClick={() => setGeluidKeuze(o.id)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
           <div className="of-acties">
             <button className="btn btn-text" onClick={onKlaar}>Terug</button>
             <button className="btn btn-p btn-full" onClick={() => { setSessieId((n) => n + 1); setGestart(true); }}>Start</button>

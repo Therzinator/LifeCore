@@ -51,6 +51,19 @@ export function useWerkTaken() {
     });
   }, []);
 
+  // Bij een categorie-hernoeming (zie useWerkInstellingen.hernoemCategorie)
+  // slaan bestaande taken de OUDE naam nog op als los stringveld — zonder
+  // deze migratie zou een hernoeming die taken laten "verweesd" achter een
+  // categorienaam die nergens meer in de instellingen-lijst voorkomt.
+  const hernoemCategorieOpTaken = useCallback((oud, nieuw) => {
+    setRecordState((huidig) => {
+      const taken = huidig.taken.map((t) => (t.categorie === oud ? { ...t, categorie: nieuw } : t));
+      const bijgewerkt = nieuwRecord({ taken });
+      schrijfLokaal('werk_taken', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const verwijder = useCallback((id) => {
     setRecordState((huidig) => {
       const bijgewerkt = nieuwRecord({ taken: huidig.taken.filter((t) => t.id !== id) });
@@ -73,5 +86,5 @@ export function useWerkTaken() {
   const alleTaken = record.taken ?? [];
   const openstaand = alleTaken.filter((t) => !t.klaar);
 
-  return { alleTaken, openstaand, voegMeerdereToe, toggleKlaar, zetFocusMinuten, zetProject, verwijder };
+  return { alleTaken, openstaand, voegMeerdereToe, toggleKlaar, zetFocusMinuten, zetProject, hernoemCategorieOpTaken, verwijder };
 }

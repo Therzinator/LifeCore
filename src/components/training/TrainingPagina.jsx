@@ -7,8 +7,10 @@ import { useExtraOefeningen } from '../../hooks/useExtraOefeningen.js';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import { useProgramma } from '../../hooks/useProgramma.js';
+import { useCardioSessies } from '../../hooks/useCardioSessies.js';
 import { PROFIELEN, EXTRA, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
+import { datumKey } from '../../utils/datum.js';
 import TrainingSessie from './TrainingSessie.jsx';
 import TrainingDashboard from './TrainingDashboard.jsx';
 import TrainingExtra from './TrainingExtra.jsx';
@@ -44,6 +46,7 @@ export default function TrainingPagina({ toonToast }) {
   const extraOefeningen = useExtraOefeningen();
   const persoonsProfiel = usePersoonsProfiel();
   const rustTimer = useRustTimer(instellingen.geluidFragment);
+  const cardioSessies = useCardioSessies();
   const [tab, setTab] = useState('dashboard');
   const [toonSessie, setToonSessie] = useState(true);
   useRegistreerSubstap(
@@ -72,11 +75,22 @@ export default function TrainingPagina({ toonToast }) {
     );
   }
 
+  function annuleer() {
+    if (!window.confirm('Deze training annuleren? Alle voortgang gaat verloren, er wordt niets opgeslagen in je geschiedenis.')) return;
+    rustTimer.stop();
+    actieveTraining.wisTraining();
+    setToonSessie(true);
+    setTab('dashboard');
+  }
+
   if (actieveTraining.training.letter && toonSessie) {
     return (
       <div className="of-wrap">
         <div className="card">
-          <button type="button" className="btn btn-text" onClick={() => setToonSessie(false)}>← Terug naar dashboard</button>
+          <div className="tp-sessie-kop-acties">
+            <button type="button" className="btn btn-text" onClick={() => setToonSessie(false)}>← Terug naar dashboard</button>
+            <button type="button" className="btn btn-text tp-annuleer-knop" onClick={annuleer}>Training annuleren</button>
+          </div>
           <TrainingSessie
             training={actieveTraining.training}
             setOefeningen={actieveTraining.setOefeningen}
@@ -95,6 +109,14 @@ export default function TrainingPagina({ toonToast }) {
   }
 
   function start() {
+    const vandaag = datumKey();
+    const krachtVandaag = geschiedenis.sessies.some((s) => datumKey(new Date(s.datum)) === vandaag);
+    const cardioVandaag = cardioSessies.sessies.some((s) => s.datum === vandaag);
+    if (krachtVandaag || cardioVandaag) {
+      const wat = krachtVandaag && cardioVandaag ? 'een training en een cardiosessie' : krachtVandaag ? 'een training' : 'een cardiosessie';
+      if (!window.confirm(`Je hebt vandaag al ${wat} gedaan. Toch een nieuwe training starten?`)) return;
+    }
+
     const letter = volgendeLetterUit(geschiedenis.laatste);
     const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
 

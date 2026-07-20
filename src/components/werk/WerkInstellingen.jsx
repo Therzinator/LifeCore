@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './WerkInstellingen.css';
 
 const DAGEN = [
   { nr: 1, label: 'Ma' },
@@ -10,8 +11,20 @@ const DAGEN = [
   { nr: 7, label: 'Zo' },
 ];
 
-export default function WerkInstellingen({ instellingen, bewaar, voegCategorieToe, verwijderCategorie }) {
+export default function WerkInstellingen({ instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie }) {
   const [nieuweCategorie, setNieuweCategorie] = useState('');
+  const [bewerkCategorie, setBewerkCategorie] = useState(null);
+  const [bewerkWaarde, setBewerkWaarde] = useState('');
+
+  function bewerkenStarten(naam) {
+    setBewerkCategorie(naam);
+    setBewerkWaarde(naam);
+  }
+
+  function bewerkenOpslaan() {
+    hernoemCategorie(bewerkCategorie, bewerkWaarde);
+    setBewerkCategorie(null);
+  }
 
   function wisselDag(nr) {
     const werkdagen = instellingen.werkdagen.includes(nr)
@@ -69,13 +82,28 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
 
       <div className="card">
         <div className="td-label">Taakcategorieën</div>
-        <div className="ti-rij">
+        <div className="ti-rij" style={{ flexWrap: 'wrap' }}>
           {instellingen.categorieen.map((c) => (
-            <button key={c} type="button" className="btn btn-sm btn-g" onClick={() => verwijderCategorie(c)}>
-              {c} ✕
-            </button>
+            bewerkCategorie === c ? (
+              <span key={c} className="wi-categorie-bewerk">
+                <input
+                  className="ti-veld wi-categorie-invoer"
+                  value={bewerkWaarde}
+                  autoFocus
+                  onChange={(e) => setBewerkWaarde(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') bewerkenOpslaan(); if (e.key === 'Escape') setBewerkCategorie(null); }}
+                  onBlur={bewerkenOpslaan}
+                />
+              </span>
+            ) : (
+              <span key={c} className="wi-categorie-chip">
+                <button type="button" className="btn btn-sm btn-g" onClick={() => bewerkenStarten(c)}>{c}</button>
+                <button type="button" className="wi-categorie-verwijder" onClick={() => verwijderCategorie(c)} aria-label={`${c} verwijderen`}>✕</button>
+              </span>
+            )
           ))}
         </div>
+        <p className="ti-hint">Tik op een categorie om de naam aan te passen.</p>
         <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
           <input
             className="ti-veld" style={{ flex: 1 }} value={nieuweCategorie}

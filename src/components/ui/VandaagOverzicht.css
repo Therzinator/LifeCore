@@ -7,24 +7,42 @@
   border-radius: var(--r-md);
   padding: var(--space-md);
   margin-bottom: var(--space-md);
-  cursor: pointer;
   font-family: inherit;
   color: inherit;
 }
-.vo-wrap:hover { background: var(--bg-2); }
 
-.vo-titel {
+.vo-titel-knop {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: var(--space-sm);
+  cursor: pointer;
+  font-family: inherit;
   font-size: var(--font-size-xs);
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--txt-faint);
-  margin-bottom: var(--space-sm);
 }
+.vo-titel-knop:hover { color: var(--txt); }
 
 .vo-leeg { font-size: var(--font-size-sm); color: var(--txt-muted); }
 
 .vo-lijst { display: flex; flex-direction: column; gap: 4px; }
 .vo-item { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-size-sm); }
 .vo-item-tijd { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--accent); flex-shrink: 0; }
-.vo-meer { font-size: var(--font-size-xs); color: var(--txt-faint); }
+.vo-meer {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 4px 0 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  color: var(--txt-faint);
+}
+.vo-meer:hover { color: var(--accent); }

@@ -8,12 +8,17 @@ function legeTraining() {
 // Oefeningen uit een oudere appversie (vóór per-set gewicht/reps) missen
 // `werk`/`setGew`/`setReps` — zonder deze check crasht TrainingSessie op zo'n
 // verouderde, nog actieve training in plaats van 'm gewoon te negeren.
+const geldigeBasisOef = (o) => Array.isArray(o.werk) && Array.isArray(o.setGew) && Array.isArray(o.setReps);
+// Alleen de hoofdoefeningen hebben opbouwsets (`ob`) — extras (accessoire-
+// oefeningen) hebben dat veld nooit gehad, dus apart gecheckt i.p.v. één
+// gedeelde validator die extras onterecht zou afkeuren.
+const geldigeHoofdOef = (o) => geldigeBasisOef(o) && Array.isArray(o.ob);
+
 export function isGeldigeTraining(training) {
   if (!training?.letter) return true;
   if (!Array.isArray(training.oefeningen)) return false;
-  const geldigeOef = (o) => Array.isArray(o.werk) && Array.isArray(o.setGew) && Array.isArray(o.setReps);
-  if (!training.oefeningen.every(geldigeOef)) return false;
-  if (training.extras && !training.extras.every(geldigeOef)) return false;
+  if (!training.oefeningen.every(geldigeHoofdOef)) return false;
+  if (training.extras && !training.extras.every(geldigeBasisOef)) return false;
   return true;
 }
 

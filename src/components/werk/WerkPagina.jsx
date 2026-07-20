@@ -13,7 +13,17 @@ import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 export default function WerkPagina({ toonToast, userId, huishoudenId }) {
   const werkTaken = useWerkTaken();
   const huishoudProjecten = useHuishoudProjecten(huishoudenId, userId);
-  const { instellingen, bewaar, voegCategorieToe, verwijderCategorie } = useWerkInstellingen();
+  const { instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie } = useWerkInstellingen();
+
+  // Validatie hier i.p.v. binnen hernoemCategorie zelf, zodat de taken-migratie
+  // alleen gebeurt als de naam ook echt is gewijzigd in de instellingen-lijst
+  // (anders verweest een mislukte hernoeming — leeg/duplicaat — de taken toch).
+  function hernoemCategorieOveral(oud, nieuw) {
+    const schoon = nieuw.trim();
+    if (!schoon || schoon === oud || instellingen.categorieen.includes(schoon)) return;
+    hernoemCategorie(oud, schoon);
+    werkTaken.hernoemCategorieOpTaken(oud, schoon);
+  }
 
   return (
     <div className="of-wrap">
@@ -24,6 +34,7 @@ export default function WerkPagina({ toonToast, userId, huishoudenId }) {
             instellingen={instellingen}
             bewaar={bewaar}
             voegCategorieToe={voegCategorieToe}
+            hernoemCategorie={hernoemCategorieOveral}
             verwijderCategorie={verwijderCategorie}
           />
         </ModuleInstellingenKnop>

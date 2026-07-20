@@ -8,6 +8,7 @@ export function rijNaarTaak(rij) {
   return {
     id: rij.id, tekst: rij.tekst, frequentie: rij.frequentie, intervalDagen: rij.interval_dagen,
     geschatteUren: rij.geschatte_uren ?? 0.5,
+    maandVanaf: rij.maand_vanaf ?? null, maandTot: rij.maand_tot ?? null,
   };
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { faseOpTijdstip } from '../../lib/ochtend/ademhaling.js';
 import { speelFragment } from '../../lib/geluid/fragmenten.js';
-import { OCHTEND_ADEMHALING_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
+import { OCHTEND_ADEMHALING_AUDIO_PAD, GELEIDE_ADEMHALING_AUDIO_PAD } from '../../lib/geluid/meditatieAudio.js';
 import { useSpraakVoorlezer } from '../../hooks/useSpraakVoorlezer.js';
 import { useMeditatieAudioSpeler } from '../../hooks/useMeditatieAudioSpeler.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
@@ -13,6 +13,12 @@ const FASE_LABEL = { inademen: 'Adem in', vasthouden: 'Vasthouden', uitademen: '
 // Programma-optie: vaste duur voor ogen-dicht gebruik, i.p.v. zelf bijhouden
 // wanneer je stopt. 'Vrij' (null) blijft het bestaande open-einde-gedrag.
 const DUUR_OPTIES = [2, 3, 5];
+const GELUID_OPTIES = [
+  { id: 'geen', label: '🔇 Geen' },
+  { id: 'instrumenteel', label: '🎵 Instrumenteel' },
+  { id: 'geleid', label: '🗣 Geleide ademhaling' },
+];
+const GELUID_PAD = { instrumenteel: OCHTEND_ADEMHALING_AUDIO_PAD, geleid: GELEIDE_ADEMHALING_AUDIO_PAD };
 
 function schaalVoorFase(fase) {
   const voortgang = fase.secondenInFase / fase.duurFase;
@@ -29,7 +35,7 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan, g
   const [elapsed, setElapsed] = useState(0);
   const [toonUitleg, setToonUitleg] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
-  const [audioAan, setAudioAan] = useState(false);
+  const [geluidKeuze, setGeluidKeuze] = useState('geen');
   const intervalRef = useRef(null);
   const geluidGespeeldRef = useRef(false);
   const meditatieAudioRef = useRef(null);
@@ -48,8 +54,8 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan, g
 
   useMeditatieAudioSpeler(meditatieAudioRef, {
     actief: gestart && !gepauzeerd && !programmaKlaar,
-    audioAan,
-    pad: OCHTEND_ADEMHALING_AUDIO_PAD,
+    audioAan: geluidKeuze !== 'geen',
+    pad: GELUID_PAD[geluidKeuze],
     resterendSeconden: resterendTotaal,
     sessieId,
   });
@@ -112,14 +118,19 @@ export default function StapAdemhaling({ dagdata, volgende, vorige, overslaan, g
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            className={`btn btn-sm ${audioAan ? 'btn-p' : 'btn-g'}`}
-            style={{ marginBottom: 'var(--space-sm)' }}
-            onClick={() => setAudioAan((v) => !v)}
-          >
-            {audioAan ? '🔊 Meditatie-audio aan' : '🔇 Meditatie-audio uit'}
-          </button>
+          <div className="ti-rij" style={{ marginBottom: 'var(--space-sm)' }}>
+            {GELUID_OPTIES.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                className={`btn btn-sm ${geluidKeuze === o.id ? 'btn-p' : 'btn-g'}`}
+                style={{ flex: 1 }}
+                onClick={() => setGeluidKeuze(o.id)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
         </>
       )}
       <audio ref={meditatieAudioRef} preload="none" />

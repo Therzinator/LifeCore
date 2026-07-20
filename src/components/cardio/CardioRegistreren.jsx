@@ -20,7 +20,7 @@ function vandaagIso() {
 function leegFormulier() {
   return {
     type: 'hardlopen', datum: vandaagIso(), omgeving: '',
-    duur: '', afstand: '', tempo: '', hartslag: '', rpe: '', notities: '',
+    duurMin: '', duurSec: '', afstand: '', tempo: '', hartslag: '', rpe: '', notities: '',
   };
 }
 
@@ -38,8 +38,9 @@ export default function CardioRegistreren({ cardio, toonToast }) {
   function opslaan(e) {
     e.preventDefault();
     if (!form.datum) { toonToast('Kies een datum', 'wn'); return; }
-    const duur = parseInt(form.duur, 10);
-    if (!duur || duur < 1) { toonToast('Vul de duur in', 'wn'); return; }
+    const duur = parseInt(form.duurMin, 10) || 0;
+    const duurSeconden = Math.min(59, parseInt(form.duurSec, 10) || 0);
+    if (duur < 1 && duurSeconden < 1) { toonToast('Vul de duur in', 'wn'); return; }
 
     const afstand = parseFloat(form.afstand) || 0;
     const isPR = isNieuweTempoPR(form.type, afstand, form.tempo, cardio.sessies);
@@ -49,6 +50,7 @@ export default function CardioRegistreren({ cardio, toonToast }) {
       type: form.type,
       omgeving: buitenActiviteit ? form.omgeving || null : null,
       duur,
+      duurSeconden,
       afstand,
       tempo: form.tempo.trim(),
       hartslag: parseInt(form.hartslag, 10) || 0,
@@ -106,12 +108,16 @@ export default function CardioRegistreren({ cardio, toonToast }) {
             <input id="cr-datum" className="cr-veld" type="date" value={form.datum} onChange={(e) => veld('datum', e.target.value)} />
           </div>
           <div className="cr-veldgroep">
-            <label className="cr-lbl" htmlFor="cr-duur">Duur (min)</label>
-            <input id="cr-duur" className="cr-veld" type="number" min="1" max="300" placeholder="45" value={form.duur} onChange={(e) => veld('duur', e.target.value)} />
+            <label className="cr-lbl" htmlFor="cr-duur-min">Duur (min:sec)</label>
+            <div className="cr-duur-rij">
+              <input id="cr-duur-min" className="cr-veld" type="number" min="0" max="300" placeholder="45" value={form.duurMin} onChange={(e) => veld('duurMin', e.target.value)} />
+              <span className="cr-duur-scheiding">:</span>
+              <input id="cr-duur-sec" className="cr-veld" type="number" min="0" max="59" placeholder="33" value={form.duurSec} onChange={(e) => veld('duurSec', e.target.value)} />
+            </div>
           </div>
           <div className="cr-veldgroep">
             <label className="cr-lbl" htmlFor="cr-afstand">Afstand (km)</label>
-            <input id="cr-afstand" className="cr-veld" type="number" min="0" step="0.1" placeholder="5.0" value={form.afstand} onChange={(e) => veld('afstand', e.target.value)} />
+            <input id="cr-afstand" className="cr-veld" type="number" min="0" step="0.01" placeholder="5.00" value={form.afstand} onChange={(e) => veld('afstand', e.target.value)} />
           </div>
           <div className="cr-veldgroep">
             <label className="cr-lbl" htmlFor="cr-tempo">Gem. tempo (min/km)</label>
