@@ -11,10 +11,11 @@ const DAGEN = [
   { nr: 7, label: 'Zo' },
 ];
 
-export default function WerkInstellingen({ instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie }) {
+export default function WerkInstellingen({ instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie, werkProjecten }) {
   const [nieuweCategorie, setNieuweCategorie] = useState('');
   const [bewerkCategorie, setBewerkCategorie] = useState(null);
   const [bewerkWaarde, setBewerkWaarde] = useState('');
+  const [nieuwProject, setNieuwProject] = useState('');
 
   function bewerkenStarten(naam) {
     setBewerkCategorie(naam);
@@ -36,6 +37,11 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
   function categorieToevoegen() {
     voegCategorieToe(nieuweCategorie);
     setNieuweCategorie('');
+  }
+
+  function projectToevoegen() {
+    werkProjecten.voegProjectToe(nieuwProject);
+    setNieuwProject('');
   }
 
   return (
@@ -112,6 +118,28 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
             placeholder="Nieuwe categorie"
           />
           <button type="button" className="btn btn-sm btn-p" onClick={categorieToevoegen}>Toevoegen</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="td-label">Projecten</div>
+        <p className="ti-hint">Eigen projecten om werktaken aan te taggen — los van de Kluslijst-projecten bij Thuis.</p>
+        <div className="ti-rij" style={{ flexWrap: 'wrap' }}>
+          {werkProjecten.projecten.map((p) => (
+            <span key={p.id} className="wi-categorie-chip">
+              <span className="btn btn-sm btn-g">{p.naam}</span>
+              <button type="button" className="wi-categorie-verwijder" onClick={() => werkProjecten.verwijderProject(p.id)} aria-label={`${p.naam} verwijderen`}>✕</button>
+            </span>
+          ))}
+        </div>
+        <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
+          <input
+            className="ti-veld" style={{ flex: 1 }} value={nieuwProject}
+            onChange={(e) => setNieuwProject(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') projectToevoegen(); }}
+            placeholder="Nieuw project"
+          />
+          <button type="button" className="btn btn-sm btn-p" onClick={projectToevoegen}>Toevoegen</button>
         </div>
       </div>
 

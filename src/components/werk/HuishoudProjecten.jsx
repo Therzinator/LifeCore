@@ -239,8 +239,8 @@ function VereisteKiezer({ waarde, opties, onZet }) {
 }
 
 function ProjectKaart({
-  project, gekoppeldeWerktaken, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
-  onToggleWerktaak, onOntkoppelWerktaak, onVoegKlusje, onHernoemKlusje, onTogglePrioriteit,
+  project, onToggleKlusje, onZetUren, onVerwijderKlusje, onVerwijderProject, onZetDeadline,
+  onVoegKlusje, onHernoemKlusje, onTogglePrioriteit,
   onVoegStapToe, onToggleStap, onZetStapUren, onVerwijderStap,
   onZetVereiste, onZetVereisteStap, onVoegWerkvoorbereidingToe, onToggleWerkvoorbereiding, onVerwijderWerkvoorbereiding,
   onVoegFoto, onVerwijderFoto, userId, huishoudenId, toonToast,
@@ -248,11 +248,10 @@ function ProjectKaart({
   const [uitgeklapt, setUitgeklapt] = useState(() => new Set());
   const [toonWerkvoorbereiding, setToonWerkvoorbereiding] = useState(false);
 
-  const alleItems = [...project.klusjes, ...gekoppeldeWerktaken.map((t) => ({ afgerond: t.klaar }))];
-  const afgerond = alleItems.filter((i) => i.afgerond).length;
-  const totaal = alleItems.length;
+  const afgerond = project.klusjes.filter((i) => i.afgerond).length;
+  const totaal = project.klusjes.length;
   const pct = totaal ? Math.round((afgerond / totaal) * 100) : 0;
-  const perMaand = projectMaandOverzicht(project.klusjes, gekoppeldeWerktaken, project.aantalMaanden, project.startMaand);
+  const perMaand = projectMaandOverzicht(project.klusjes, project.aantalMaanden, project.startMaand);
   const dagen = dagenTotDeadline(project.deadline, vandaagKey());
   // Platte lijst (klusjes + hun stappen) voor de isGeblokkeerd-badge en de
   // 'Taak kan pas na'-opties — apart van 'alleItems' hierboven (die is voor
@@ -320,7 +319,6 @@ function ProjectKaart({
           <div className="hhp-maand-titel">{maandLabel(maand)}</div>
           <div className="hh-lijst">
             {items.map((item) => {
-              const isWerk = item.bron === 'werk';
               const stappen = item.subklusjes ?? [];
               const isUitgeklapt = uitgeklapt.has(item.id);
               return (
@@ -328,29 +326,26 @@ function ProjectKaart({
                   <div className="hh-item">
                     <button
                       className={`hh-check ${item.afgerond ? 'gedaan' : ''}`}
-                      onClick={() => (isWerk ? onToggleWerktaak(item.id) : onToggleKlusje(project.id, item.id))}
+                      onClick={() => onToggleKlusje(project.id, item.id)}
                     >
                       {item.afgerond ? '✓' : ''}
                     </button>
                     <span className={`hh-tekst ${item.afgerond ? 'gedaan' : ''}`}>
-                      {isWerk ? item.tekst : (
-                        <BewerkbareTekst
-                          waarde={item.tekst}
-                          onWijzig={(t) => onHernoemKlusje(project.id, item.id, t)}
-                          label="Naam van het klusje"
-                        />
-                      )}
-                      {isWerk && <span className="hhp-werk-badge"> · werk</span>}
-                      {!isWerk && item.prioriteit && <span className="hhp-prioriteit" title="Prioriteit (externe deadline)"> ⭐</span>}
-                      {!isWerk && isGeblokkeerd(item, alleProjectItems) && (
+                      <BewerkbareTekst
+                        waarde={item.tekst}
+                        onWijzig={(t) => onHernoemKlusje(project.id, item.id, t)}
+                        label="Naam van het klusje"
+                      />
+                      {item.prioriteit && <span className="hhp-prioriteit" title="Prioriteit (externe deadline)"> ⭐</span>}
+                      {isGeblokkeerd(item, alleProjectItems) && (
                         <span
                           className="hhp-geblokkeerd"
                           title={`Wacht op: ${alleProjectItems.find((i) => i.id === item.vereistKlusjeId)?.tekst ?? ''}`}
                         > ⛔</span>
                       )}
                     </span>
-                    {isWerk || stappen.length > 0 ? (
-                      <span className="hhp-uren-val" title={stappen.length > 0 ? 'Som van de duur van de stappen' : undefined}>
+                    {stappen.length > 0 ? (
+                      <span className="hhp-uren-val" title="Som van de duur van de stappen">
                         {item.geschatteUren}u
                       </span>
                     ) : (
@@ -360,40 +355,34 @@ function ProjectKaart({
                         onCommit={(w) => onZetUren(project.id, item.id, w)}
                       />
                     )}
-                    {!isWerk && (
-                      <button
-                        type="button"
-                        className={`hhp-prioriteit-toggle ${item.prioriteit ? 'on' : ''}`}
-                        onClick={() => onTogglePrioriteit(project.id, item.id)}
-                        aria-label="Prioriteit wisselen"
-                        title="Prioriteit (bv. geleend gereedschap, weersomstandigheden) — gaat vóór op de planning"
-                      >★</button>
-                    )}
-                    {!isWerk && (
-                      <button
-                        type="button"
-                        className="hhp-stappen-toggle"
-                        onClick={() => wisselUitgeklapt(item.id)}
-                        aria-label="Stappen tonen of verbergen"
-                        title="In stappen opdelen"
-                      >
-                        {stappen.length > 0 ? `${stappen.filter((s) => s.afgerond).length}/${stappen.length}` : '+'}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className={`hhp-prioriteit-toggle ${item.prioriteit ? 'on' : ''}`}
+                      onClick={() => onTogglePrioriteit(project.id, item.id)}
+                      aria-label="Prioriteit wisselen"
+                      title="Prioriteit (bv. geleend gereedschap, weersomstandigheden) — gaat vóór op de planning"
+                    >★</button>
+                    <button
+                      type="button"
+                      className="hhp-stappen-toggle"
+                      onClick={() => wisselUitgeklapt(item.id)}
+                      aria-label="Stappen tonen of verbergen"
+                      title="In stappen opdelen"
+                    >
+                      {stappen.length > 0 ? `${stappen.filter((s) => s.afgerond).length}/${stappen.length}` : '+'}
+                    </button>
                     <button
                       className="hh-verwijder"
                       onClick={() => {
-                        if (isWerk) { onOntkoppelWerktaak(item.id); return; }
                         if (window.confirm(`Klusje "${item.tekst}" verwijderen? Inclusief eventuele stappen en foto's.`)) {
                           onVerwijderKlusje(project.id, item.id);
                         }
                       }}
-                      aria-label={isWerk ? 'Ontkoppel van project' : 'Verwijder klusje'}
-                      title={isWerk ? 'Ontkoppel van project (taak blijft bestaan in Werktaken)' : undefined}
+                      aria-label="Verwijder klusje"
                     >✕</button>
                   </div>
 
-                  {!isWerk && isUitgeklapt && (
+                  {isUitgeklapt && (
                     <div className="hhp-details">
                       <VereisteKiezer
                         waarde={item.vereistKlusjeId}
@@ -432,7 +421,7 @@ function ProjectKaart({
   );
 }
 
-export default function HuishoudProjecten({ projecten, werkTaken, toonToast, userId, huishoudenId }) {
+export default function HuishoudProjecten({ projecten, toonToast, userId, huishoudenId }) {
   const [toonForm, setToonForm] = useState(false);
 
   function toevoegen(naam, aantalMaanden, klusjes, deadline) {
@@ -457,14 +446,11 @@ export default function HuishoudProjecten({ projecten, werkTaken, toonToast, use
         <ProjectKaart
           key={project.id}
           project={project}
-          gekoppeldeWerktaken={werkTaken.alleTaken.filter((t) => t.projectId === project.id)}
           onToggleKlusje={projecten.toggleKlusje}
           onZetUren={projecten.zetGeschatteUren}
           onVerwijderKlusje={projecten.verwijderKlusje}
           onVerwijderProject={projecten.verwijderProject}
           onZetDeadline={projecten.zetDeadline}
-          onToggleWerktaak={werkTaken.toggleKlaar}
-          onOntkoppelWerktaak={(id) => werkTaken.zetProject(id, null)}
           onVoegKlusje={projecten.voegKlusjeToe}
           onHernoemKlusje={projecten.hernoemKlusje}
           onTogglePrioriteit={projecten.togglePrioriteit}

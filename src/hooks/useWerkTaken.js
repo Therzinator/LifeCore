@@ -10,12 +10,26 @@ function nieuweId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+// Vóór de eigen Werk-projectenlaag (zie useWerkProjecten.js) wees projectId
+// naar een Kluslijst-project (id-prefix 'proj_'). Die koppeling is
+// losgekoppeld, dus zo'n oude verwijzing wijst nu naar niets meer — eenmalig
+// opgeschoond bij het lezen i.p.v. stil te blijven verwijzen naar een
+// project buiten de nieuwe (Werk-eigen) namespace.
+function opgeschoondeTaken(taken) {
+  return taken.map((t) => (
+    t.projectId && !t.projectId.startsWith('wproj_') ? { ...t, projectId: null } : t
+  ));
+}
+
 // Werktaken zijn gekoppeld aan de dagelijkse werkcontext (Gemeente Oldambt) —
 // geen carry-over-logica nodig voor "openstaand van eerdere dagen": een taak
 // die niet is afgevinkt blijft gewoon zichtbaar, ongeacht op welke dag hij
 // is aangemaakt.
 export function useWerkTaken() {
-  const [record, setRecordState] = useState(() => leesLokaal('werk_taken', leegRecord()));
+  const [record, setRecordState] = useState(() => {
+    const gelezen = leesLokaal('werk_taken', leegRecord());
+    return { ...gelezen, taken: opgeschoondeTaken(gelezen.taken ?? []) };
+  });
 
   const voegMeerdereToe = useCallback((teksten, focusMinuten = null, categorie = null, projectId = null) => {
     setRecordState((huidig) => {

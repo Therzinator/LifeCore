@@ -1,5 +1,5 @@
 import { useWerkTaken } from '../../hooks/useWerkTaken.js';
-import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { useWerkProjecten } from '../../hooks/useWerkProjecten.js';
 import { useWerkInstellingen } from '../../hooks/useWerkInstellingen.js';
 import WerkTaken from './WerkTaken.jsx';
 import WerkInstellingen from './WerkInstellingen.jsx';
@@ -7,12 +7,11 @@ import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 
 // Huishouden, Kluslijst, Ontspullen en Boodschappen zijn verhuisd naar de
 // Thuis-module (zie thuis/ThuisPagina.jsx) — Werk is nu puur de werk-taken
-// van de dag. huishoudProjecten blijft hier wél nodig (read-only, voor de
-// 'koppel aan project'-dropdown in WerkTaken), maar de volledige
-// Kluslijst-UI leeft niet meer hier.
-export default function WerkPagina({ toonToast, userId, huishoudenId }) {
+// van de dag. werkProjecten is Werk's eigen, losse projectenlaag (zie
+// useWerkProjecten.js) — niet gekoppeld aan Kluslijst.
+export default function WerkPagina({ toonToast }) {
   const werkTaken = useWerkTaken();
-  const huishoudProjecten = useHuishoudProjecten(huishoudenId, userId);
+  const werkProjecten = useWerkProjecten();
   const { instellingen, bewaar, voegCategorieToe, hernoemCategorie, verwijderCategorie } = useWerkInstellingen();
 
   // Validatie hier i.p.v. binnen hernoemCategorie zelf, zodat de taken-migratie
@@ -36,12 +35,13 @@ export default function WerkPagina({ toonToast, userId, huishoudenId }) {
             voegCategorieToe={voegCategorieToe}
             hernoemCategorie={hernoemCategorieOveral}
             verwijderCategorie={verwijderCategorie}
+            werkProjecten={werkProjecten}
           />
         </ModuleInstellingenKnop>
       </div>
 
       <div className="card">
-        <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} huishoudProjecten={huishoudProjecten} />
+        <WerkTaken werkTaken={werkTaken} toonToast={toonToast} instellingen={instellingen} werkProjecten={werkProjecten} />
       </div>
     </div>
   );

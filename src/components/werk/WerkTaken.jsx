@@ -4,13 +4,13 @@ import { werkLabels } from '../../lib/werk/labels.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './WerkTaken.css';
 
-export default function WerkTaken({ werkTaken, toonToast, instellingen, huishoudProjecten }) {
+export default function WerkTaken({ werkTaken, toonToast, instellingen, werkProjecten }) {
   const [invoer, setInvoer] = useState('');
   const [categorie, setCategorie] = useState(instellingen.categorieen[0] ?? null);
   const [projectId, setProjectId] = useState('');
   const labels = werkLabels(instellingen.oldambtModus);
   const vandaagIsWerkdag = instellingen.werkdagen.includes(new Date().getDay() === 0 ? 7 : new Date().getDay());
-  const projecten = huishoudProjecten?.projecten ?? [];
+  const projecten = werkProjecten?.projecten ?? [];
 
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
@@ -38,7 +38,7 @@ export default function WerkTaken({ werkTaken, toonToast, instellingen, huishoud
         )}
         {projecten.length > 0 && (
           <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
-            <label className="ti-lbl" htmlFor="wt-project">Project (optioneel, Kluslijst)</label>
+            <label className="ti-lbl" htmlFor="wt-project">Project (optioneel)</label>
             <select id="wt-project" className="ti-veld" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
               <option value="">Geen project</option>
               {projecten.map((p) => <option key={p.id} value={p.id}>{p.naam}</option>)}

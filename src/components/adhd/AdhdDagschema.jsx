@@ -1,6 +1,6 @@
 import { useDagdata } from '../../hooks/useDagdata.js';
 import { useWerkTaken } from '../../hooks/useWerkTaken.js';
-import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
+import { useWerkProjecten } from '../../hooks/useWerkProjecten.js';
 import { dagLimiet, effectieveEnergie } from '../../lib/adhd/dagLimiet.js';
 import { genereerDagschema } from '../../lib/adhd/dagschema.js';
 import './AdhdDagschema.css';
@@ -14,13 +14,11 @@ const ONTSTRESS_TIPS = [
 
 // Zet de open Werktaken om in een tijdgeblokte dagplanning — puur weergave,
 // geen eigen opslag: genereerDagschema wordt bij elke render vers berekend
-// uit de actuele Werktaken/energie/instellingen (zie dagschema.js), net als
-// Kluslijst's projectMaandOverzicht. userId/huishoudenId alleen nodig om
-// (read-only) de projectnaam van een gekoppelde Kluslijst-taak op te halen.
-export default function AdhdDagschema({ adhdDag, instellingen, focusMoetVerlagen, onStartFocus, onNavigeer, userId, huishoudenId }) {
+// uit de actuele Werktaken/energie/instellingen (zie dagschema.js).
+export default function AdhdDagschema({ adhdDag, instellingen, focusMoetVerlagen, onStartFocus, onNavigeer }) {
   const dagdata = useDagdata();
   const werkTaken = useWerkTaken();
-  const huishoudProjecten = useHuishoudProjecten(huishoudenId, userId);
+  const werkProjecten = useWerkProjecten();
 
   const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
   const energie = effectieveEnergie(ochtendEnergie, adhdDag.dag.middagEnergie, focusMoetVerlagen);
@@ -30,7 +28,7 @@ export default function AdhdDagschema({ adhdDag, instellingen, focusMoetVerlagen
 
   function projectNaam(projectId) {
     if (!projectId) return null;
-    return huishoudProjecten.projecten.find((p) => p.id === projectId)?.naam ?? null;
+    return werkProjecten.projecten.find((p) => p.id === projectId)?.naam ?? null;
   }
 
   return (

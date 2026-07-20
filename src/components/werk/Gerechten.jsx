@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CURATED_GERECHTEN } from '../../lib/boodschappen/curatedeGerechten.js';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
+import { verwerkFoto } from '../../lib/werk/fotoVoorbewerking.js';
+import { sbClient } from '../../lib/supabase/client.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import './HuishoudTaken.css';
 import './HuishoudProjecten.css';
@@ -11,12 +13,26 @@ const CATEGORIEEN = [
   { key: 'kruiden', label: 'Kruiden' },
 ];
 
-function NieuwGerechtForm({ onOpslaan, onAnnuleren }) {
-  const [naam, setNaam] = useState('');
-  const [bereiding, setBereiding] = useState('');
-  const [ingredienten, setIngredienten] = useState('');
-  const [optioneel, setOptioneel] = useState('');
-  const [kruiden, setKruiden] = useState('');
+// Herkent alleen data-URL's ('data:image/jpeg;base64,xxx') — het resultaat
+// van verwerkFoto() als blob-URL via FileReader.readAsDataURL ingelezen.
+function bestandNaarBase64(bestand) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('Kon foto niet lezen'));
+    reader.readAsDataURL(bestand);
+  });
+}
+
+// initieel (optioneel): voorgevulde waarden vanuit de foto-naar-recept-flow
+// (zie fotoNaarRecept in Gerechten) — arrays worden terug naar tekstregels
+// omgezet, dezelfde vorm die parseSpraakTekst bij opslaan weer verwacht.
+function NieuwGerechtForm({ onOpslaan, onAnnuleren, initieel }) {
+  const [naam, setNaam] = useState(initieel?.naam ?? '');
+  const [bereiding, setBereiding] = useState(initieel?.bereiding ?? '');
+  const [ingredienten, setIngredienten] = useState((initieel?.ingredienten ?? []).join('\n'));
+  const [optioneel, setOptioneel] = useState((initieel?.optioneel ?? []).join('\n'));
+  const [kruiden, setKruiden] = useState((initieel?.kruiden ?? []).join('\n'));
 
   function submit(e) {
     e.preventDefault();
@@ -178,15 +194,55 @@ function GerechtRij({ gerecht, uitgeklapt, onWissel, onVerwijder, boodschappen, 
 export default function Gerechten({ gerechten, boodschappen, toonToast }) {
   const [uitgeklapt, setUitgeklapt] = useState(null);
   const [toonForm, setToonForm] = useState(false);
+  const [voorgevuld, setVoorgevuld] = useState(null);
+  const [fotoBezig, setFotoBezig] = useState(false);
+  const fotoInputRef = useRef(null);
 
   function opslaan(gerecht) {
     gerechten.maakGerecht(gerecht);
     setToonForm(false);
+    setVoorgevuld(null);
     toonToast(`Gerecht "${gerecht.naam}" opgeslagen`, 'ok');
+  }
+
+  function annuleerForm() {
+    setToonForm(false);
+    setVoorgevuld(null);
   }
 
   function wissel(id) {
     setUitgeklapt((huidig) => (huidig === id ? null : id));
+  }
+
+  // Foto wordt alleen lokaal verwerkt (compressie + base64) en naar de
+  // Edge Function gestuurd — nooit geüpload naar storage, dus na deze
+  // functie is er niets meer om op te ruimen.
+  async function fotoNaarRecept(e) {
+    const bestand = e.target.files?.[0];
+    e.target.value = '';
+    if (!bestand) return;
+
+    const sb = sbClient();
+    if (!sb) { toonToast('Supabase niet geconfigureerd — foto-naar-recept werkt alleen online', 'wn'); return; }
+
+    setFotoBezig(true);
+    try {
+      const verwerkt = await verwerkFoto(bestand);
+      const afbeelding = await bestandNaarBase64(verwerkt);
+      const { data, error } = await sb.functions.invoke('recept-uit-foto', {
+        body: { afbeelding, mediaType: verwerkt.type },
+      });
+      if (error || data?.error) throw new Error(data?.error || error.message);
+
+      setVoorgevuld(data);
+      setToonForm(true);
+      toonToast('Recept herkend — controleer en pas aan waar nodig', 'ok');
+    } catch (err) {
+      console.error('Kon foto niet omzetten naar recept', err);
+      toonToast('Kon de foto niet verwerken', 'wn');
+    } finally {
+      setFotoBezig(false);
+    }
   }
 
   return (
@@ -234,10 +290,29 @@ export default function Gerechten({ gerechten, boodschappen, toonToast }) {
 
       {toonForm ? (
         <div className="card" style={{ marginTop: 'var(--space-sm)' }}>
-          <NieuwGerechtForm onOpslaan={opslaan} onAnnuleren={() => setToonForm(false)} />
+          {voorgevuld && <p className="ti-hint">Herkend uit de foto — controleer en pas aan voor je opslaat.</p>}
+          <NieuwGerechtForm onOpslaan={opslaan} onAnnuleren={annuleerForm} initieel={voorgevuld} />
         </div>
       ) : (
-        <button className="btn btn-g btn-full" style={{ marginTop: 'var(--space-sm)' }} onClick={() => setToonForm(true)}>+ Nieuw gerecht</button>
+        <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
+          <button className="btn btn-g btn-full" onClick={() => setToonForm(true)}>+ Nieuw gerecht</button>
+          <button
+            type="button"
+            className="btn btn-g btn-full"
+            disabled={fotoBezig}
+            onClick={() => fotoInputRef.current?.click()}
+          >
+            {fotoBezig ? 'Foto verwerken...' : '📷 Foto van recept'}
+          </button>
+          <input
+            ref={fotoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={fotoNaarRecept}
+          />
+        </div>
       )}
     </div>
   );

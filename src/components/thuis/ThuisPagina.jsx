@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useWerkTaken } from '../../hooks/useWerkTaken.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
 import { useTuinTaken } from '../../hooks/useTuinTaken.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
@@ -27,12 +26,9 @@ const TABS = [
 
 // Huishouden, Kluslijst, Ontspullen en Boodschappen — voorheen tabbladen
 // binnen Werk, nu een eigen module (zie modules.js): dit is de huiselijke
-// kant van de dag, los van de werk-taken zelf. Instantieert hier zijn eigen
-// useWerkTaken() (voor de gekoppelde-werktaken-weergave in Kluslijst) —
-// veilig, want er is nooit meer dan één module tegelijk gemount (App.jsx
-// rendert altijd precies één actieve pagina).
+// kant van de dag, los van de werk-taken zelf (Kluslijst heeft geen
+// koppeling meer met Werk-taken — zie useWerkProjecten.js).
 export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
-  const werkTaken = useWerkTaken();
   const huishoudTaken = useHuishoudTaken(huishoudenId, userId);
   const tuinTaken = useTuinTaken(huishoudenId, userId);
   const huishoudProjecten = useHuishoudProjecten(huishoudenId, userId);
@@ -59,7 +55,6 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
         {tab === 'kluslijst' && (
           <HuishoudProjecten
             projecten={huishoudProjecten}
-            werkTaken={werkTaken}
             toonToast={toonToast}
             userId={userId}
             huishoudenId={huishoudenId}

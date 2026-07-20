@@ -21,7 +21,7 @@ const TABS = [
   { id: 'afsluiten', label: 'Afsluiten' },
 ];
 
-export default function AdhdPagina({ toonToast, onNavigeer, userId, huishoudenId }) {
+export default function AdhdPagina({ toonToast, onNavigeer }) {
   const adhdDag = useAdhdDag();
   const klusboek = useKlusboek();
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useAdhdInstellingen();
@@ -68,8 +68,6 @@ export default function AdhdPagina({ toonToast, onNavigeer, userId, huishoudenId
             focusMoetVerlagen={focusMoetVerlagen}
             onStartFocus={startFocus}
             onNavigeer={onNavigeer}
-            userId={userId}
-            huishoudenId={huishoudenId}
           />
         )}
         {tab === 'klusboek' && <AdhdKlusboek klusboek={klusboek} adhdDag={adhdDag} toonToast={toonToast} />}
