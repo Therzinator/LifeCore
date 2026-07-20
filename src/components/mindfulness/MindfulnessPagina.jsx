@@ -6,6 +6,7 @@ import { useMindfulnessInstellingen } from '../../hooks/useMindfulnessInstelling
 import { useVragenlijstGeschiedenis } from '../../hooks/useVragenlijstGeschiedenis.js';
 import { useWelzijnInstellingen } from '../../hooks/useWelzijnInstellingen.js';
 import { mindfulnessSuggestieActief } from '../../lib/welzijn/mindfulnessSignaal.js';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import MindfulnessOefeningen from './MindfulnessOefeningen.jsx';
 import SessieBrowser from './SessieBrowser.jsx';
 import SessieSpeler from './SessieSpeler.jsx';
@@ -32,6 +33,7 @@ export default function MindfulnessPagina({ toonToast }) {
 
   const ingelogd = Boolean(auth.user?.id);
   const toonWelzijnSuggestie = mindfulnessSuggestieActief(welzijnGeschiedenis.afnames, welzijnInstellingen.mindfulnessImpactPct);
+  useRegistreerSubstap(actieveSessie ? `Sessie: ${actieveSessie.titel}` : TABS.find((t) => t.id === tab)?.label);
 
   if (actieveSessie) {
     return (

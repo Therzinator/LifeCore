@@ -15,11 +15,11 @@ function nieuweId() {
 export function useNotities() {
   const [record, setRecordState] = useState(() => leesLokaal('notities', leegRecord()));
 
-  const voegToe = useCallback((moduleId, tekst) => {
+  const voegToe = useCallback((moduleId, substap, tekst) => {
     const schoon = tekst.trim();
     if (!schoon) return;
     setRecordState((huidig) => {
-      const nieuw = { id: nieuweId(), moduleId, tekst: schoon, aangemaaktOp: new Date().toISOString() };
+      const nieuw = { id: nieuweId(), moduleId, substap: substap ?? null, tekst: schoon, aangemaaktOp: new Date().toISOString() };
       const bijgewerkt = nieuwRecord({ notities: [nieuw, ...(huidig.notities ?? [])] });
       schrijfLokaal('notities', bijgewerkt);
       return bijgewerkt;

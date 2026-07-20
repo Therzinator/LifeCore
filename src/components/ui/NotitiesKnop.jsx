@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNotities } from '../../hooks/useNotities.js';
+import { useSubstap } from '../../contexts/SubstapContext.jsx';
 import { formatteerNotitiesVoorExport } from '../../lib/notities/notitieExport.js';
 import { MODULES } from '../../lib/nav/modules.js';
 import { IconNotitie } from './ModuleIconen.jsx';
@@ -19,12 +20,13 @@ function moduleLabel(moduleId) {
 // route: dit moet vanuit elke module in twee tikken bereikbaar zijn.
 export default function NotitiesKnop({ huidigeModule }) {
   const notities = useNotities();
+  const { substap } = useSubstap();
   const [open, setOpen] = useState(false);
   const [tekst, setTekst] = useState('');
   const [gekopieerd, setGekopieerd] = useState(false);
 
   function voegToe() {
-    notities.voegToe(huidigeModule, tekst);
+    notities.voegToe(huidigeModule, substap, tekst);
     setTekst('');
   }
 
@@ -50,7 +52,9 @@ export default function NotitiesKnop({ huidigeModule }) {
       {open && (
         <Modal titel="Notities" onClose={() => setOpen(false)}>
           <div className="nk-toevoegen">
-            <div className="nk-huidige-module">Notitie bij: <strong>{moduleLabel(huidigeModule)}</strong></div>
+            <div className="nk-huidige-module">
+              Notitie bij: <strong>{moduleLabel(huidigeModule)}{substap ? ` → ${substap}` : ''}</strong>
+            </div>
             <textarea
               className="nk-textarea"
               value={tekst}
@@ -77,7 +81,7 @@ export default function NotitiesKnop({ huidigeModule }) {
                 {notities.notities.map((n) => (
                   <div key={n.id} className="nk-item">
                     <div className="nk-item-kop">
-                      <span className="nk-item-module">{moduleLabel(n.moduleId)}</span>
+                      <span className="nk-item-module">{moduleLabel(n.moduleId)}{n.substap ? ` → ${n.substap}` : ''}</span>
                       <span className="nk-item-datum">
                         {new Date(n.aangemaaktOp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })}
                       </span>

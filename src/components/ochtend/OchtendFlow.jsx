@@ -1,7 +1,8 @@
 import { useOchtendflow } from '../../hooks/useOchtendflow.js';
 import { useDagdata } from '../../hooks/useDagdata.js';
-import { useOchtendInstellingen } from '../../hooks/useOchtendInstellingen.js';
+import { useOchtendInstellingen, STAP_LABELS } from '../../hooks/useOchtendInstellingen.js';
 import { useKruisSignalen } from '../../hooks/useKruisSignalen.js';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import Voortgangsbalk from '../ui/Voortgangsbalk.jsx';
 import StapWelkom from './StapWelkom.jsx';
 import StapCheckin from './StapCheckin.jsx';
@@ -14,12 +15,15 @@ import OchtendInstellingen from './OchtendInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './OchtendFlow.css';
 
+const SUBSTAP_LABEL = { welkom: 'Welkom', ...STAP_LABELS, afronden: 'Afronden' };
+
 export default function OchtendFlow({ toonToast, onNaarDefusie }) {
   const dagdata = useDagdata();
   const { instellingen, bewaar: bewaarInstellingen } = useOchtendInstellingen();
   const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow(instellingen);
   const { signalen } = useKruisSignalen({ ochtend: instellingen.toonTrainingsherinnering });
   const trainingsherinnering = signalen.find((s) => s.doel === 'ochtend');
+  useRegistreerSubstap(SUBSTAP_LABEL[stapNaam]);
 
   const gedeeld = { dagdata, volgende, vorige, overslaan, toonToast, isEersteStap: stapIndex === 0 };
 

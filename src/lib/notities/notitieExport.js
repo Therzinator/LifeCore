@@ -28,7 +28,8 @@ export function formatteerNotitiesVoorExport(notities) {
       .sort((a, b) => a.aangemaaktOp.localeCompare(b.aangemaaktOp))
       .forEach((n) => {
         const datum = new Date(n.aangemaaktOp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' });
-        regels.push(`- (${datum}) ${n.tekst}`);
+        const prefix = n.substap ? `${n.substap}: ` : '';
+        regels.push(`- (${datum}) ${prefix}${n.tekst}`);
       });
     regels.push('');
   });

@@ -6,6 +6,7 @@ import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { useOntspullen } from '../../hooks/useOntspullen.js';
 import { useBoodschappen } from '../../hooks/useBoodschappen.js';
 import { useGerechten } from '../../hooks/useGerechten.js';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import HuishoudTaken from '../werk/HuishoudTaken.jsx';
 import HuishoudProjecten from '../werk/HuishoudProjecten.jsx';
 import Ontspullen from '../werk/Ontspullen.jsx';
@@ -36,6 +37,7 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
   const boodschappen = useBoodschappen(huishoudenId, userId);
   const gerechten = useGerechten(huishoudenId, userId);
   const [tab, setTab] = useState('huishouden');
+  useRegistreerSubstap(TABS.find((t) => t.id === tab)?.label);
 
   return (
     <div className="of-wrap">

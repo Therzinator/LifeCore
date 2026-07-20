@@ -18,6 +18,7 @@ import AgendaWeek from './AgendaWeek.jsx';
 import AgendaDag from './AgendaDag.jsx';
 import AgendaBlokForm from './AgendaBlokForm.jsx';
 import Modal from '../ui/Modal.jsx';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './AgendaPagina.css';
 
 const WEERGAVEN = [
@@ -53,6 +54,7 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
   const [referentieDatum, setReferentieDatum] = useState(() => initieleDatum ?? vandaagIso());
   const [toonForm, setToonForm] = useState(false);
   const [bewerkBlok, setBewerkBlok] = useState(null);
+  useRegistreerSubstap(WEERGAVEN.find((w) => w.id === weergave)?.label);
 
   useEffect(() => {
     if (initieleDatum) onInitieleDatumGeconsumeerd?.();

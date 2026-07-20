@@ -10,6 +10,7 @@ import AdhdFocusTimer from './AdhdFocusTimer.jsx';
 import AdhdAfsluiten from './AdhdAfsluiten.jsx';
 import AdhdInstellingen from './AdhdInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './AdhdPagina.css';
 
 const TABS = [
@@ -27,6 +28,7 @@ export default function AdhdPagina({ toonToast, onNavigeer, userId, huishoudenId
   const { focusMoetVerlagen } = useKruisSignalen({ focus: instellingen.pasDaglimietAanBijUitputting });
   const [tab, setTab] = useState('dashboard');
   const [focusContext, setFocusContext] = useState({ taakTekst: null, blokAdvies: null });
+  useRegistreerSubstap(TABS.find((t) => t.id === tab)?.label);
 
   function startFocus(taakTekst, blokAdvies) {
     setFocusContext({ taakTekst, blokAdvies });

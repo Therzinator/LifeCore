@@ -18,6 +18,7 @@ import TrainingInstellingen from './TrainingInstellingen.jsx';
 import TrainingProgramma from './TrainingProgramma.jsx';
 import PersoonsProfiel from './PersoonsProfiel.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './TrainingPagina.css';
 
 const TABS = [
@@ -44,6 +45,13 @@ export default function TrainingPagina({ toonToast }) {
   const persoonsProfiel = usePersoonsProfiel();
   const rustTimer = useRustTimer(instellingen.geluidFragment);
   const [tab, setTab] = useState('dashboard');
+  useRegistreerSubstap(
+    !profiel.profiel.profielNaam
+      ? 'Kies startgewicht'
+      : actieveTraining.training.letter
+        ? `Training ${actieveTraining.training.letter}`
+        : TABS.find((t) => t.id === tab)?.label,
+  );
 
   if (!profiel.profiel.profielNaam) {
     return (

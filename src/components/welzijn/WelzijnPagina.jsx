@@ -11,6 +11,7 @@ import VragenlijstCheck from './VragenlijstCheck.jsx';
 import LijnGrafiek from '../dashboard/LijnGrafiek.jsx';
 import WelzijnInstellingen from './WelzijnInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './WelzijnPagina.css';
 
 function datumLabel(iso) {
@@ -27,6 +28,7 @@ export default function WelzijnPagina() {
   const { signalen: kruisSignalen } = useKruisSignalen({ welzijnVroegCheck: instellingen.toonVroegeCheckSuggestie });
   const werkSuggestie = kruisSignalen.find((s) => s.doel === 'welzijn');
   const [scherm, setScherm] = useState('overzicht');
+  useRegistreerSubstap(scherm === 'vragen' ? 'Vragenlijst invullen' : 'Overzicht');
 
   const afnames = geschiedenis.afnames;
   const signalen = bepaalSignalen(afnames);

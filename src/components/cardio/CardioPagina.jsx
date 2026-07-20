@@ -9,6 +9,7 @@ import CardioGroei from './CardioGroei.jsx';
 import CardioRoeien from './CardioRoeien.jsx';
 import CardioInstellingen from './CardioInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
+import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './CardioPagina.css';
 
 const TABS = [
@@ -24,6 +25,7 @@ export default function CardioPagina({ toonToast }) {
   const checklist = useCardioChecklist();
   const { instellingen, bewaar: bewaarInstellingen } = useCardioInstellingen();
   const [tab, setTab] = useState('vandaag');
+  useRegistreerSubstap(TABS.find((t) => t.id === tab)?.label);
 
   return (
     <div className="of-wrap">
