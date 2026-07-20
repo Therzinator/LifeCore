@@ -7,10 +7,16 @@ export const REK_OEFENINGEN = [
   { id: 'r3', naam: 'Nek langzaam draaien', uitleg: 'Links houd 3s, midden, rechts houd 3s — 5× per kant. Niet forceren.', duur: '30s' },
   { id: 'r4', naam: 'Cat-Cow', uitleg: 'Op handen/knieën: rug hol (in) → rug bol (uit). 8 cycli.', duur: '45s' },
   { id: 'r5', naam: 'Thoracale rotatie (zij)', uitleg: 'Lig op zij, knieën 90°. Bovenste arm naar achter, borst openen. 8× per kant.', duur: '45s' },
-  { id: 'r6', naam: 'Kindhouding', uitleg: '30s rustig ademhalen. Rekt lumbale fascia.', duur: '30s' },
+  { id: 'r6', naam: 'Kindhouding', uitleg: '30s rustig ademhalen. Rekt lumbale fascia.', duur: '35s (incl. 5s om in positie te komen)' },
   { id: 'r7', naam: 'Knie naar borst', uitleg: 'Lig op rug. Trek één knie naar borst 20s, wissel. Rekt heupbuiger.', duur: '40s' },
   { id: 'r8', naam: 'Heupscharnieren', uitleg: 'Staand, voeten schouderbreedte. Buig voorover 10× langzaam.', duur: '30s' },
 ];
+
+// Kindhouding krijgt een eigen timer (i.p.v. alleen een vinkje) — 30s zelf
+// tellen met dicht/afgeleid gevoel duurt in de praktijk te lang. 5s extra
+// zodat er tijd is om in positie te gaan zitten na het starten van de timer.
+export const KINDHOUDING_ID = 'r6';
+export const KINDHOUDING_TIMER_SECONDEN = 35;
 
 const ENERGIE_HINT = {
   laag: 'Energie laag — doe alleen rek & strek, sla plank en push-ups gerust over.',

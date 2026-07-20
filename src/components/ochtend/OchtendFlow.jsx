@@ -36,7 +36,7 @@ export default function OchtendFlow({ toonToast }) {
 
       {stapNaam === 'welkom' && <StapWelkom {...gedeeld} />}
       {stapNaam === 'checkin' && <StapCheckin {...gedeeld} />}
-      {stapNaam === 'ademhaling' && <StapAdemhaling {...gedeeld} />}
+      {stapNaam === 'ademhaling' && <StapAdemhaling {...gedeeld} geluidFragment={instellingen.geluidFragment} />}
       {stapNaam === 'activering' && (
         <StapActivering {...gedeeld} geluidFragment={instellingen.geluidFragment} trainingsherinnering={trainingsherinnering?.tekst} />
       )}

@@ -83,7 +83,7 @@ export default function OchtendInstellingen({ instellingen, bewaar }) {
       <div className="card">
         <div className="td-label">Geluid</div>
         <GeluidKiezer
-          label="Geluid bij einde plank-timer"
+          label="Geluid bij einde plank-timer, kindhouding-timer & ademhalingsprogramma"
           waarde={instellingen.geluidFragment}
           onWaarde={(v) => bewaar({ geluidFragment: v })}
         />

@@ -62,6 +62,29 @@
 .sa-item.gedaan .sa-check { border-color: var(--accent); background: var(--accent-dim); }
 
 .sa-item-tekst { flex: 1; min-width: 0; }
+
+.sa-item-timer-btn {
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: var(--bg-2);
+  color: var(--txt);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+.sa-item-timer-btn:hover { background: var(--bg-3); }
+
+.sa-item-timer-actief {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 2.5em;
+  text-align: right;
+}
 .sa-item-naam { display: block; font-size: var(--font-size-sm); font-weight: 500; color: var(--txt); }
 .sa-item.gedaan .sa-item-naam { opacity: .45; text-decoration: line-through; }
 .sa-item-uitleg { display: block; font-size: var(--font-size-xs); color: var(--txt-muted); line-height: 1.5; margin-top: 2px; }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { REK_OEFENINGEN, energieHint } from '../../lib/ochtend/activering.js';
+import { REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN } from '../../lib/ochtend/activering.js';
 import { SPANNING_OEFENINGEN, spanningOefeningKernSet } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
@@ -16,12 +16,19 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
   const [pushGedaan, setPushGedaan] = useState(false);
   const [toonUitleg, setToonUitleg] = useState(false);
   const plankTimer = useRustTimer(geluidFragment);
+  const kindhoudingTimer = useRustTimer(geluidFragment);
 
   useEffect(() => {
     if (plankTimer.totaal > 0 && !plankTimer.actief && plankTimer.resterend === 0) {
       setPlankGedaan(true);
     }
   }, [plankTimer.actief, plankTimer.resterend, plankTimer.totaal]);
+
+  useEffect(() => {
+    if (kindhoudingTimer.totaal > 0 && !kindhoudingTimer.actief && kindhoudingTimer.resterend === 0) {
+      setRekGedaan((huidig) => (huidig.has(KINDHOUDING_ID) ? huidig : new Set(huidig).add(KINDHOUDING_ID)));
+    }
+  }, [kindhoudingTimer.actief, kindhoudingTimer.resterend, kindhoudingTimer.totaal]);
 
   const hint = energieHint(dagdata.dag.checkin?.energie);
 
@@ -55,6 +62,29 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
         <div className="sa-lijst">
           {REK_OEFENINGEN.map((oef) => {
             const gedaan = rekGedaan.has(oef.id);
+            if (oef.id === KINDHOUDING_ID) {
+              return (
+                <div key={oef.id} className={`sa-item ${gedaan ? 'gedaan' : ''}`}>
+                  <span className="sa-check">{gedaan ? '✓' : ''}</span>
+                  <span className="sa-item-tekst">
+                    <span className="sa-item-naam">{oef.naam}</span>
+                    <span className="sa-item-uitleg">{oef.uitleg}</span>
+                    <span className="sa-item-duur">{oef.duur}</span>
+                  </span>
+                  {kindhoudingTimer.actief ? (
+                    <span className="sa-item-timer-actief">{kindhoudingTimer.resterend}s</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="sa-item-timer-btn"
+                      onClick={() => kindhoudingTimer.start(KINDHOUDING_TIMER_SECONDEN)}
+                    >
+                      ▶ Start
+                    </button>
+                  )}
+                </div>
+              );
+            }
             return (
               <button key={oef.id} className={`sa-item ${gedaan ? 'gedaan' : ''}`} onClick={() => vinkRek(oef.id)}>
                 <span className="sa-check">{gedaan ? '✓' : ''}</span>
