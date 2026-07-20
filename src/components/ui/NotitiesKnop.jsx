@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNotities } from '../../hooks/useNotities.js';
 import { useSubstap } from '../../contexts/SubstapContext.jsx';
-import { formatteerNotitiesVoorExport } from '../../lib/notities/notitieExport.js';
+import { groepeerPerModule, formatteerNotitiesVoorExport, formatteerModuleVoorExport } from '../../lib/notities/notitieExport.js';
 import { MODULES } from '../../lib/nav/modules.js';
 import { IconNotitie } from './ModuleIconen.jsx';
 import Modal from './Modal.jsx';
@@ -24,6 +24,7 @@ export default function NotitiesKnop({ huidigeModule }) {
   const [open, setOpen] = useState(false);
   const [tekst, setTekst] = useState('');
   const [gekopieerd, setGekopieerd] = useState(false);
+  const [gekopieerdModule, setGekopieerdModule] = useState(null);
 
   function voegToe() {
     notities.voegToe(huidigeModule, substap, tekst);
@@ -37,9 +38,21 @@ export default function NotitiesKnop({ huidigeModule }) {
     setTimeout(() => setGekopieerd(false), 2000);
   }
 
+  function kopieerModule(moduleId, lijst) {
+    const geformatteerd = formatteerModuleVoorExport(moduleId, lijst);
+    navigator.clipboard?.writeText(geformatteerd);
+    setGekopieerdModule(moduleId);
+    setTimeout(() => setGekopieerdModule(null), 2000);
+  }
+
   function wisAlles() {
     if (!window.confirm(`Alle ${notities.notities.length} notities verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
     notities.wisAlles();
+  }
+
+  function wisModule(moduleId, aantal) {
+    if (!window.confirm(`Alle ${aantal} notities bij ${moduleLabel(moduleId)} verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+    notities.verwijderModule(moduleId);
   }
 
   return (
@@ -77,22 +90,35 @@ export default function NotitiesKnop({ huidigeModule }) {
               </div>
               <p className="ti-hint">Plak dit in een Claude Code-sessie in de terminal om te laten verwerken.</p>
 
-              <div className="nk-lijst">
-                {notities.notities.map((n) => (
-                  <div key={n.id} className="nk-item">
-                    <div className="nk-item-kop">
-                      <span className="nk-item-module">{moduleLabel(n.moduleId)}{n.substap ? ` → ${n.substap}` : ''}</span>
-                      <span className="nk-item-datum">
-                        {new Date(n.aangemaaktOp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })}
-                      </span>
+              {groepeerPerModule(notities.notities).map(({ moduleId, notities: lijst }) => (
+                <div className="nk-module-groep" key={moduleId}>
+                  <div className="nk-module-kop">
+                    <span className="td-label">{moduleLabel(moduleId)} ({lijst.length})</span>
+                    <div className="nk-module-acties">
+                      <button type="button" className="btn btn-g btn-sm" onClick={() => kopieerModule(moduleId, lijst)}>
+                        {gekopieerdModule === moduleId ? '✓' : 'Kopieer'}
+                      </button>
+                      <button type="button" className="btn btn-text" onClick={() => wisModule(moduleId, lijst.length)}>Wis</button>
                     </div>
-                    <div className="nk-item-tekst">{n.tekst}</div>
-                    <button type="button" className="nk-item-verwijder" onClick={() => notities.verwijder(n.id)} aria-label="Notitie verwijderen">
-                      ✕
-                    </button>
                   </div>
-                ))}
-              </div>
+                  <div className="nk-lijst">
+                    {lijst.map((n) => (
+                      <div key={n.id} className="nk-item">
+                        <div className="nk-item-kop">
+                          <span className="nk-item-module">{n.substap ? `→ ${n.substap}` : ''}</span>
+                          <span className="nk-item-datum">
+                            {new Date(n.aangemaaktOp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })}
+                          </span>
+                        </div>
+                        <div className="nk-item-tekst">{n.tekst}</div>
+                        <button type="button" className="nk-item-verwijder" onClick={() => notities.verwijder(n.id)} aria-label="Notitie verwijderen">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </>
           )}
         </Modal>

@@ -65,6 +65,26 @@
   border-top: 1px solid var(--border);
 }
 
+.nk-module-groep {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
+.nk-module-kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.nk-module-acties {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
 .nk-lijst {
   display: flex;
   flex-direction: column;

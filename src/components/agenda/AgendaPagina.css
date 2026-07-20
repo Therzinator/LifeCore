@@ -120,6 +120,7 @@
 }
 .ag-blok-item:last-child { border-bottom: none; }
 .ag-blok-titel-rij { display: flex; align-items: center; }
+.ag-blok-item.afgerond .ag-blok-titel-rij { opacity: .55; text-decoration: line-through; }
 .ag-blok-acties-rij {
   display: flex;
   align-items: center;

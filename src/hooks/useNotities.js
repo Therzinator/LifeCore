@@ -34,11 +34,21 @@ export function useNotities() {
     });
   }, []);
 
+  const verwijderModule = useCallback((moduleId) => {
+    setRecordState((huidig) => {
+      const bijgewerkt = nieuwRecord({
+        notities: (huidig.notities ?? []).filter((n) => (n.moduleId ?? 'algemeen') !== moduleId),
+      });
+      schrijfLokaal('notities', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const wisAlles = useCallback(() => {
     const bijgewerkt = nieuwRecord({ notities: [] });
     schrijfLokaal('notities', bijgewerkt);
     setRecordState(bijgewerkt);
   }, []);
 
-  return { notities: record.notities ?? [], voegToe, verwijder, wisAlles };
+  return { notities: record.notities ?? [], voegToe, verwijder, verwijderModule, wisAlles };
 }

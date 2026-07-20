@@ -14,6 +14,7 @@ const DAGTYPE_OPTIES = [
 
 export default function AgendaDag({
   datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride, onNavigeer,
+  afgerondLog = {}, onToggleAfgerond,
   openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
   openHuishoudTaken = [], onVoegHuishoudTaakToe,
   toonMeditatieSuggestie = false, onVoegMeditatieToe,
@@ -166,13 +167,22 @@ export default function AgendaDag({
         {dagBlokken.length === 0 && <p className="of-stap-tekst">Nog niets gepland.</p>}
         {dagBlokken.map((b) => {
           const moduleVoorBlok = BLOK_TYPE_MODULE[b.type];
+          const isAfgerond = Boolean(afgerondLog[b.id]?.[b.datum]);
           return (
-            <div className="ag-blok-item" key={`${b.id}-${b.datum}`}>
+            <div className={`ag-blok-item ${isAfgerond ? 'afgerond' : ''}`} key={`${b.id}-${b.datum}`}>
               <div className="ag-blok-titel-rij">
                 <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
               </div>
               <div className="ag-blok-acties-rij">
                 <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                {onToggleAfgerond && (
+                  <button
+                    className={`btn btn-sm ${isAfgerond ? 'btn-p' : 'btn-g'}`}
+                    onClick={() => onToggleAfgerond(b.id, b.datum)}
+                  >
+                    {isAfgerond ? '✓ Gedaan' : 'Uitgevoerd'}
+                  </button>
+                )}
                 {moduleVoorBlok && onNavigeer && (
                   <button className="btn btn-g btn-sm" onClick={() => onNavigeer(moduleVoorBlok)}>Start sessie →</button>
                 )}

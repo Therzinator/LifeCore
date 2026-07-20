@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 
 function leegRecord() {
-  return nieuwRecord({ blokken: [] });
+  return nieuwRecord({ blokken: [], log: {} });
 }
 
 function nieuweId() {
@@ -15,7 +15,7 @@ export function useAgendaBlokken() {
   const voegToe = useCallback((blok) => {
     setRecordState((huidig) => {
       const nieuw = { id: nieuweId(), herhaling: null, ...blok };
-      const bijgewerkt = nieuwRecord({ blokken: [...(huidig.blokken ?? []), nieuw] });
+      const bijgewerkt = nieuwRecord({ ...huidig, blokken: [...(huidig.blokken ?? []), nieuw] });
       schrijfLokaal('agenda_blokken', bijgewerkt);
       return bijgewerkt;
     });
@@ -24,7 +24,7 @@ export function useAgendaBlokken() {
   const bewerk = useCallback((id, patch) => {
     setRecordState((huidig) => {
       const blokken = huidig.blokken.map((b) => (b.id === id ? { ...b, ...patch } : b));
-      const bijgewerkt = nieuwRecord({ blokken });
+      const bijgewerkt = nieuwRecord({ ...huidig, blokken });
       schrijfLokaal('agenda_blokken', bijgewerkt);
       return bijgewerkt;
     });
@@ -32,11 +32,30 @@ export function useAgendaBlokken() {
 
   const verwijder = useCallback((id) => {
     setRecordState((huidig) => {
-      const bijgewerkt = nieuwRecord({ blokken: huidig.blokken.filter((b) => b.id !== id) });
+      const bijgewerkt = nieuwRecord({ ...huidig, blokken: huidig.blokken.filter((b) => b.id !== id) });
       schrijfLokaal('agenda_blokken', bijgewerkt);
       return bijgewerkt;
     });
   }, []);
 
-  return { blokken: record.blokken ?? [], voegToe, bewerk, verwijder };
+  // Los van de blokken zelf bijgehouden, per (blokId, datum) — een blok met
+  // herhaling: 'wekelijks' levert immers meerdere zichtbare instanties op
+  // (zie lib/agenda/agendaBlokken.js instantiesInBereik) die allemaal
+  // hetzelfde blok-record delen; "uitgevoerd" moet per week/instantie gelden,
+  // niet voor alle weken tegelijk. Zelfde per-periode-log-patroon als
+  // huishoud_taken_log (useHuishoudTaken.js).
+  const toggleAfgerond = useCallback((blokId, datum) => {
+    setRecordState((huidig) => {
+      const log = { ...(huidig.log ?? {}) };
+      const blokLog = { ...(log[blokId] ?? {}) };
+      if (blokLog[datum]) delete blokLog[datum];
+      else blokLog[datum] = true;
+      log[blokId] = blokLog;
+      const bijgewerkt = nieuwRecord({ ...huidig, log });
+      schrijfLokaal('agenda_blokken', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  return { blokken: record.blokken ?? [], log: record.log ?? {}, voegToe, bewerk, verwijder, toggleAfgerond };
 }

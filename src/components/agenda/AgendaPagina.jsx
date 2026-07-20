@@ -294,6 +294,8 @@ export default function AgendaPagina({ toonToast, onNavigeer, initieleDatum, onI
             signalen={signalen}
             onVerwijderBlok={blokken.verwijder}
             onBewerkBlok={bewerkBlokFormOpenen}
+            afgerondLog={blokken.log}
+            onToggleAfgerond={blokken.toggleAfgerond}
             onNieuwBlok={nieuwBlokFormOpenen}
             dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
             onZetDagTypeOverride={zetDagTypeOverride}
