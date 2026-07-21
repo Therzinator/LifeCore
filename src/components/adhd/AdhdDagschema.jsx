@@ -60,7 +60,7 @@ export default function AdhdDagschema({ adhdDag, instellingen, focusMoetVerlagen
                     <span className="hhp-werk-badge"> · {projectNaam(blok.taak.projectId)}</span>
                   )}
                 </div>
-                <button className="btn btn-p btn-sm" onClick={() => onStartFocus(blok.taak.tekst, limiet.blok)}>Start</button>
+                <button className="btn btn-p btn-sm" onClick={() => onStartFocus(blok.taak, limiet.blok)}>Start</button>
               </div>
             ) : (
               <div className={`adsc-blok adsc-pauze ${blok.lang ? 'lang' : ''}`} key={i}>

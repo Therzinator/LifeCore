@@ -14,7 +14,7 @@ const MIDDAG_OPTIES = [
   { id: 'hoog', label: 'Nog steeds goed' },
 ];
 
-export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, focusMoetVerlagen = false }) {
+export default function AdhdDashboard({ adhdDag, werkTaken, instellingen, onStartFocus, focusMoetVerlagen = false }) {
   const dagdata = useDagdata();
   const { overrides: dagTypeOverrides } = useDagTypeOverrides();
   const [nieuweTaak, setNieuweTaak] = useState('');
@@ -24,7 +24,7 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
   const ochtendEnergie = dagdata.dag.checkin?.energie ?? null;
   const huidigeEnergie = effectieveEnergie(ochtendEnergie, adhdDag.dag.middagEnergie, focusMoetVerlagen);
   const limiet = dagLimiet(huidigeEnergie, instellingen.werkurenPerDag);
-  const openTaken = adhdDag.dag.taken.filter((t) => !t.klaar).length;
+  const openTaken = werkTaken.openstaand.length;
   const takenPct = Math.min(100, Math.round((openTaken / limiet.taken) * 100));
 
   const focusUren = adhdDag.dag.focusMinuten / 60;
@@ -38,7 +38,7 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
     e.preventDefault();
     const tekst = nieuweTaak.trim();
     if (!tekst) return;
-    adhdDag.voegTaakToe(tekst);
+    werkTaken.voegMeerdereToe([tekst]);
     setNieuweTaak('');
   }
 
@@ -107,18 +107,14 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
 
       <div className="card">
         <div className="td-label">Taken vandaag</div>
-        {adhdDag.dag.taken.length === 0 && <p className="of-stap-tekst">Nog geen taken — voeg er hieronder een toe of haal er een uit het klusboek.</p>}
+        {werkTaken.openstaand.length === 0 && <p className="of-stap-tekst">Nog geen open Werktaken — voeg er hieronder een toe of haal er een uit het klusboek.</p>}
         <div className="ad-takenlijst">
-          {adhdDag.dag.taken.map((t) => (
+          {werkTaken.openstaand.map((t) => (
             <div className="ad-taak" key={t.id}>
-              <button className={`ad-taak-check ${t.klaar ? 'gedaan' : ''}`} onClick={() => adhdDag.toggleTaak(t.id)}>
-                {t.klaar ? '✓' : ''}
-              </button>
-              <span className={`ad-taak-tekst ${t.klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
-              {!t.klaar && (
-                <button className="btn btn-g btn-sm" onClick={() => onStartFocus(t.tekst, limiet.blok)}>⏱ Focus</button>
-              )}
-              <button className="ad-taak-verwijder" onClick={() => adhdDag.verwijderTaak(t.id)}>✕</button>
+              <button className="ad-taak-check" onClick={() => werkTaken.toggleKlaar(t.id)}>✓</button>
+              <span className="ad-taak-tekst">{t.tekst}</span>
+              <button className="btn btn-g btn-sm" onClick={() => onStartFocus(t, limiet.blok)}>⏱ Focus</button>
+              <button className="ad-taak-verwijder" onClick={() => werkTaken.verwijder(t.id)}>✕</button>
             </div>
           ))}
         </div>
@@ -143,7 +139,7 @@ export default function AdhdDashboard({ adhdDag, instellingen, onStartFocus, foc
         </div>
         <div className="metric">
           <div className="ml">Afgerond</div>
-          <div className="mv">{adhdDag.dag.taken.filter((t) => t.klaar).length}</div>
+          <div className="mv">{werkTaken.alleTaken.filter((t) => t.afgerondOp === datumKey()).length}</div>
         </div>
         <div className="metric">
           <div className="ml">Pauzes</div>

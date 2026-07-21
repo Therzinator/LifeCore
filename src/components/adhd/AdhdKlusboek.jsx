@@ -2,7 +2,7 @@ import { useState } from 'react';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdKlusboek.css';
 
-export default function AdhdKlusboek({ klusboek, adhdDag, toonToast }) {
+export default function AdhdKlusboek({ klusboek, werkTaken, toonToast }) {
   const [naam, setNaam] = useState('');
   const [minuten, setMinuten] = useState(10);
 
@@ -16,8 +16,8 @@ export default function AdhdKlusboek({ klusboek, adhdDag, toonToast }) {
   }
 
   function naarVandaag(item) {
-    adhdDag.voegTaakToe(item.naam);
-    toonToast(`"${item.naam}" toegevoegd aan vandaag`, 'ok');
+    werkTaken.voegMeerdereToe([item.naam], item.minuten);
+    toonToast(`"${item.naam}" toegevoegd aan Werk-taken`, 'ok');
   }
 
   return (

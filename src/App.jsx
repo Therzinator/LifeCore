@@ -13,7 +13,6 @@ import WelzijnPagina from './components/welzijn/WelzijnPagina.jsx';
 import MindfulnessPagina from './components/mindfulness/MindfulnessPagina.jsx';
 import TrainingPagina from './components/training/TrainingPagina.jsx';
 import CardioPagina from './components/cardio/CardioPagina.jsx';
-import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import WerkPagina from './components/werk/WerkPagina.jsx';
 import ThuisPagina from './components/thuis/ThuisPagina.jsx';
 import ShoppingPagina from './components/shopping/ShoppingPagina.jsx';
@@ -45,8 +44,7 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
     case 'mindfulness': return <MindfulnessPagina toonToast={toonToast} />;
     case 'training': return <TrainingPagina toonToast={toonToast} />;
     case 'cardio': return <CardioPagina toonToast={toonToast} />;
-    case 'adhd': return <AdhdPagina toonToast={toonToast} onNavigeer={setPagina} />;
-    case 'werk': return <WerkPagina toonToast={toonToast} />;
+    case 'werk': return <WerkPagina toonToast={toonToast} onNavigeer={setPagina} />;
     case 'thuis': return <ThuisPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'shopping': return <ShoppingPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'agenda':

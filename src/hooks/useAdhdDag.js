@@ -5,7 +5,6 @@ import { vandaagKey } from '../utils/datum.js';
 function legeDag(datumKey) {
   return nieuwRecord({
     datum: datumKey,
-    taken: [],
     focusMinuten: 0,
     pauzes: 0,
     onderbrekingen: 0,
@@ -29,18 +28,6 @@ export function useAdhdDag() {
       return bijgewerkt;
     });
   }, [datumKey]);
-
-  const voegTaakToe = useCallback((tekst) => {
-    bewaar({ taken: [...dag.taken, { id: `t_${Date.now()}`, tekst, klaar: false }] });
-  }, [bewaar, dag.taken]);
-
-  const toggleTaak = useCallback((id) => {
-    bewaar({ taken: dag.taken.map((t) => (t.id === id ? { ...t, klaar: !t.klaar } : t)) });
-  }, [bewaar, dag.taken]);
-
-  const verwijderTaak = useCallback((id) => {
-    bewaar({ taken: dag.taken.filter((t) => t.id !== id) });
-  }, [bewaar, dag.taken]);
 
   const voegFocusMinutenToe = useCallback((minuten) => {
     setDag((huidig) => {
@@ -86,9 +73,6 @@ export function useAdhdDag() {
 
   return {
     dag,
-    voegTaakToe,
-    toggleTaak,
-    verwijderTaak,
     voegFocusMinutenToe,
     voegPauzeToe,
     voegOnderbrekingToe,

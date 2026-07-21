@@ -1,11 +1,11 @@
-.apg-tabs {
+.wp-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
   margin-bottom: var(--space-md);
 }
 
-.apg-tab {
+.wp-tab {
   flex-shrink: 0;
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -19,8 +19,8 @@
   transition: var(--tx);
   white-space: nowrap;
 }
-.apg-tab:hover { color: var(--txt); }
-.apg-tab.on {
+.wp-tab:hover { color: var(--txt); }
+.wp-tab.on {
   background: var(--accent-dim);
   border-color: var(--accent-mid);
   color: var(--accent);

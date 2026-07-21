@@ -17,7 +17,7 @@ function tijdLabel(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function AdhdFocusTimer({ actieveTaakTekst, blokAdvies, adhdDag, geluidFragment, toonToast }) {
+export default function AdhdFocusTimer({ actieveTaak, blokAdvies, adhdDag, werkTaken, geluidFragment, toonToast }) {
   const [duur, setDuur] = useState(blokAdvies || 25);
   const [checklist, setChecklist] = useState(() => new Set());
   const timer = useRustTimer(geluidFragment);
@@ -31,9 +31,14 @@ export default function AdhdFocusTimer({ actieveTaakTekst, blokAdvies, adhdDag, 
     if (!verwerktRef.current && timer.totaal > 0 && !timer.actief && timer.resterend === 0) {
       verwerktRef.current = true;
       adhdDag.voegFocusMinutenToe(duur);
+      // Focusblok op een echte Werk-taak (heeft een id, i.t.t. vrij starten
+      // zonder gekoppelde taak) markeert die taak meteen als klaar — voorheen
+      // wist de Focus-timer alleen de taak-TEKST, dus moest je 'm na afloop
+      // nog apart afvinken bij Werk. Dat dubbele werk is nu weg.
+      if (actieveTaak?.id) werkTaken.toggleKlaar(actieveTaak.id);
       toonToast(`Focusblok voltooid — ${duur} minuten! Neem een korte pauze.`, 'ok');
     }
-  }, [timer.actief, timer.resterend, timer.totaal, duur, adhdDag, toonToast]);
+  }, [timer.actief, timer.resterend, timer.totaal, duur, adhdDag, werkTaken, actieveTaak, toonToast]);
 
   function toggleChecklist(id) {
     setChecklist((huidig) => {
@@ -57,8 +62,8 @@ export default function AdhdFocusTimer({ actieveTaakTekst, blokAdvies, adhdDag, 
   return (
     <div>
       <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Focus-timer</div>
-      {actieveTaakTekst ? (
-        <p className="of-stap-tekst">🎯 {actieveTaakTekst}</p>
+      {actieveTaak ? (
+        <p className="of-stap-tekst">🎯 {actieveTaak.tekst}</p>
       ) : (
         <p className="of-stap-tekst">Kies een duur en start — kies eventueel eerst een taak op het Dashboard.</p>
       )}

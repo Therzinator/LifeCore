@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SHUTDOWN_ITEMS, stemmingReactie } from '../../lib/adhd/afsluiten.js';
+import { datumKey } from '../../utils/datum.js';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
 import './AdhdAfsluiten.css';
 
@@ -11,11 +12,13 @@ const STEMMING_OPTIES = [
   { id: 'top', label: '😄' },
 ];
 
-export default function AdhdAfsluiten({ adhdDag, toonToast }) {
+export default function AdhdAfsluiten({ adhdDag, werkTaken, toonToast }) {
   const [reflectie, setReflectieLokaal] = useState(adhdDag.dag.reflectie);
   const [morgenPrio, setMorgenPrioLokaal] = useState(adhdDag.dag.morgenPrio);
 
-  const klaar = adhdDag.dag.taken.filter((t) => t.klaar).length;
+  // Telt Werk-taken die vandaag zijn afgerond (afgerondOp, zie useWerkTaken.js)
+  // i.p.v. de vroegere, losse dagelijkse takenlijst van Focus zelf.
+  const klaar = werkTaken.alleTaken.filter((t) => t.afgerondOp === datumKey()).length;
 
   function afronden() {
     adhdDag.setReflectie(reflectie);
