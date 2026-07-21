@@ -103,6 +103,7 @@
   padding: 3px 8px;
 }
 .ag-item-tijd { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); flex-shrink: 0; }
+.ag-item-tijd-geen { font-family: inherit; color: var(--accent); }
 .ag-suggesties { margin-bottom: var(--space-sm); }
 .ag-suggesties-wrap { margin-bottom: var(--space-sm); }
 .ag-suggesties-wrap .bd-inklap-knop { margin-bottom: var(--space-xs); }

@@ -53,18 +53,26 @@ function instantieDatumsVoorBlok(blok, bereikStart, bereikEind) {
   return datums;
 }
 
+// Een blok mag zonder starttijd/eindtijd bestaan — een pure herinnering op
+// een dag, zonder vast tijdstip (zie ThuisPagina.jsx zetStandaardInAgenda:
+// de gebruiker bepaalt zelf of/wanneer die dag een tijd krijgt, i.p.v. dat
+// de app een tijd verzint die toch nooit klopt). Zulke blokken sorteren
+// vóór de tijdgebonden blokken op diezelfde dag (lege string < elke 'HH:MM').
 export function instantiesInBereik(blokken, bereikStart, bereikEind) {
   return blokken
     .flatMap((blok) => instantieDatumsVoorBlok(blok, bereikStart, bereikEind).map((datum) => ({ ...blok, datum })))
-    .sort((a, b) => (a.datum + a.starttijd).localeCompare(b.datum + b.starttijd));
+    .sort((a, b) => (a.datum + (a.starttijd ?? '')).localeCompare(b.datum + (b.starttijd ?? '')));
 }
 
 // Standaard interval-overlap-check op 'HH:MM'-strings — die vergelijken
 // lexicografisch net zo correct als numeriek zolang ze altijd 2 cijfers
 // hebben (zoals overal in dit project). [startA,eindA) overlapt met
 // [startB,eindB) zodra startA vóór eindB ligt EN startB vóór eindA — het
-// standaard-interval-overlap-criterium, geen zelfverzonnen heuristiek.
+// standaard-interval-overlap-criterium, geen zelfverzonnen heuristiek. Een
+// tijdloos blok (starttijd/eindtijd null) heeft geen tijdvak om mee te
+// overlappen — telt dus nooit als conflict.
 function tijdenOverlappen(startA, eindA, startB, eindB) {
+  if (!startA || !eindA || !startB || !eindB) return false;
   return startA < eindB && startB < eindA;
 }
 

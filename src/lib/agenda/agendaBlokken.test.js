@@ -68,6 +68,15 @@ describe('instantiesInBereik', () => {
     const instanties = instantiesInBereik(blokken, '2026-07-01', '2026-07-31');
     expect(instanties.map((i) => i.titel)).toEqual(['Vroeg', 'Laat']);
   });
+
+  it('een tijdloos blok (herinnering) sorteert vóór tijdgebonden blokken op dezelfde dag', () => {
+    const blokken = [
+      { id: 'a', titel: 'Sporten', datum: '2026-07-05', starttijd: '08:00', eindtijd: '09:00', herhaling: null },
+      { id: 'b', titel: 'Kattenbak', datum: '2026-07-05', starttijd: null, eindtijd: null, herhaling: null },
+    ];
+    const instanties = instantiesInBereik(blokken, '2026-07-01', '2026-07-31');
+    expect(instanties.map((i) => i.titel)).toEqual(['Kattenbak', 'Sporten']);
+  });
 });
 
 describe('heeftOverlap', () => {
@@ -102,6 +111,14 @@ describe('heeftOverlap', () => {
       { id: 'b', titel: 'Partnertijd', datum: '2026-07-01', starttijd: '20:00', eindtijd: '21:00', herhaling: 'wekelijks' },
     ];
     expect(heeftOverlap(herhalend, { datum: '2026-07-22', starttijd: '20:30', eindtijd: '21:30' })).toBe(true);
+  });
+
+  it('een tijdloos blok (herinnering, starttijd/eindtijd null) overlapt nooit', () => {
+    const tijdloos = [
+      { id: 'c', titel: 'Kattenbak', datum: '2026-07-15', starttijd: null, eindtijd: null, herhaling: null },
+    ];
+    expect(heeftOverlap(tijdloos, { datum: '2026-07-15', starttijd: '18:00', eindtijd: '19:00' })).toBe(false);
+    expect(heeftOverlap(blokken, { datum: '2026-07-15', starttijd: null, eindtijd: null })).toBe(false);
   });
 });
 

@@ -6,7 +6,6 @@ import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { useOntspullen } from '../../hooks/useOntspullen.js';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { cyclusStartDatum } from '../../lib/werk/huishoudPeriode.js';
-import { pasTijdAan } from '../../lib/agenda/agendaBlokken.js';
 import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import HuishoudTaken from '../werk/HuishoudTaken.jsx';
 import TuinTaken from './TuinTaken.jsx';
@@ -47,6 +46,12 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
     blokken.blokken.filter((b) => b.herhaling?.type === 'interval' && b.bronId).map((b) => b.bronId),
   );
 
+  // Bewust geen starttijd/eindtijd — de app kan niet weten wanneer een
+  // klus als 'Kattenbak' of 'Toilet schoonmaken' de gebruiker uitkomt, dus
+  // verzint ze er geen tijd bij. Het blok verschijnt als tijdloze
+  // herinnering op zijn cyclusdag (zie ag-item-tijd-geen in AgendaDag.jsx/
+  // AgendaWeek.jsx); wie 'm toch op een vast moment wil, geeft die zelf op
+  // via het ✏️-bewerken-icoon in de Agenda.
   function zetStandaardInAgenda(taak, aan) {
     const bestaandBlok = blokken.blokken.find((b) => b.bronId === taak.id && b.herhaling?.type === 'interval');
     if (!aan) {
@@ -54,11 +59,9 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
       return;
     }
     if (bestaandBlok) return;
-    const duur = (taak.geschatteUren ?? 0.5) * 60;
-    const starttijd = '10:00';
     blokken.voegToe({
       titel: taak.tekst, type: 'huishouden', datum: cyclusStartDatum(taak.intervalDagen),
-      starttijd, eindtijd: pasTijdAan(starttijd, duur),
+      starttijd: null, eindtijd: null,
       herhaling: { type: 'interval', dagen: taak.intervalDagen }, bronId: taak.id,
     });
   }

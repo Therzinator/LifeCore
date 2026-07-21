@@ -23,7 +23,11 @@ export default function AgendaWeek({ datums, blokInstanties, signalen, onKiesDag
             <div className="ag-week-dag-kop">{datumLabelKort(datum)}</div>
             <div className="ag-week-dag-items">
               {dagSignalen.map((s) => <span key={s.id} className="ag-week-item">{TYPE_ICOON[s.type] ?? '•'} {s.tekst}</span>)}
-              {dagBlokken.map((b) => <span key={`${b.id}-${b.datum}`} className="ag-week-item">{b.starttijd} {TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>)}
+              {dagBlokken.map((b) => (
+                <span key={`${b.id}-${b.datum}`} className="ag-week-item">
+                  {b.starttijd ? `${b.starttijd} ` : '🔔 '}{TYPE_ICOON[b.type] ?? '•'} {b.titel}
+                </span>
+              ))}
               {dagBlokken.length === 0 && dagSignalen.length === 0 && <span className="ag-week-leeg">—</span>}
             </div>
           </button>

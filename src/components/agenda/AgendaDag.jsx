@@ -205,7 +205,11 @@ export default function AgendaDag({
                 <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
               </div>
               <div className="ag-blok-acties-rij">
-                <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                {b.starttijd ? (
+                  <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                ) : (
+                  <span className="ag-item-tijd ag-item-tijd-geen">🔔 herinnering</span>
+                )}
                 {onToggleAfgerond && (
                   <button
                     className={`btn btn-sm ${isAfgerond ? 'btn-p' : 'btn-g'}`}

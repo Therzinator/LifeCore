@@ -38,7 +38,14 @@ export default function AgendaBlokForm({ initieleDatum, bewerkBlok, valideer, on
   const [datum, setDatum] = useState(bewerkBlok?.datum ?? initieleDatum);
   const [starttijd, setStarttijd] = useState(bewerkBlok?.starttijd ?? '18:00');
   const [eindtijd, setEindtijd] = useState(bewerkBlok?.eindtijd ?? '19:00');
-  const [herhaling, setHerhaling] = useState(Boolean(bewerkBlok?.herhaling));
+  // Een blok met een eigen-interval-herhaling (bv. via de 'Altijd in
+  // agenda'-toggle bij Thuis → Huishouden, zie ThuisPagina.jsx) beheert zijn
+  // herhaling niet via dit formulier — de wekelijks-checkbox hieronder gaat
+  // daar dus niet over. Zonder deze uitzondering zou simpelweg openen en
+  // opslaan (bv. om alsnog een tijd toe te voegen) de herhaling stilzwijgend
+  // terugzetten naar 'wekelijks' en het eigen interval kwijtraken.
+  const heeftEigenIntervalHerhaling = bewerkBlok?.herhaling?.type === 'interval';
+  const [herhaling, setHerhaling] = useState(bewerkBlok?.herhaling === 'wekelijks');
   const [fout, setFout] = useState(null);
 
   function wijzigStarttijd(nieuweStarttijd) {
@@ -49,7 +56,8 @@ export default function AgendaBlokForm({ initieleDatum, bewerkBlok, valideer, on
   function submit(e) {
     e.preventDefault();
     if (!titel.trim()) return;
-    const blok = { titel: titel.trim(), type, datum, starttijd, eindtijd, herhaling: herhaling ? 'wekelijks' : null };
+    const nieuweHerhaling = heeftEigenIntervalHerhaling ? bewerkBlok.herhaling : (herhaling ? 'wekelijks' : null);
+    const blok = { titel: titel.trim(), type, datum, starttijd, eindtijd, herhaling: nieuweHerhaling };
     const foutmelding = valideer?.(blok) ?? null;
     if (foutmelding) { setFout(foutmelding); return; }
     setFout(null);
@@ -113,10 +121,17 @@ export default function AgendaBlokForm({ initieleDatum, bewerkBlok, valideer, on
         </div>
       </div>
 
-      <label className="ag-herhaling-rij">
-        <input type="checkbox" checked={herhaling} onChange={(e) => setHerhaling(e.target.checked)} />
-        <span>Herhaalt wekelijks</span>
-      </label>
+      {heeftEigenIntervalHerhaling ? (
+        <p className="ti-hint">
+          Herhaalt elke {bewerkBlok.herhaling.dagen} dagen — zet dat uit via de &quot;Altijd in agenda&quot;-toggel
+          bij Thuis → Huishouden, niet hier.
+        </p>
+      ) : (
+        <label className="ag-herhaling-rij">
+          <input type="checkbox" checked={herhaling} onChange={(e) => setHerhaling(e.target.checked)} />
+          <span>Herhaalt wekelijks</span>
+        </label>
+      )}
 
       {fout && <p className="is-fout">{fout}</p>}
 
