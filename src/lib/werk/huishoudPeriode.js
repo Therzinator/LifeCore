@@ -32,6 +32,17 @@ export function huidigePeriodeKey(frequentie, nu = new Date(), intervalDagen = n
   return maandagVan(nu);
 }
 
+// Eerste dag van de huidige cyclus van een 'aangepast'-interval-taak, als
+// datumKey-string — dezelfde epoch-verankerde cyclusgrens als aangepastKey
+// hierboven. Gebruikt om een 'standaard in agenda'-herhalend blok (zie
+// ThuisPagina.jsx) exact op dezelfde dagen te laten vallen als het
+// cyclus-signaal in agendaSignalen.js (huishoudTaakSignalen).
+export function cyclusStartDatum(intervalDagen, nu = new Date()) {
+  const dagenSindsEpoch = Math.floor(nu.getTime() / (1000 * 60 * 60 * 24));
+  const cyclusStartDagen = Math.floor(dagenSindsEpoch / intervalDagen) * intervalDagen;
+  return datumKey(new Date(cyclusStartDagen * 1000 * 60 * 60 * 24));
+}
+
 // Percentage afgerond voor de huidige periode (deze week/maand) — voor de
 // checklist-graad in de Huishouden-tab zelf.
 export function percentageAfgerond(taken, log, frequentie, nu = new Date()) {

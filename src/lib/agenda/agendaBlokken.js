@@ -12,12 +12,24 @@ export function pasTijdAan(tijd, deltaMinuten) {
   return `${nieuwUur}:${nieuwMinuut}`;
 }
 
+// Herhaling was ooit alleen de string 'wekelijks' (elke 7 dagen) — nu ook
+// { type: 'interval', dagen: N } voor een willekeurig dagen-interval (bv.
+// 'standaard in agenda' voor een huishoudtaak met een eigen interval, zie
+// ThuisPagina.jsx). De bare string blijft ondersteund zodat bestaande,
+// eerder opgeslagen wekelijkse blokken ongewijzigd blijven werken.
+function intervalDagenVoorHerhaling(herhaling) {
+  if (herhaling === 'wekelijks') return 7;
+  if (herhaling?.type === 'interval' && herhaling.dagen > 0) return herhaling.dagen;
+  return null;
+}
+
 // Zet lokale planningsblokken om naar concrete data-instanties binnen een
-// gegeven bereik — een blok met herhaling: 'wekelijks' is één opgeslagen
-// record, maar levert meerdere zichtbare instanties op (één per week).
+// gegeven bereik — een herhalend blok is één opgeslagen record, maar
+// levert meerdere zichtbare instanties op (één per interval-stap).
 // Bereikgrenzen zijn 'YYYY-MM-DD'-strings (inclusief).
 function instantieDatumsVoorBlok(blok, bereikStart, bereikEind) {
-  if (!blok.herhaling) {
+  const intervalDagen = intervalDagenVoorHerhaling(blok.herhaling);
+  if (!intervalDagen) {
     return (blok.datum >= bereikStart && blok.datum <= bereikEind) ? [blok.datum] : [];
   }
 
@@ -28,15 +40,15 @@ function instantieDatumsVoorBlok(blok, bereikStart, bereikEind) {
   let cursor = new Date(basis);
   if (cursor < start) {
     const dagenVerschil = Math.floor((start - basis) / (1000 * 60 * 60 * 24));
-    const wekenVerschil = Math.ceil(dagenVerschil / 7);
+    const stappenVerschil = Math.ceil(dagenVerschil / intervalDagen);
     cursor = new Date(basis);
-    cursor.setDate(cursor.getDate() + wekenVerschil * 7);
+    cursor.setDate(cursor.getDate() + stappenVerschil * intervalDagen);
   }
 
   const datums = [];
   while (cursor <= eind) {
     datums.push(datumKey(cursor));
-    cursor.setDate(cursor.getDate() + 7);
+    cursor.setDate(cursor.getDate() + intervalDagen);
   }
   return datums;
 }

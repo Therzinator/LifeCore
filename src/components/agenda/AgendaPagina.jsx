@@ -78,8 +78,21 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   // crashten de hele pagina (zie kluslijstGedeeld.js).
   const huishoudProjecten = useHuishoudProjecten(huishoudenId);
   const huishoudTaken = useHuishoudTaken(huishoudenId);
+  // Een taak met een actief 'standaard in agenda'-herhalend blok (zie
+  // ThuisPagina.jsx zetStandaardInAgenda) krijgt geen los cyclus-signaal
+  // meer — die dagen tonen dan al een echt gepland blok, een dubbel stipje
+  // zou verwarrend zijn. Filtert alleen taken met een écht herhalend blok
+  // (herhaling.type === 'interval') eruit, geen eenmalig via-suggestie
+  // toegevoegde blokken (die gelden maar voor één cyclus).
+  const taakIdsMetVasteAgenda = new Set(
+    blokken.blokken.filter((b) => b.herhaling?.type === 'interval' && b.bronId).map((b) => b.bronId),
+  );
+  const huishoudTakenVoorSignalen = {
+    ...huishoudTaken,
+    taken: huishoudTaken.taken.filter((t) => !taakIdsMetVasteAgenda.has(t.id)),
+  };
   const { signalen } = useAgendaSignalen(
-    bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten, huishoudTaken,
+    bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten, huishoudTakenVoorSignalen,
   );
 
   // Een suggestie die al als blok is toegevoegd (bronId, zie hieronder) mag

@@ -6,7 +6,9 @@ import './HuishoudTaken.css';
 
 const DAGLABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
-export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) {
+export default function HuishoudTaken({
+  huishoudTaken, weekschema, toonToast, standaardInAgendaIds = new Set(), onZetStandaardInAgenda,
+}) {
   const [invoer, setInvoer] = useState('');
   const [frequentie, setFrequentie] = useState('week');
   const [intervalDagen, setIntervalDagen] = useState(10);
@@ -204,32 +206,44 @@ export default function HuishoudTaken({ huishoudTaken, weekschema, toonToast }) 
           {aangepasteTaken.map((t) => {
             const klaar = Boolean(huishoudTaken.log[t.id]?.[huidigePeriodeKey('aangepast', new Date(), t.intervalDagen)]);
             return (
-              <div className="hh-item" key={t.id}>
-                <button
-                  className={`hh-check ${klaar ? 'gedaan' : ''}`}
-                  onClick={() => huishoudTaken.toggleDezePeriode(t.id, 'aangepast', t.intervalDagen)}
-                >
-                  {klaar ? '✓' : ''}
-                </button>
-                <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>
-                  {t.tekst}
-                  <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
-                </span>
-                <span className="hhp-uren-rij">
-                  <input
-                    type="number"
-                    className="hhp-uren-invoer"
-                    min="0.25"
-                    step="0.25"
-                    value={t.geschatteUren}
-                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
-                    aria-label={`Geschatte tijd voor ${t.tekst}`}
-                  />u
-                </span>
-                <button
-                  className="hh-verwijder"
-                  onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
-                >✕</button>
+              <div className="hht-item" key={t.id}>
+                <div className="hht-item-rij">
+                  <button
+                    className={`hh-check ${klaar ? 'gedaan' : ''}`}
+                    onClick={() => huishoudTaken.toggleDezePeriode(t.id, 'aangepast', t.intervalDagen)}
+                  >
+                    {klaar ? '✓' : ''}
+                  </button>
+                  <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>
+                    {t.tekst}
+                    <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
+                  </span>
+                  <span className="hhp-uren-rij">
+                    <input
+                      type="number"
+                      className="hhp-uren-invoer"
+                      min="0.25"
+                      step="0.25"
+                      value={t.geschatteUren}
+                      onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                      aria-label={`Geschatte tijd voor ${t.tekst}`}
+                    />u
+                  </span>
+                  <button
+                    className="hh-verwijder"
+                    onClick={() => { if (window.confirm(`"${t.tekst}" verwijderen?`)) huishoudTaken.verwijder(t.id); }}
+                  >✕</button>
+                </div>
+                {onZetStandaardInAgenda && (
+                  <label className="hht-toggle-rij">
+                    <input
+                      type="checkbox"
+                      checked={standaardInAgendaIds.has(t.id)}
+                      onChange={(e) => onZetStandaardInAgenda(t, e.target.checked)}
+                    />
+                    Altijd in agenda (herhalend blok, elke {t.intervalDagen} dagen om 10:00 — later aanpasbaar)
+                  </label>
+                )}
               </div>
             );
           })}

@@ -68,3 +68,16 @@
   border-bottom: 1px solid var(--border);
 }
 .hhw-item:last-child { border-bottom: none; }
+
+.hht-item { display: flex; flex-direction: column; gap: 4px; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+.hht-item:last-child { border-bottom: none; }
+.hht-item-rij { display: flex; align-items: center; gap: var(--space-sm); }
+.hht-toggle-rij {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  cursor: pointer;
+  padding-left: 32px;
+}

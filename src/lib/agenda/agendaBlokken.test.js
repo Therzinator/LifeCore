@@ -42,6 +42,24 @@ describe('instantiesInBereik', () => {
     expect(instanties.map((i) => i.datum)).toEqual(['2026-07-01', '2026-07-08']);
   });
 
+  it('genereert een willekeurig dagen-interval (herhaling.type === "interval")', () => {
+    const blokken = [{
+      id: 'a', titel: 'Kattenbak', datum: '2026-07-01', starttijd: '10:00', eindtijd: '10:15',
+      herhaling: { type: 'interval', dagen: 3 },
+    }];
+    const instanties = instantiesInBereik(blokken, '2026-07-01', '2026-07-10');
+    expect(instanties.map((i) => i.datum)).toEqual(['2026-07-01', '2026-07-04', '2026-07-07', '2026-07-10']);
+  });
+
+  it('start een dagen-interval-herhaling correct als het bereik ná de eerste instantie begint', () => {
+    const blokken = [{
+      id: 'a', titel: 'Kattenbak', datum: '2026-07-01', starttijd: '10:00', eindtijd: '10:15',
+      herhaling: { type: 'interval', dagen: 3 },
+    }];
+    const instanties = instantiesInBereik(blokken, '2026-07-05', '2026-07-10');
+    expect(instanties.map((i) => i.datum)).toEqual(['2026-07-07', '2026-07-10']);
+  });
+
   it('sorteert instanties chronologisch, ook over meerdere blokken heen', () => {
     const blokken = [
       { id: 'a', titel: 'Laat', datum: '2026-07-05', starttijd: '20:00', eindtijd: '21:00', herhaling: null },
