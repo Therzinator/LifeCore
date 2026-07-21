@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAgendaBlokken } from '../../hooks/useAgendaBlokken.js';
 import { useAgendaSignalen } from '../../hooks/useAgendaSignalen.js';
+import { useAgendaInstellingen } from '../../hooks/useAgendaInstellingen.js';
 import { useDagTypeOverrides } from '../../hooks/useDagTypeOverrides.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useHuishoudTaken } from '../../hooks/useHuishoudTaken.js';
 import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { isGeblokkeerd, alleItemsVanProject } from '../../lib/werk/projectVerdeling.js';
 import {
-  instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd,
+  instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd, volgendeVrijeTijdInVenster,
 } from '../../lib/agenda/agendaBlokken.js';
 import { takenVoorDag } from '../../lib/werk/huishoudWeekschema.js';
 import { huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
@@ -17,7 +18,9 @@ import AgendaMaand from './AgendaMaand.jsx';
 import AgendaWeek from './AgendaWeek.jsx';
 import AgendaDag from './AgendaDag.jsx';
 import AgendaBlokForm from './AgendaBlokForm.jsx';
+import AgendaInstellingen from './AgendaInstellingen.jsx';
 import Modal from '../ui/Modal.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import './AgendaPagina.css';
 
@@ -62,6 +65,7 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   }, []);
 
   const blokken = useAgendaBlokken();
+  const agendaInstellingen = useAgendaInstellingen();
   const { overrides: dagTypeOverrides, zetOverride: zetDagTypeOverride } = useDagTypeOverrides();
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
@@ -156,14 +160,27 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
 
   const openHuishoudTaken = [...openWekelijkseTaken, ...openAangepasteTaken, ...openMaandelijkseTaken];
 
-  // Suggesties hebben allemaal dezelfde 'gewenste' standaardtijd (10:00) —
-  // volgendeVrijeTijd schuift automatisch door naar het eerstvolgende vrije
-  // tijdvak i.p.v. de tweede/derde suggestie op dezelfde dag te blokkeren
-  // (zie agendaBlokken.js). De gebruiker past de exacte tijd zo nodig
+  // Suggesties (Kluslijst/huishouden/mediteren) laten de gebruiker een
+  // dagdeel kiezen (zie useAgendaInstellingen.js) i.p.v. altijd om 10:00 te
+  // beginnen — binnen dat venster wordt het eerstvolgende vrije tijdvak
+  // gezocht (agendaBlokken.js volgendeVrijeTijdInVenster). Zit het venster
+  // die dag al vol, dan volgt een waarschuwing i.p.v. stilzwijgend buiten
+  // het dagdeel te plannen; de gebruiker past de exacte tijd zo nodig
   // handmatig aan via het ✏️-bewerken-icoon.
-  function voegKlusjeAlsBlokToe(klusje) {
+  const DAGDEEL_KEY = { ochtend: 'dagdeelOchtend', middag: 'dagdeelMiddag', avond: 'dagdeelAvond' };
+  function vindStarttijdInDagdeel(dagdeel, duurMinuten) {
+    const venster = agendaInstellingen.instellingen[DAGDEEL_KEY[dagdeel]];
+    const starttijd = volgendeVrijeTijdInVenster(blokken.blokken, referentieDatum, venster, duurMinuten);
+    if (!starttijd) {
+      toonToast(`Geen vrije tijd meer in het dagdeel ${venster.start}–${venster.eind} — kies een ander dagdeel of pas 'm handmatig in.`, 'wn');
+    }
+    return starttijd;
+  }
+
+  function voegKlusjeAlsBlokToe(klusje, dagdeel) {
     const duur = klusje.geschatteUren * 60;
-    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', duur);
+    const starttijd = vindStarttijdInDagdeel(dagdeel, duur);
+    if (!starttijd) return;
     const eindtijd = pasTijdAan(starttijd, duur);
     blokken.voegToe({
       titel: `${klusje.projectNaam}: ${klusje.tekst}`, type: 'klusjes', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: klusje.id,
@@ -191,11 +208,12 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   }
 
   // Huishoudtaak-suggestie als blok inplannen — duur uit de taak zelf
-  // (geschatteUren, zie huishoud_taken-migratie 0017), start standaard om
-  // 10:00, schuift automatisch door bij een bezette tijd (zie hierboven).
-  function voegHuishoudTaakAlsBlokToe(taak) {
+  // (geschatteUren, zie huishoud_taken-migratie 0017), binnen het gekozen
+  // dagdeel (zie hierboven).
+  function voegHuishoudTaakAlsBlokToe(taak, dagdeel) {
     const duur = (taak.geschatteUren ?? 0.5) * 60;
-    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', duur);
+    const starttijd = vindStarttijdInDagdeel(dagdeel, duur);
+    if (!starttijd) return;
     const eindtijd = pasTijdAan(starttijd, duur);
     blokken.voegToe({
       titel: taak.tekst, type: 'huishouden', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: taak.id,
@@ -211,8 +229,9 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   const meditatieBronId = `meditatie_${referentieDatum}`;
   const toonMeditatieSuggestie = !isAlToegevoegd(meditatieBronId);
 
-  function voegMeditatieAlsBlokToe() {
-    const starttijd = volgendeVrijeTijd(blokken.blokken, referentieDatum, '10:00', 10);
+  function voegMeditatieAlsBlokToe(dagdeel) {
+    const starttijd = vindStarttijdInDagdeel(dagdeel, 10);
+    if (!starttijd) return;
     const eindtijd = pasTijdAan(starttijd, 10);
     blokken.voegToe({
       titel: 'Mediteren', type: 'ontspanning', datum: referentieDatum, starttijd, eindtijd, herhaling: null, bronId: meditatieBronId,
@@ -296,7 +315,12 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
 
   return (
     <div className="of-wrap">
-      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Agenda</div>
+      <div className="mik-kop-rij">
+        <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)', flex: 1 }}>Agenda</div>
+        <ModuleInstellingenKnop titel="Agenda-instellingen">
+          <AgendaInstellingen instellingen={agendaInstellingen.instellingen} bewaar={agendaInstellingen.bewaar} />
+        </ModuleInstellingenKnop>
+      </div>
       <p className="of-stap-tekst">
         Eén overzicht van je afspraken, geplande rust-/sport-/sociale tijd, en signalen uit andere modules —
         vervangt geen enkele module-instelling, toont ze alleen samen.
@@ -334,6 +358,7 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
             onNieuwBlok={nieuwBlokFormOpenen}
             dagTypeOverride={dagTypeOverrides[referentieDatum] ?? null}
             onZetDagTypeOverride={zetDagTypeOverride}
+            dagdelen={agendaInstellingen.instellingen}
             openKlusjes={openKlusjes}
             onVoegKlusjeToe={voegKlusjeAlsBlokToe}
             onVoegTrainingToe={voegTrainingAlsBlokToe}

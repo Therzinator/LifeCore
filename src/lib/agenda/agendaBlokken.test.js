@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd } from './agendaBlokken.js';
+import {
+  instantiesInBereik, pasTijdAan, heeftOverlap, volgendeVrijeTijd, volgendeVrijeTijdInVenster,
+} from './agendaBlokken.js';
 
 describe('pasTijdAan', () => {
   it('telt minuten op binnen een etmaal', () => {
@@ -106,5 +108,30 @@ describe('volgendeVrijeTijd', () => {
   it('houdt geen rekening met blokken op een andere datum', () => {
     const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-16', starttijd: '10:00', eindtijd: '10:30', herhaling: null }];
     expect(volgendeVrijeTijd(blokken, '2026-07-15', '10:00', 30)).toBe('10:00');
+  });
+});
+
+describe('volgendeVrijeTijdInVenster', () => {
+  const venster = { start: '09:00', eind: '12:00' };
+
+  it('geeft het begin van het venster terug als dat vrij is', () => {
+    expect(volgendeVrijeTijdInVenster([], '2026-07-15', venster, 30)).toBe('09:00');
+  });
+
+  it('schuift binnen het venster door naar de eerstvolgende vrije tijd', () => {
+    const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-15', starttijd: '09:00', eindtijd: '09:30', herhaling: null }];
+    expect(volgendeVrijeTijdInVenster(blokken, '2026-07-15', venster, 30)).toBe('09:30');
+  });
+
+  it('geeft null terug als er geen ruimte meer in het venster past', () => {
+    const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-15', starttijd: '09:00', eindtijd: '11:45', herhaling: null }];
+    // Nog 15 min vrij (11:45-12:00), maar de gevraagde duur (30 min) past er niet meer in.
+    expect(volgendeVrijeTijdInVenster(blokken, '2026-07-15', venster, 30)).toBeNull();
+  });
+
+  it('schuift nooit voorbij het einde van het venster, ook niet met wrap-around', () => {
+    const avondVenster = { start: '19:00', eind: '21:30' };
+    const blokken = [{ id: 'a', titel: 'Bestaand', datum: '2026-07-15', starttijd: '19:00', eindtijd: '21:30', herhaling: null }];
+    expect(volgendeVrijeTijdInVenster(blokken, '2026-07-15', avondVenster, 30)).toBeNull();
   });
 });

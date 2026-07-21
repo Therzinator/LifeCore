@@ -86,3 +86,21 @@ export function volgendeVrijeTijd(blokken, datum, gewensteStarttijd, duurMinuten
   }
   return gewensteStarttijd;
 }
+
+// Zoekt, net als volgendeVrijeTijd hierboven, het eerstvolgende vrije
+// tijdvak — maar begrensd tot een dagdeel-venster (bv. 09:00–12:00 i.p.v.
+// een vaste standaardtijd die desnoods een volle dag doorschuift). Gebruikt
+// door de dagdeel-keuzeknoppen bij de Agenda-suggesties (zie
+// useAgendaInstellingen.js). Geeft null terug als het venster vol zit i.p.v.
+// (zoals volgendeVrijeTijd) buiten het venster te schuiven — de suggestie
+// hoort dan niet stilzwijgend op een ander dagdeel te belanden.
+export function volgendeVrijeTijdInVenster(blokken, datum, venster, duurMinuten, stapMinuten = 15) {
+  let starttijd = venster.start;
+  const maxPogingen = Math.ceil((24 * 60) / stapMinuten);
+  for (let i = 0; i < maxPogingen && starttijd < venster.eind; i += 1) {
+    const eindtijd = pasTijdAan(starttijd, duurMinuten);
+    if (eindtijd <= venster.eind && !heeftOverlap(blokken, { datum, starttijd, eindtijd })) return starttijd;
+    starttijd = pasTijdAan(starttijd, stapMinuten);
+  }
+  return null;
+}

@@ -12,9 +12,35 @@ const DAGTYPE_OPTIES = [
   { waarde: 'klusjesdag', label: 'Klusjes-dag' },
 ];
 
+const DAGDEEL_OPTIES = [
+  { sleutel: 'ochtend', key: 'dagdeelOchtend', label: 'Ochtend' },
+  { sleutel: 'middag', key: 'dagdeelMiddag', label: 'Middag' },
+  { sleutel: 'avond', key: 'dagdeelAvond', label: 'Avond' },
+];
+
+// Vervangt de vroegere losse '+ Toevoegen'-knop bij Kluslijst-/huishoud-/
+// mediteer-suggesties — laat de gebruiker eerst een dagdeel kiezen (zie
+// useAgendaInstellingen.js), de exacte tijd binnen dat venster wordt
+// automatisch gezocht (AgendaPagina.jsx vindStarttijdInDagdeel).
+function DagdeelKnoppen({ dagdelen, onKies }) {
+  return (
+    <div className="ti-rij">
+      {DAGDEEL_OPTIES.map((optie) => (
+        <button
+          key={optie.sleutel}
+          type="button"
+          className="btn btn-g btn-sm"
+          style={{ flex: 1 }}
+          onClick={() => onKies(optie.sleutel)}
+        >{optie.label} · {dagdelen[optie.key].start}</button>
+      ))}
+    </div>
+  );
+}
+
 export default function AgendaDag({
   datum, blokInstanties, signalen, onVerwijderBlok, onBewerkBlok, onNieuwBlok, dagTypeOverride, onZetDagTypeOverride,
-  afgerondLog = {}, onToggleAfgerond,
+  afgerondLog = {}, onToggleAfgerond, dagdelen,
   openKlusjes = [], onVoegKlusjeToe, onVoegTrainingToe,
   openHuishoudTaken = [], onVoegHuishoudTaakToe,
   toonMeditatieSuggestie = false, onVoegMeditatieToe,
@@ -79,9 +105,9 @@ export default function AgendaDag({
                   <div className="ti-lbl">Moment voor jezelf</div>
                   <p className="ti-hint">Nog geen rustmoment gepland vandaag — een korte meditatie kan helpen bij piekeren.</p>
                   <div className="hh-lijst">
-                    <div className="hh-item">
+                    <div className="ag-sugg-item">
                       <span className="hh-tekst">🧘 Mediteren</span>
-                      <button className="btn btn-g btn-sm" onClick={onVoegMeditatieToe}>+ Toevoegen</button>
+                      <DagdeelKnoppen dagdelen={dagdelen} onKies={onVoegMeditatieToe} />
                     </div>
                   </div>
                 </div>
@@ -138,10 +164,12 @@ export default function AgendaDag({
                   </p>
                   <div className="hh-lijst">
                     {openKlusjes.map((k) => (
-                      <div className="hh-item" key={k.id}>
-                        <span className="hh-tekst">{k.projectNaam}: {k.tekst}</span>
-                        <span className="hhp-uren-val">{k.geschatteUren}u</span>
-                        <button className="btn btn-g btn-sm" onClick={() => onVoegKlusjeToe(k)}>+ Toevoegen</button>
+                      <div className="ag-sugg-item" key={k.id}>
+                        <div className="ag-sugg-item-kop">
+                          <span className="hh-tekst">{k.projectNaam}: {k.tekst}</span>
+                          <span className="hhp-uren-val">{k.geschatteUren}u</span>
+                        </div>
+                        <DagdeelKnoppen dagdelen={dagdelen} onKies={(dagdeel) => onVoegKlusjeToe(k, dagdeel)} />
                       </div>
                     ))}
                   </div>
@@ -154,9 +182,9 @@ export default function AgendaDag({
                   <p className="ti-hint">Nog te doen deze periode — plan een moment in of vink &apos;m af bij Thuis → Huishouden.</p>
                   <div className="hh-lijst">
                     {openHuishoudTaken.map((t) => (
-                      <div className="hh-item" key={t.id}>
+                      <div className="ag-sugg-item" key={t.id}>
                         <span className="hh-tekst">🧹 {t.tekst}</span>
-                        <button className="btn btn-g btn-sm" onClick={() => onVoegHuishoudTaakToe(t)}>+ Toevoegen</button>
+                        <DagdeelKnoppen dagdelen={dagdelen} onKies={(dagdeel) => onVoegHuishoudTaakToe(t, dagdeel)} />
                       </div>
                     ))}
                   </div>

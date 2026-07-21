@@ -108,6 +108,14 @@
 .ag-suggesties-wrap .bd-inklap-knop { margin-bottom: var(--space-xs); }
 .ag-suggesties-wrap .ag-suggesties:last-child { margin-bottom: 0; }
 
+/* Suggestie-item met dagdeel-keuzeknoppen (Kluslijst/huishouden/mediteren)
+   — tekst + eventuele metadata bovenaan, de 3 dagdeel-knoppen (DagdeelKnoppen,
+   AgendaDag.jsx) daaronder. Een rij (zoals .hh-item) is te smal voor tekst +
+   3 knoppen naast elkaar op mobiel. */
+.ag-sugg-item { display: flex; flex-direction: column; gap: var(--space-xs); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border); }
+.ag-sugg-item:last-child { border-bottom: none; }
+.ag-sugg-item-kop { display: flex; align-items: center; gap: var(--space-sm); }
+
 /* Geplande blokken (dagweergave): icoon+titel op de bovenste regel, tijd +
    acties (Start sessie/bewerken/verwijderen) op de regel(s) daaronder — op
    smalle schermen perste dat voorheen allemaal op één rij, wat de titel tot
