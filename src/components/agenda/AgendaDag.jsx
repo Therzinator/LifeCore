@@ -147,7 +147,7 @@ export default function AgendaDag({
               {openHuishoudTaken.length > 0 && (
                 <div className="ag-suggesties">
                   <div className="ti-lbl">Huishouden vandaag</div>
-                  <p className="ti-hint">Uit het weekschema — plan een moment in of vink &apos;m af bij Thuis → Huishouden.</p>
+                  <p className="ti-hint">Nog te doen deze periode — plan een moment in of vink &apos;m af bij Thuis → Huishouden.</p>
                   <div className="hh-lijst">
                     {openHuishoudTaken.map((t) => (
                       <div className="hh-item" key={t.id}>

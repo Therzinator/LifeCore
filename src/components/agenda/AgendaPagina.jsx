@@ -127,9 +127,22 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   // één suggestie per dag, en als die specifieke klus die dag net niet
   // uitkomt, blijft er niets over om de Agenda mee te vullen (zie ook
   // HuishoudTaken.jsx). Vandaag-toegewezen taken staan voorop.
-  const openHuishoudTaken = wekelijkseTaken
+  const openWekelijkseTaken = wekelijkseTaken
     .filter((t) => !huishoudTaken.log[t.id]?.[huidigePeriode] && !isAlToegevoegd(t.id))
     .sort((a, b) => Number(vandaagToegewezenIds.has(b.id)) - Number(vandaagToegewezenIds.has(a.id)));
+
+  // Taken met een eigen interval (bv. 'elke 3 dagen') hebben geen
+  // weekschema-dag — ze staan de hele cyclus lang open (zie HuishoudTaken.jsx)
+  // en werden hierdoor nooit in de Agenda gesuggereerd. Zelfde aanpak als
+  // hierboven: zolang de huidige cyclus nog niet is afgevinkt, blijft de taak
+  // als suggestie verschijnen.
+  const aangepasteTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'aangepast' && t.intervalDagen > 0);
+  const openAangepasteTaken = aangepasteTaken.filter((t) => {
+    const periode = huidigePeriodeKey('aangepast', new Date(referentieDatum), t.intervalDagen);
+    return !huishoudTaken.log[t.id]?.[periode] && !isAlToegevoegd(t.id);
+  });
+
+  const openHuishoudTaken = [...openWekelijkseTaken, ...openAangepasteTaken];
 
   // Suggesties hebben allemaal dezelfde 'gewenste' standaardtijd (10:00) —
   // volgendeVrijeTijd schuift automatisch door naar het eerstvolgende vrije
