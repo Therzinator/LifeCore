@@ -32,7 +32,7 @@ function DagdeelKnoppen({ dagdelen, onKies }) {
           className="btn btn-g btn-sm"
           style={{ flex: 1 }}
           onClick={() => onKies(optie.sleutel)}
-        >{optie.label} · {dagdelen[optie.key].start}</button>
+        >{optie.label} · {dagdelen[optie.key].start}–{dagdelen[optie.key].eind}</button>
       ))}
     </div>
   );
@@ -52,7 +52,10 @@ export default function AgendaDag({
   // krijgen.
   const [toonSuggesties, setToonSuggesties] = useState(false);
 
-  const dagBlokken = blokInstanties.filter((b) => b.datum === datum).sort((a, b) => a.starttijd.localeCompare(b.starttijd));
+  // Tijdloze herinneringen (starttijd null, zie agendaBlokken.js) sorteren
+  // vóór tijdgebonden blokken — zelfde volgorde als instantiesInBereik.
+  const dagBlokken = blokInstanties.filter((b) => b.datum === datum)
+    .sort((a, b) => (a.starttijd ?? '').localeCompare(b.starttijd ?? ''));
   const dagSignalen = signalen.filter((s) => s.datum === datum);
   const isKlusjesDag = dagSignalen.some((s) => s.type === 'klusjesdag');
   // Al ingepland (bronId, zie AgendaPagina) -> niet nog een keer voorstellen

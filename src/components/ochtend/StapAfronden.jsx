@@ -17,7 +17,7 @@ export default function StapAfronden({ dagdata, toonToast }) {
   const vandaag = datumKey();
   const blokkenVandaag = instantiesInBereik(blokken, vandaag, vandaag)
     .filter((b) => b.datum === vandaag)
-    .sort((a, b) => a.starttijd.localeCompare(b.starttijd));
+    .sort((a, b) => (a.starttijd ?? '').localeCompare(b.starttijd ?? ''));
 
   return (
     <div>
@@ -37,7 +37,11 @@ export default function StapAfronden({ dagdata, toonToast }) {
                   <span className="hh-tekst">{TYPE_ICOON[b.type] ?? '•'} {b.titel}</span>
                 </div>
                 <div className="ag-blok-acties-rij">
-                  <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                  {b.starttijd ? (
+                    <span className="ag-item-tijd">{b.starttijd}–{b.eindtijd}</span>
+                  ) : (
+                    <span className="ag-item-tijd ag-item-tijd-geen">🔔 herinnering</span>
+                  )}
                 </div>
               </div>
             ))}
