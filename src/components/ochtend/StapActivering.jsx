@@ -141,7 +141,9 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
               </div>
               <button className="sa-teller-btn" onClick={() => setPlankDoel((s) => Math.min(300, s + 5))}>+5s</button>
             </div>
-            <button className="btn btn-g btn-sm" onClick={() => plankTimer.start(plankDoel)}>▶ Start timer</button>
+            {/* Zelfde 'tijd om in positie te komen'-opzet als kindhouding/nekstrek (zie activering.js) — timer loopt 5s langer dan het ingestelde doel. */}
+            <button className="btn btn-g btn-sm" onClick={() => plankTimer.start(plankDoel + 5)}>▶ Start timer</button>
+            <p className="ti-hint">Timer loopt 5s extra om in positie te komen.</p>
           </div>
         ) : (
           <div className="sa-ring-wrap">

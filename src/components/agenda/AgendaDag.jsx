@@ -35,7 +35,7 @@ export default function AgendaDag({
     .find((s) => (s.type === 'lift' || s.type === 'cardio') && !dagBlokken.some((b) => b.bronId === s.id));
 
   const aantalSuggesties = (toonMeditatieSuggestie ? 1 : 0) + (trainingSignaal ? 1 : 0) + (isCardioDag ? 1 : 0)
-    + (isKlusjesDag ? openKlusjes.length : 0) + openHuishoudTaken.length + openHondMomenten.length;
+    + openKlusjes.length + openHuishoudTaken.length + openHondMomenten.length;
 
   return (
     <div>
@@ -128,10 +128,14 @@ export default function AgendaDag({
                 </div>
               )}
 
-              {isKlusjesDag && openKlusjes.length > 0 && (
+              {openKlusjes.length > 0 && (
                 <div className="ag-suggesties">
                   <div className="ti-lbl">Suggesties uit Kluslijst</div>
-                  <p className="ti-hint">Grotere klusjes staan bovenaan — ideaal om vandaag een flinke stap te zetten.</p>
+                  <p className="ti-hint">
+                    {isKlusjesDag
+                      ? 'Grotere klusjes staan bovenaan — ideaal om vandaag een flinke stap te zetten.'
+                      : 'Grotere klusjes staan bovenaan — komt het beter uit dan op de vaste Klusjes-dag? Plan gerust nu al.'}
+                  </p>
                   <div className="hh-lijst">
                     {openKlusjes.map((k) => (
                       <div className="hh-item" key={k.id}>

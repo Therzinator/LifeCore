@@ -146,7 +146,15 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
     return !huishoudTaken.log[t.id]?.[periode] && !isAlToegevoegd(t.id);
   });
 
-  const openHuishoudTaken = [...openWekelijkseTaken, ...openAangepasteTaken];
+  // Maandelijkse taken hebben, net als 'aangepast', geen weekschema-dag —
+  // dezelfde open-zolang-niet-afgevinkt-aanpak, alleen met de maand als
+  // periode i.p.v. de cyclus.
+  const maandelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'maand');
+  const huidigeMaand = huidigePeriodeKey('maand', new Date(referentieDatum));
+  const openMaandelijkseTaken = maandelijkseTaken
+    .filter((t) => !huishoudTaken.log[t.id]?.[huidigeMaand] && !isAlToegevoegd(t.id));
+
+  const openHuishoudTaken = [...openWekelijkseTaken, ...openAangepasteTaken, ...openMaandelijkseTaken];
 
   // Suggesties hebben allemaal dezelfde 'gewenste' standaardtijd (10:00) —
   // volgendeVrijeTijd schuift automatisch door naar het eerstvolgende vrije
