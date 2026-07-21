@@ -11,7 +11,8 @@ export const MODULES = {
   cardio: { label: 'Cardio', subtitel: 'Hardlopen, wandelen en roeien loggen' },
   adhd: { label: 'Focus', subtitel: 'Taken, focus-timer en dag afsluiten' },
   werk: { label: 'Werk', subtitel: 'Werktaken met spraakinvoer' },
-  thuis: { label: 'Thuis', subtitel: 'Huishouden, Kluslijst, Ontspullen en Boodschappen' },
+  thuis: { label: 'Thuis', subtitel: 'Huishouden, Kluslijst en Ontspullen' },
+  shopping: { label: 'Shopping', subtitel: 'Boodschappen en gerechten' },
   agenda: { label: 'Agenda', subtitel: 'Maand-, week- en dagoverzicht van je hele leven' },
   dashboard: { label: 'Dashboard', subtitel: 'Voortgang over alle modules heen' },
 };
@@ -19,11 +20,11 @@ export const MODULES = {
 // Vaste, platte volgorde — gebruikt door de desktop-zijbalk, die alle
 // modules altijd in één lijst toont zonder categorie-koppen.
 export const MODULE_VOLGORDE = [
-  'ochtend', 'waarden', 'welzijn', 'mindfulness', 'training', 'cardio', 'adhd', 'werk', 'thuis', 'agenda', 'dashboard',
+  'ochtend', 'waarden', 'welzijn', 'mindfulness', 'training', 'cardio', 'adhd', 'werk', 'thuis', 'shopping', 'agenda', 'dashboard',
 ];
 
 export const MODULE_CATEGORIEEN = [
-  { id: 'dag', titel: 'Dag & focus', modules: ['ochtend', 'adhd', 'werk', 'thuis', 'agenda'] },
+  { id: 'dag', titel: 'Dag & focus', modules: ['ochtend', 'adhd', 'werk', 'thuis', 'shopping', 'agenda'] },
   { id: 'lichaam', titel: 'Lichaam', modules: ['training', 'cardio'] },
   { id: 'geest', titel: 'Rust & geest', modules: ['waarden', 'welzijn', 'mindfulness'] },
   { id: 'overzicht', titel: 'Overzicht', modules: ['dashboard'] },

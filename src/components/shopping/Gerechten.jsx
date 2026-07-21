@@ -3,9 +3,9 @@ import { CURATED_GERECHTEN } from '../../lib/boodschappen/curatedeGerechten.js';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { verwerkFoto } from '../../lib/werk/fotoVoorbewerking.js';
 import { sbClient } from '../../lib/supabase/client.js';
-import SpraakInvoer from './SpraakInvoer.jsx';
-import './HuishoudTaken.css';
-import './HuishoudProjecten.css';
+import SpraakInvoer from '../werk/SpraakInvoer.jsx';
+import '../werk/HuishoudTaken.css';
+import '../werk/HuishoudProjecten.css';
 
 const CATEGORIEEN = [
   { key: 'ingredienten', label: 'Ingrediënten' },
@@ -162,7 +162,7 @@ function GerechtDetails({ gerecht, boodschappen, toonToast }) {
 }
 
 // gerechten = useGerechten()-hook, boodschappen = de BESTAANDE
-// useBoodschappen()-instantie van ThuisPagina — bewust als prop meegegeven
+// useBoodschappen()-instantie van ShoppingPagina — bewust als prop meegegeven
 // i.p.v. hier een eigen instantie aan te maken: twee losse instanties voor
 // hetzelfde huishouden botsen op hetzelfde Supabase Realtime-kanaal (zie
 // AgendaPagina-geschiedenis).

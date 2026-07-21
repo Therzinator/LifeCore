@@ -19,8 +19,21 @@ function standaardRecord() {
   return nieuwRecord({ actieveModules: [...MODULE_VOLGORDE], onboardingVoltooid: heeftBestaandeData() });
 }
 
+// Bestaande installaties hebben een opgeslagen actieveModules-array van vóór
+// het bestaan van een nieuwe module — die array overschrijft de standaard
+// volledig bij het samenvoegen hieronder, dus zonder deze migratie zou zo'n
+// nieuwe module (bv. 'shopping', afgesplitst van 'thuis') onzichtbaar
+// blijven tot iemand de onboarding-wizard opnieuw doorloopt.
+function migreerActieveModules(actieveModules) {
+  if (!actieveModules || actieveModules.includes('shopping')) return actieveModules;
+  return [...actieveModules, 'shopping'];
+}
+
 export function useModuleVoorkeuren() {
-  const [record, setRecordState] = useState(() => ({ ...standaardRecord(), ...leesLokaal('module_voorkeuren', {}) }));
+  const [record, setRecordState] = useState(() => {
+    const samengevoegd = { ...standaardRecord(), ...leesLokaal('module_voorkeuren', {}) };
+    return { ...samengevoegd, actieveModules: migreerActieveModules(samengevoegd.actieveModules) };
+  });
 
   const zetActieveModules = useCallback((ids) => {
     setRecordState((huidig) => {

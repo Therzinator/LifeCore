@@ -2,16 +2,41 @@ import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { relatieveTijd } from '../../utils/datum.js';
 import { detecteerFavorieten } from '../../lib/werk/boodschappenLeren.js';
-import SpraakInvoer from './SpraakInvoer.jsx';
+import { groepeerOpAfdeling } from '../../lib/boodschappen/categorieDetectie.js';
+import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
-import './HuishoudTaken.css';
+import '../werk/HuishoudTaken.css';
 import './Boodschappen.css';
+
+// Eén regel van de boodschappenlijst — los getrokken zodat 'm zowel binnen
+// een afdelingsgroep als (voor 'laatst gekocht', dat niet gegroepeerd is)
+// los gebruikt kan worden.
+function BoodschapItem({ item, boodschappen }) {
+  return (
+    <div className="hh-item">
+      <button className="hh-check" onClick={() => boodschappen.toggleGekocht(item.id)} aria-label="Markeer als gekocht" title="Gekocht" />
+      <span className="hh-tekst">
+        <BewerkbareTekst waarde={item.tekst} onWijzig={(t) => boodschappen.hernoemItem(item.id, t)} label="Naam" />
+      </span>
+      <div className="bd-aantal-ctrl">
+        <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(item.id, item.aantal - 1)}>−</button>
+        <span className="bd-aantal-val">{item.aantal}</span>
+        <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(item.id, item.aantal + 1)}>+</button>
+      </div>
+      <button
+        className="hh-verwijder"
+        onClick={() => { if (window.confirm(`"${item.tekst}" verwijderen van de boodschappenlijst?`)) boodschappen.verwijder(item.id); }}
+      >✕</button>
+    </div>
+  );
+}
 
 export default function Boodschappen({ boodschappen, toonToast }) {
   const [invoer, setInvoer] = useState('');
   const [toonLaatstGekocht, setToonLaatstGekocht] = useState(false);
 
   const actief = boodschappen.items.filter((i) => i.opLijst);
+  const afdelingen = groepeerOpAfdeling(actief);
   const laatstGekocht = boodschappen.items
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
     .sort((a, b) => new Date(b.laatstGekochtOp) - new Date(a.laatstGekochtOp));
@@ -84,25 +109,14 @@ export default function Boodschappen({ boodschappen, toonToast }) {
       <div className="card">
         <div className="td-label">Boodschappenlijst ({actief.length})</div>
         {actief.length === 0 && <p className="of-stap-tekst">Niets op de lijst.</p>}
-        <div className="hh-lijst">
-          {actief.map((i) => (
-            <div className="hh-item" key={i.id}>
-              <button className="hh-check" onClick={() => boodschappen.toggleGekocht(i.id)} aria-label="Markeer als gekocht" title="Gekocht" />
-              <span className="hh-tekst">
-                <BewerkbareTekst waarde={i.tekst} onWijzig={(t) => boodschappen.hernoemItem(i.id, t)} label="Naam" />
-              </span>
-              <div className="bd-aantal-ctrl">
-                <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(i.id, i.aantal - 1)}>−</button>
-                <span className="bd-aantal-val">{i.aantal}</span>
-                <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(i.id, i.aantal + 1)}>+</button>
-              </div>
-              <button
-                className="hh-verwijder"
-                onClick={() => { if (window.confirm(`"${i.tekst}" verwijderen van de boodschappenlijst?`)) boodschappen.verwijder(i.id); }}
-              >✕</button>
+        {afdelingen.map(({ afdeling, items }) => (
+          <div key={afdeling} style={{ marginBottom: 'var(--space-sm)' }}>
+            <label className="ti-lbl">{afdeling}</label>
+            <div className="hh-lijst">
+              {items.map((i) => <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} />)}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       <div className="card">

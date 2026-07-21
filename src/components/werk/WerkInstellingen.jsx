@@ -16,6 +16,8 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
   const [bewerkCategorie, setBewerkCategorie] = useState(null);
   const [bewerkWaarde, setBewerkWaarde] = useState('');
   const [nieuwProject, setNieuwProject] = useState('');
+  const [bewerkProject, setBewerkProject] = useState(null);
+  const [bewerkProjectWaarde, setBewerkProjectWaarde] = useState('');
 
   function bewerkenStarten(naam) {
     setBewerkCategorie(naam);
@@ -25,6 +27,16 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
   function bewerkenOpslaan() {
     hernoemCategorie(bewerkCategorie, bewerkWaarde);
     setBewerkCategorie(null);
+  }
+
+  function projectBewerkenStarten(project) {
+    setBewerkProject(project.id);
+    setBewerkProjectWaarde(project.naam);
+  }
+
+  function projectBewerkenOpslaan() {
+    werkProjecten.hernoemProject(bewerkProject, bewerkProjectWaarde);
+    setBewerkProject(null);
   }
 
   function wisselDag(nr) {
@@ -126,12 +138,26 @@ export default function WerkInstellingen({ instellingen, bewaar, voegCategorieTo
         <p className="ti-hint">Eigen projecten om werktaken aan te taggen — los van de Kluslijst-projecten bij Thuis.</p>
         <div className="ti-rij" style={{ flexWrap: 'wrap' }}>
           {werkProjecten.projecten.map((p) => (
-            <span key={p.id} className="wi-categorie-chip">
-              <span className="btn btn-sm btn-g">{p.naam}</span>
-              <button type="button" className="wi-categorie-verwijder" onClick={() => werkProjecten.verwijderProject(p.id)} aria-label={`${p.naam} verwijderen`}>✕</button>
-            </span>
+            bewerkProject === p.id ? (
+              <span key={p.id} className="wi-categorie-bewerk">
+                <input
+                  className="ti-veld wi-categorie-invoer"
+                  value={bewerkProjectWaarde}
+                  autoFocus
+                  onChange={(e) => setBewerkProjectWaarde(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') projectBewerkenOpslaan(); if (e.key === 'Escape') setBewerkProject(null); }}
+                  onBlur={projectBewerkenOpslaan}
+                />
+              </span>
+            ) : (
+              <span key={p.id} className="wi-categorie-chip">
+                <button type="button" className="btn btn-sm btn-g" onClick={() => projectBewerkenStarten(p)}>{p.naam}</button>
+                <button type="button" className="wi-categorie-verwijder" onClick={() => werkProjecten.verwijderProject(p.id)} aria-label={`${p.naam} verwijderen`}>✕</button>
+              </span>
+            )
           ))}
         </div>
+        <p className="ti-hint">Tik op een project om de naam aan te passen.</p>
         <div className="ti-rij" style={{ marginTop: 'var(--space-sm)' }}>
           <input
             className="ti-veld" style={{ flex: 1 }} value={nieuwProject}

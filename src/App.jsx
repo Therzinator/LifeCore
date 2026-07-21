@@ -16,6 +16,7 @@ import CardioPagina from './components/cardio/CardioPagina.jsx';
 import AdhdPagina from './components/adhd/AdhdPagina.jsx';
 import WerkPagina from './components/werk/WerkPagina.jsx';
 import ThuisPagina from './components/thuis/ThuisPagina.jsx';
+import ShoppingPagina from './components/shopping/ShoppingPagina.jsx';
 import AgendaPagina from './components/agenda/AgendaPagina.jsx';
 import DashboardPagina from './components/dashboard/DashboardPagina.jsx';
 import InlogScherm from './components/auth/InlogScherm.jsx';
@@ -47,6 +48,7 @@ function renderModule(paginaId, toonToast, setPagina, agendaInitieleDatum, wisAg
     case 'adhd': return <AdhdPagina toonToast={toonToast} onNavigeer={setPagina} />;
     case 'werk': return <WerkPagina toonToast={toonToast} />;
     case 'thuis': return <ThuisPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
+    case 'shopping': return <ShoppingPagina toonToast={toonToast} userId={userId} huishoudenId={huishoudenId} />;
     case 'agenda':
       return (
         <AgendaPagina

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN } from '../../lib/ochtend/activering.js';
+import {
+  REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN, NEKSTREK_ID, NEKSTREK_TIMER_SECONDEN,
+} from '../../lib/ochtend/activering.js';
 import { SPANNING_OEFENINGEN, spanningOefeningKernSet } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
@@ -17,6 +19,7 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
   const [toonUitleg, setToonUitleg] = useState(false);
   const plankTimer = useRustTimer(geluidFragment);
   const kindhoudingTimer = useRustTimer(geluidFragment);
+  const nekstrekTimer = useRustTimer(geluidFragment);
 
   useEffect(() => {
     if (plankTimer.totaal > 0 && !plankTimer.actief && plankTimer.resterend === 0) {
@@ -29,6 +32,20 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
       setRekGedaan((huidig) => (huidig.has(KINDHOUDING_ID) ? huidig : new Set(huidig).add(KINDHOUDING_ID)));
     }
   }, [kindhoudingTimer.actief, kindhoudingTimer.resterend, kindhoudingTimer.totaal]);
+
+  useEffect(() => {
+    if (nekstrekTimer.totaal > 0 && !nekstrekTimer.actief && nekstrekTimer.resterend === 0) {
+      setRekGedaan((huidig) => (huidig.has(NEKSTREK_ID) ? huidig : new Set(huidig).add(NEKSTREK_ID)));
+    }
+  }, [nekstrekTimer.actief, nekstrekTimer.resterend, nekstrekTimer.totaal]);
+
+  // Kindhouding en nek-rek delen dezelfde 'eigen timer i.p.v. vinkje'-opzet
+  // (zie activering.js) — één opzoektabel i.p.v. de JSX hieronder tweemaal
+  // uit te schrijven.
+  const TIMER_OEFENINGEN = {
+    [KINDHOUDING_ID]: { timer: kindhoudingTimer, seconden: KINDHOUDING_TIMER_SECONDEN },
+    [NEKSTREK_ID]: { timer: nekstrekTimer, seconden: NEKSTREK_TIMER_SECONDEN },
+  };
 
   const hint = energieHint(dagdata.dag.checkin?.energie);
 
@@ -62,7 +79,8 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
         <div className="sa-lijst">
           {REK_OEFENINGEN.map((oef) => {
             const gedaan = rekGedaan.has(oef.id);
-            if (oef.id === KINDHOUDING_ID) {
+            const timerOef = TIMER_OEFENINGEN[oef.id];
+            if (timerOef) {
               return (
                 <div key={oef.id} className={`sa-item ${gedaan ? 'gedaan' : ''}`}>
                   <span className="sa-check">{gedaan ? '✓' : ''}</span>
@@ -71,13 +89,13 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
                     <span className="sa-item-uitleg">{oef.uitleg}</span>
                     <span className="sa-item-duur">{oef.duur}</span>
                   </span>
-                  {kindhoudingTimer.actief ? (
-                    <span className="sa-item-timer-actief">{kindhoudingTimer.resterend}s</span>
+                  {timerOef.timer.actief ? (
+                    <span className="sa-item-timer-actief">{timerOef.timer.resterend}s</span>
                   ) : (
                     <button
                       type="button"
                       className="sa-item-timer-btn"
-                      onClick={() => kindhoudingTimer.start(KINDHOUDING_TIMER_SECONDEN)}
+                      onClick={() => timerOef.timer.start(timerOef.seconden)}
                     >
                       ▶ Start
                     </button>

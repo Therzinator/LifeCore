@@ -116,10 +116,20 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   const schemaVoorReferentieDag = [weekschema.huidigSchema, weekschema.volgendSchema]
     .find((s) => s?.weekMaandag === referentieMaandag);
   const huidigePeriode = huidigePeriodeKey('week');
-  const openHuishoudTaken = schemaVoorReferentieDag
-    ? takenVoorDag(wekelijkseTaken, schemaVoorReferentieDag.toewijzing, dagIndexVan(referentieDatum))
-      .filter((t) => !huishoudTaken.log[t.id]?.[huidigePeriode] && !isAlToegevoegd(t.id))
-    : [];
+  const vandaagToegewezenIds = new Set(
+    schemaVoorReferentieDag
+      ? takenVoorDag(wekelijkseTaken, schemaVoorReferentieDag.toewijzing, dagIndexVan(referentieDatum)).map((t) => t.id)
+      : [],
+  );
+  // Niet alleen de dag-specifiek toegewezen taak (kan er maar 1 zijn bij een
+  // gelijkmatig verdeeld weekschema) — ook de rest van de nog-openstaande
+  // wekelijkse taken worden als alternatief aangeboden. Anders is er maar
+  // één suggestie per dag, en als die specifieke klus die dag net niet
+  // uitkomt, blijft er niets over om de Agenda mee te vullen (zie ook
+  // HuishoudTaken.jsx). Vandaag-toegewezen taken staan voorop.
+  const openHuishoudTaken = wekelijkseTaken
+    .filter((t) => !huishoudTaken.log[t.id]?.[huidigePeriode] && !isAlToegevoegd(t.id))
+    .sort((a, b) => Number(vandaagToegewezenIds.has(b.id)) - Number(vandaagToegewezenIds.has(a.id)));
 
   // Suggesties hebben allemaal dezelfde 'gewenste' standaardtijd (10:00) —
   // volgendeVrijeTijd schuift automatisch door naar het eerstvolgende vrije

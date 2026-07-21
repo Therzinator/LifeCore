@@ -40,5 +40,17 @@ export function useWerkProjecten() {
     });
   }, []);
 
-  return { projecten: record.projecten ?? [], voegProjectToe, verwijderProject };
+  const hernoemProject = useCallback((id, naam) => {
+    const schoon = naam.trim();
+    if (!schoon) return;
+    setRecordState((huidig) => {
+      const bijgewerkt = nieuwRecord({
+        projecten: (huidig.projecten ?? []).map((p) => (p.id === id ? { ...p, naam: schoon } : p)),
+      });
+      schrijfLokaal('werk_projecten', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
+  return { projecten: record.projecten ?? [], voegProjectToe, verwijderProject, hernoemProject };
 }

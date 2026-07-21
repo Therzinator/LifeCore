@@ -4,15 +4,11 @@ import { useTuinTaken } from '../../hooks/useTuinTaken.js';
 import { useHuishoudProjecten } from '../../hooks/useHuishoudProjecten.js';
 import { useHuishoudWeekschema } from '../../hooks/useHuishoudWeekschema.js';
 import { useOntspullen } from '../../hooks/useOntspullen.js';
-import { useBoodschappen } from '../../hooks/useBoodschappen.js';
-import { useGerechten } from '../../hooks/useGerechten.js';
 import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import HuishoudTaken from '../werk/HuishoudTaken.jsx';
 import TuinTaken from './TuinTaken.jsx';
 import HuishoudProjecten from '../werk/HuishoudProjecten.jsx';
 import Ontspullen from '../werk/Ontspullen.jsx';
-import Boodschappen from '../werk/Boodschappen.jsx';
-import Gerechten from '../werk/Gerechten.jsx';
 import './ThuisPagina.css';
 
 const TABS = [
@@ -20,22 +16,19 @@ const TABS = [
   { id: 'tuinieren', label: 'Tuinieren' },
   { id: 'kluslijst', label: 'Kluslijst' },
   { id: 'ontspullen', label: 'Ontspullen' },
-  { id: 'boodschappen', label: 'Boodschappen' },
-  { id: 'gerechten', label: 'Gerechten' },
 ];
 
-// Huishouden, Kluslijst, Ontspullen en Boodschappen — voorheen tabbladen
-// binnen Werk, nu een eigen module (zie modules.js): dit is de huiselijke
-// kant van de dag, los van de werk-taken zelf (Kluslijst heeft geen
-// koppeling meer met Werk-taken — zie useWerkProjecten.js).
+// Huishouden, Kluslijst en Ontspullen — voorheen tabbladen binnen Werk, nu
+// een eigen module (zie modules.js): dit is de huiselijke kant van de dag,
+// los van de werk-taken zelf (Kluslijst heeft geen koppeling meer met
+// Werk-taken — zie useWerkProjecten.js). Boodschappen en Gerechten zijn
+// inmiddels zelf ook los getrokken naar de Shopping-module.
 export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
   const huishoudTaken = useHuishoudTaken(huishoudenId, userId);
   const tuinTaken = useTuinTaken(huishoudenId, userId);
   const huishoudProjecten = useHuishoudProjecten(huishoudenId, userId);
   const weekschema = useHuishoudWeekschema(huishoudenId);
   const ontspullen = useOntspullen(huishoudenId, userId);
-  const boodschappen = useBoodschappen(huishoudenId, userId);
-  const gerechten = useGerechten(huishoudenId, userId);
   const [tab, setTab] = useState('huishouden');
   useRegistreerSubstap(TABS.find((t) => t.id === tab)?.label);
 
@@ -61,8 +54,6 @@ export default function ThuisPagina({ toonToast, userId, huishoudenId }) {
           />
         )}
         {tab === 'ontspullen' && <Ontspullen ontspullen={ontspullen} toonToast={toonToast} />}
-        {tab === 'boodschappen' && <Boodschappen boodschappen={boodschappen} toonToast={toonToast} />}
-        {tab === 'gerechten' && <Gerechten gerechten={gerechten} boodschappen={boodschappen} toonToast={toonToast} />}
       </div>
     </div>
   );

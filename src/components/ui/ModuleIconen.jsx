@@ -135,6 +135,15 @@ export function IconThuis(props) {
   );
 }
 
+export function IconShopping(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <path d="M6 8h12l-1.2 10.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 8Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconDashboard(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" {...props}>
@@ -183,6 +192,7 @@ export const MODULE_ICONEN = {
   adhd: IconAdhd,
   werk: IconWerk,
   thuis: IconThuis,
+  shopping: IconShopping,
   agenda: IconAgenda,
   dashboard: IconDashboard,
 };
