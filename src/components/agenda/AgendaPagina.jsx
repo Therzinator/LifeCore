@@ -66,13 +66,17 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   const { bereikStart, bereikEind } = bereikVoorWeergave(weergave, referentieDatum);
   const blokInstanties = instantiesInBereik(blokken.blokken, bereikStart, bereikEind);
 
-  // Eén instantie, gedeeld tussen useAgendaSignalen (huishoudProjectSignalen)
-  // en de Klusjes-dag-suggesties hieronder — voorheen twee losse instanties
-  // (zelfde precedent als de dubbele useDagTypeOverrides-instantie), maar
-  // die botsten allebei op hetzelfde Supabase Realtime-kanaal voor
-  // hetzelfde huishouden en crashten de hele pagina (zie kluslijstGedeeld.js).
+  // Eén instantie, gedeeld tussen useAgendaSignalen (huishoudProjectSignalen/
+  // huishoudTaakSignalen) en de Klusjes-dag-/Huishoudtaken-suggesties
+  // hieronder — voorheen twee losse instanties (zelfde precedent als de
+  // dubbele useDagTypeOverrides-instantie), maar die botsten allebei op
+  // hetzelfde Supabase Realtime-kanaal voor hetzelfde huishouden en
+  // crashten de hele pagina (zie kluslijstGedeeld.js).
   const huishoudProjecten = useHuishoudProjecten(huishoudenId);
-  const { signalen } = useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten);
+  const huishoudTaken = useHuishoudTaken(huishoudenId);
+  const { signalen } = useAgendaSignalen(
+    bereikStart, bereikEind, dagTypeOverrides, huishoudProjecten.projecten, huishoudTaken,
+  );
 
   // Een suggestie die al als blok is toegevoegd (bronId, zie hieronder) mag
   // niet nog een keer voorgesteld worden — pas als dat blok weer verwijderd
@@ -99,7 +103,7 @@ export default function AgendaPagina({ toonToast, initieleDatum, onInitieleDatum
   // taak staat vandaag gepland'-berekening als HuishoudVandaagOverzicht.jsx
   // op het startscherm, maar dan voor een willekeurige dag i.p.v. alleen
   // vandaag, en met een 'voeg toe als blok'-actie in plaats van alleen tonen.
-  const huishoudTaken = useHuishoudTaken(huishoudenId);
+  // huishoudTaken zelf is hierboven al opgehaald (gedeeld met useAgendaSignalen).
   const weekschema = useHuishoudWeekschema(huishoudenId);
   const wekelijkseTaken = huishoudTaken.taken.filter((t) => t.frequentie === 'week');
 

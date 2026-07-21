@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
+  huishoudTaakSignalen,
 } from './agendaSignalen.js';
 
 describe('trainingCardioSignalen', () => {
@@ -78,6 +79,29 @@ describe('klusjesDagSignalen', () => {
   it('een andere override (bv. vrij) onderdrukt het vaste klusjesdag-patroon', () => {
     const signalen = klusjesDagSignalen('2026-07-13', '2026-07-13', 1, { '2026-07-13': 'vrij' });
     expect(signalen).toEqual([]);
+  });
+});
+
+describe('huishoudTaakSignalen', () => {
+  // 2026-07-13 t/m 2026-07-19: bij intervalDagen=3 vallen de cyclusgrenzen
+  // (epoch-dagen deelbaar door 3) op 2026-07-15 en 2026-07-18.
+  const taken = [{ id: 'kb', tekst: 'Kattenbak', frequentie: 'aangepast', intervalDagen: 3 }];
+
+  it('geeft alleen een signaal op de eerste dag van elke cyclus', () => {
+    const signalen = huishoudTaakSignalen(taken, {}, '2026-07-13', '2026-07-19');
+    expect(signalen.map((s) => s.datum)).toEqual(['2026-07-15', '2026-07-18']);
+    expect(signalen.every((s) => s.type === 'huishoudtaak' && s.tekst === 'Kattenbak')).toBe(true);
+  });
+
+  it('onderdrukt het signaal als die cyclus al is afgevinkt', () => {
+    const log = { kb: { elke3d_6883: true } }; // periode-key van de cyclus die op 2026-07-15 begint
+    const signalen = huishoudTaakSignalen(taken, log, '2026-07-13', '2026-07-19');
+    expect(signalen.map((s) => s.datum)).toEqual(['2026-07-18']);
+  });
+
+  it('negeert taken zonder frequentie "aangepast"', () => {
+    const wekelijkseTaak = [{ id: 'w', tekst: 'Stofzuigen', frequentie: 'week' }];
+    expect(huishoudTaakSignalen(wekelijkseTaak, {}, '2026-07-13', '2026-07-19')).toEqual([]);
   });
 });
 

@@ -4,6 +4,7 @@ import { useWerkInstellingen } from './useWerkInstellingen.js';
 import { useTrainingInstellingen } from './useTrainingInstellingen.js';
 import {
   trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
+  huishoudTaakSignalen,
 } from '../lib/agenda/agendaSignalen.js';
 
 // Dunne hook, zelfde opzet als useKruisSignalen: leest de bron-hooks van
@@ -18,7 +19,9 @@ import {
 // botsten op hetzelfde Supabase Realtime-kanaal (zie kluslijstGedeeld.js)
 // en crashten de hele Agenda-pagina. Eén gedeelde instantie, hier alleen
 // als data doorgegeven.
-export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}, huishoudProjecten = []) {
+export function useAgendaSignalen(
+  bereikStart, bereikEind, dagTypeOverrides = {}, huishoudProjecten = [], huishoudTaken = { taken: [], log: {} },
+) {
   const { instellingen: welzijnInstellingen } = useWelzijnInstellingen();
   const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
   const { instellingen: werkInstellingen } = useWerkInstellingen();
@@ -35,6 +38,7 @@ export function useAgendaSignalen(bereikStart, bereikEind, dagTypeOverrides = {}
     ...werkdagSignalen(bereikStart, bereikEind, werkInstellingen.werkdagen, dagTypeOverrides),
     ...klusjesDagSignalen(bereikStart, bereikEind, werkInstellingen.klusjesDag, dagTypeOverrides),
     ...huishoudProjectSignalen(huishoudProjecten, bereikStart, bereikEind),
+    ...huishoudTaakSignalen(huishoudTaken.taken, huishoudTaken.log, bereikStart, bereikEind),
     welzijnSignaal(welzijnGeschiedenis.laatste?.datum, welzijnInstellingen.cadansDagen),
   ].filter((s) => s && s.datum >= bereikStart && s.datum <= bereikEind)
     .sort((a, b) => a.datum.localeCompare(b.datum));

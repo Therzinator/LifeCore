@@ -1,6 +1,7 @@
 import { LIFT_DAGEN, CARDIO_DAGEN } from '../dagstructuur/weekoverzicht.js';
 import { dagIndexVan, datumKey } from '../../utils/datum.js';
 import { volgendeCheckDatum } from '../welzijn/vragenset.js';
+import { huidigePeriodeKey } from '../werk/huishoudPeriode.js';
 
 // Alle losse signalen die de Agenda toont zijn afgeleide, pure functies over
 // bestaande module-data (zelfde principe als de kruismodule-signalenlaag,
@@ -89,6 +90,32 @@ export function klusjesDagSignalen(bereikStart, bereikEind, klusjesDag, override
       return { id: `klusjesdag_${datum}`, bron: 'huishouden', datum, tekst: 'Klusjes-dag', type: 'klusjesdag' };
     })
     .filter(Boolean);
+}
+
+// Huishoudtaken met een eigen interval (frequentie 'aangepast', bv. 'elke 3
+// dagen') hebben geen vaste dag binnen hun cyclus — ze staan de hele cyclus
+// lang open (zie HuishoudTaken.jsx). Voor een kalender-stipje moet er tóch
+// één ankerdatum gekozen worden: de eerste dag van elke cyclus (dezelfde
+// epoch-verankerde cyclusgrens als huidigePeriodeKey/aangepastKey in
+// huishoudPeriode.js). Een cyclus die al is afgevinkt levert geen stipje op.
+export function huishoudTaakSignalen(taken, log, bereikStart, bereikEind) {
+  const aangepasteTaken = (taken ?? []).filter((t) => t.frequentie === 'aangepast' && t.intervalDagen > 0);
+  if (aangepasteTaken.length === 0) return [];
+
+  const signalen = [];
+  alleDatumsInBereik(bereikStart, bereikEind).forEach((datum) => {
+    const dagenSindsEpoch = Math.floor(new Date(datum).getTime() / (1000 * 60 * 60 * 24));
+    aangepasteTaken.forEach((taak) => {
+      if (dagenSindsEpoch % taak.intervalDagen !== 0) return;
+      const periode = huidigePeriodeKey('aangepast', new Date(datum), taak.intervalDagen);
+      if (log[taak.id]?.[periode]) return;
+      signalen.push({
+        id: `huishoudtaak_${taak.id}_${datum}`, bron: 'huishouden', datum,
+        tekst: taak.tekst, type: 'huishoudtaak',
+      });
+    });
+  });
+  return signalen;
 }
 
 export function welzijnSignaal(laatsteCheckDatum, cadansDagen) {

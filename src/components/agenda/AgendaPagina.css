@@ -63,6 +63,7 @@
 .ag-stip.project { background: var(--accent); }
 .ag-stip.klusjes { background: var(--accent); }
 .ag-stip.klusjesdag { background: var(--accent); }
+.ag-stip.huishoudtaak { background: var(--accent); }
 .ag-stip.werk { background: var(--txt-muted); }
 .ag-stip.sociaal { background: #e05a7a; }
 .ag-stip.ontspanning { background: #4aa8e0; }
