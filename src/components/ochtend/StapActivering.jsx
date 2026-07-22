@@ -3,12 +3,9 @@ import {
   REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN,
   KIN_NAAR_BORST_ID, KIN_NAAR_BORST_TIMER_SECONDEN, KIN_NAAR_BORST_TUSSENSIGNAAL_SECONDEN,
 } from '../../lib/ochtend/activering.js';
-import { SPANNING_OEFENINGEN, spanningOefeningKernSet } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
-import OefeningPopup from '../ui/OefeningPopup.jsx';
-import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './StapActivering.css';
 
 export default function StapActivering({
@@ -74,11 +71,10 @@ export default function StapActivering({
     <div>
       <div className="of-stap-titel">Ochtend activering</div>
       <p className="of-stap-tekst">
-        Rek en strek, spanning verlichten (nek/schouders/borst), dan plank &amp; push-ups. Sla over wat niet past.
+        Rek en strek (incl. nek/schouders/borst), dan plank &amp; push-ups. Sla over wat niet past.
       </p>
       <div className="sa-kop-acties">
         <button className="ad-link" onClick={() => setToonUitleg(true)}>Waarom werkt dit?</button>
-        <OefeningenBibliotheek oefeningen={SPANNING_OEFENINGEN} titel="Spanning verlichten — bibliotheek" />
       </div>
 
       {hint && <div className="sa-hint">{hint}</div>}
@@ -130,16 +126,6 @@ export default function StapActivering({
             );
           })}
         </div>
-      </div>
-
-      <div className="card">
-        <div className="sa-kop">
-          <span>Spanning verlichten</span>
-          <span className="sa-kop-hint">nek, schouders, borst</span>
-        </div>
-        {spanningOefeningKernSet().map((oef) => (
-          <OefeningPopup key={oef.id} oefening={oef} />
-        ))}
       </div>
 
       <div className="card">

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { REK_OEFENINGEN, energieHint } from '../src/lib/ochtend/activering.js';
 
 describe('REK_OEFENINGEN', () => {
-  it('heeft 9 korte oefeningen, elk met naam, uitleg en duur', () => {
-    expect(REK_OEFENINGEN).toHaveLength(9);
+  it('heeft 10 korte oefeningen, elk met naam, uitleg en duur', () => {
+    expect(REK_OEFENINGEN).toHaveLength(10);
     for (const oef of REK_OEFENINGEN) {
       expect(oef.naam).toBeTruthy();
       expect(oef.uitleg).toBeTruthy();

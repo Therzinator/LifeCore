@@ -6,6 +6,7 @@ export const REK_OEFENINGEN = [
   { id: 'r2', naam: 'Schouders oprollen', uitleg: '10× naar voren, 10× naar achteren. Verlicht slaap-spanning.', duur: '20s' },
   { id: 'r3', naam: 'Nek langzaam draaien', uitleg: 'Links houd 3s, midden, rechts houd 3s — 5× per kant. Niet forceren.', duur: '35s' },
   { id: 'r9', naam: 'Kin naar borst', uitleg: 'Kin rustig richting borst, rek achterin de nek voelen. Niet forceren.', duur: '35s (incl. 5s om in positie te komen)' },
+  { id: 'r10', naam: 'Borst openen (dynamisch)', uitleg: 'Armen gestrekt voor je, handpalmen tegen elkaar. Zwaai ze zo ver mogelijk naar achteren en weer terug.', duur: '20s (5-10×)' },
   { id: 'r4', naam: 'Cat-Cow', uitleg: 'Op handen/knieën: rug hol (in) → rug bol (uit). 8 cycli.', duur: '45s' },
   { id: 'r5', naam: 'Thoracale rotatie (zij)', uitleg: 'Lig op zij, knieën 90°. Bovenste arm naar achter, borst openen. 8× per kant.', duur: '45s' },
   { id: 'r6', naam: 'Kindhouding', uitleg: '30s rustig ademhalen. Rekt lumbale fascia.', duur: '35s (incl. 5s om in positie te komen)' },
