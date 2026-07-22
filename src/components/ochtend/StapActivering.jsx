@@ -4,27 +4,44 @@ import {
   KIN_NAAR_BORST_ID, KIN_NAAR_BORST_TIMER_SECONDEN, KIN_NAAR_BORST_TUSSENSIGNAAL_SECONDEN,
 } from '../../lib/ochtend/activering.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
+import { datumKey } from '../../utils/datum.js';
 import OnderbouwingModal from '../ui/OnderbouwingModal.jsx';
 import TimerRing from '../ui/TimerRing.jsx';
 import './StapActivering.css';
 
 export default function StapActivering({
-  dagdata, volgende, vorige, overslaan, geluidFragment, kinNaarBorstTussenGeluid, kinNaarBorstEindGeluid, trainingsherinnering,
+  dagdata, volgende, vorige, overslaan, geluidFragment, kinNaarBorstTussenGeluid, kinNaarBorstEindGeluid,
+  trainingsherinnering, geschiedenis, progressie,
 }) {
+  const vandaag = datumKey();
+  const vandaagSessie = geschiedenis.sessies.find((s) => s.datum === vandaag);
   const [rekGedaan, setRekGedaan] = useState(() => new Set());
-  const [plankDoel, setPlankDoel] = useState(30);
-  const [plankGedaan, setPlankGedaan] = useState(false);
-  const [pushAantal, setPushAantal] = useState(10);
-  const [pushGedaan, setPushGedaan] = useState(false);
+  const [plankGedaan, setPlankGedaanState] = useState(() => vandaagSessie?.plankGedaan ?? false);
+  const [pushGedaan, setPushGedaanState] = useState(() => vandaagSessie?.pushGedaan ?? false);
   const [toonUitleg, setToonUitleg] = useState(false);
+  const { plankDoel, pushAantal, zetPlankDoel, zetPushAantal } = progressie;
   const plankTimer = useRustTimer(geluidFragment);
   const kindhoudingTimer = useRustTimer(geluidFragment);
   const kinNaarBorstTimer = useRustTimer(kinNaarBorstEindGeluid);
 
+  // Registreert meteen in activering_geschiedenis (i.p.v. alleen lokale
+  // state) — dat voedt de wekelijkse opbouw/deload-berekening in
+  // useActiveringProgressie.js, die per kalenderdag maar één keer draait.
+  function zetPlankGedaan(waarde) {
+    setPlankGedaanState(waarde);
+    geschiedenis.registreer(vandaag, { plankSeconden: plankDoel, plankGedaan: waarde });
+  }
+
+  function zetPushGedaan(waarde) {
+    setPushGedaanState(waarde);
+    geschiedenis.registreer(vandaag, { pushReps: pushAantal, pushGedaan: waarde });
+  }
+
   useEffect(() => {
     if (plankTimer.totaal > 0 && !plankTimer.actief && plankTimer.resterend === 0) {
-      setPlankGedaan(true);
+      zetPlankGedaan(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen reageren op het aflopen van de timer zelf.
   }, [plankTimer.actief, plankTimer.resterend, plankTimer.totaal]);
 
   useEffect(() => {
@@ -135,16 +152,16 @@ export default function StapActivering({
         {!plankTimer.actief ? (
           <div className="sa-teller-rij">
             <div className="sa-teller">
-              <button className="sa-teller-btn" onClick={() => setPlankDoel((s) => Math.max(5, s - 5))}>−5s</button>
+              <button className="sa-teller-btn" onClick={() => zetPlankDoel(Math.max(5, plankDoel - 5))}>−5s</button>
               <div className="sa-teller-mid">
                 <div className="sa-teller-val">{plankDoel}</div>
                 <div className="sa-teller-lbl">sec doel</div>
               </div>
-              <button className="sa-teller-btn" onClick={() => setPlankDoel((s) => Math.min(300, s + 5))}>+5s</button>
+              <button className="sa-teller-btn" onClick={() => zetPlankDoel(Math.min(300, plankDoel + 5))}>+5s</button>
             </div>
             {/* Zelfde 'tijd om in positie te komen'-opzet als kindhouding/nekstrek (zie activering.js) — timer loopt 5s langer dan het ingestelde doel. */}
             <button className="btn btn-g btn-sm" onClick={() => plankTimer.start(plankDoel + 5)}>▶ Start timer</button>
-            <p className="ti-hint">Timer loopt 5s extra om in positie te komen.</p>
+            <p className="ti-hint">Timer loopt 5s extra om in positie te komen. Doel bouwt vanzelf wekelijks op.</p>
           </div>
         ) : (
           <div className="sa-ring-wrap">
@@ -153,7 +170,7 @@ export default function StapActivering({
           </div>
         )}
 
-        <button className={`sa-gedaan-btn ${plankGedaan ? 'gedaan' : ''}`} onClick={() => setPlankGedaan((g) => !g)}>
+        <button className={`sa-gedaan-btn ${plankGedaan ? 'gedaan' : ''}`} onClick={() => zetPlankGedaan(!plankGedaan)}>
           {plankGedaan ? '✓ Gedaan' : 'Markeer als gedaan'}
         </button>
       </div>
@@ -163,17 +180,18 @@ export default function StapActivering({
         <p className="of-stap-tekst">Handen schouderbreedte, lichaam recht. Op knieën is prima.</p>
         <div className="sa-teller-rij">
           <div className="sa-teller">
-            <button className="sa-teller-btn" onClick={() => setPushAantal((n) => Math.max(1, n - 1))}>−</button>
+            <button className="sa-teller-btn" onClick={() => zetPushAantal(Math.max(1, pushAantal - 1))}>−</button>
             <div className="sa-teller-mid">
               <div className="sa-teller-val">{pushAantal}</div>
               <div className="sa-teller-lbl">reps</div>
             </div>
-            <button className="sa-teller-btn" onClick={() => setPushAantal((n) => Math.min(100, n + 1))}>+</button>
+            <button className="sa-teller-btn" onClick={() => zetPushAantal(Math.min(100, pushAantal + 1))}>+</button>
           </div>
-          <button className={`sa-gedaan-btn ${pushGedaan ? 'gedaan' : ''}`} onClick={() => setPushGedaan((g) => !g)}>
+          <button className={`sa-gedaan-btn ${pushGedaan ? 'gedaan' : ''}`} onClick={() => zetPushGedaan(!pushGedaan)}>
             {pushGedaan ? '✓ Gedaan' : 'Markeer als gedaan'}
           </button>
         </div>
+        <p className="ti-hint">Doel bouwt vanzelf wekelijks op.</p>
       </div>
 
       <div className="of-acties">

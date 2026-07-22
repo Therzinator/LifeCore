@@ -8,6 +8,8 @@ import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
 import { useProgramma } from '../../hooks/useProgramma.js';
 import { useCardioSessies } from '../../hooks/useCardioSessies.js';
+import { useActiveringGeschiedenis } from '../../hooks/useActiveringGeschiedenis.js';
+import { useActiveringProgressie } from '../../hooks/useActiveringProgressie.js';
 import { PROFIELEN, EXTRA, extraGroepenVoorLetter, haalExtraGewicht } from '../../lib/training/schema.js';
 import { berekenOpbouwsets } from '../../lib/training/opbouw.js';
 import { datumKey } from '../../utils/datum.js';
@@ -47,6 +49,8 @@ export default function TrainingPagina({ toonToast }) {
   const persoonsProfiel = usePersoonsProfiel();
   const rustTimer = useRustTimer(instellingen.geluidFragment);
   const cardioSessies = useCardioSessies();
+  const activeringGeschiedenis = useActiveringGeschiedenis();
+  const activeringProgressie = useActiveringProgressie(activeringGeschiedenis.sessies);
   const [tab, setTab] = useState('dashboard');
   const [toonSessie, setToonSessie] = useState(true);
   useRegistreerSubstap(
@@ -211,6 +215,8 @@ export default function TrainingPagina({ toonToast }) {
             programma={programma.programma}
             geschiedenis={geschiedenis}
             extraOefeningen={extraOefeningen}
+            activeringGeschiedenis={activeringGeschiedenis}
+            activeringDoelen={{ plankDoel: activeringProgressie.plankDoel, pushAantal: activeringProgressie.pushAantal }}
           />
         )}
         {tab === 'geschiedenis' && <TrainingGeschiedenis sessies={geschiedenis.sessies} />}

@@ -2,6 +2,8 @@ import { useOchtendflow } from '../../hooks/useOchtendflow.js';
 import { useDagdata } from '../../hooks/useDagdata.js';
 import { useOchtendInstellingen, STAP_LABELS } from '../../hooks/useOchtendInstellingen.js';
 import { useKruisSignalen } from '../../hooks/useKruisSignalen.js';
+import { useActiveringGeschiedenis } from '../../hooks/useActiveringGeschiedenis.js';
+import { useActiveringProgressie } from '../../hooks/useActiveringProgressie.js';
 import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import Voortgangsbalk from '../ui/Voortgangsbalk.jsx';
 import StapWelkom from './StapWelkom.jsx';
@@ -23,6 +25,8 @@ export default function OchtendFlow({ toonToast, onNaarDefusie }) {
   const { stapIndex, stapNaam, totaal, volgende, vorige, overslaan } = useOchtendflow(instellingen);
   const { signalen } = useKruisSignalen({ ochtend: instellingen.toonTrainingsherinnering });
   const trainingsherinnering = signalen.find((s) => s.doel === 'ochtend');
+  const activeringGeschiedenis = useActiveringGeschiedenis();
+  const activeringProgressie = useActiveringProgressie(activeringGeschiedenis.sessies);
   useRegistreerSubstap(SUBSTAP_LABEL[stapNaam]);
 
   const gedeeld = { dagdata, volgende, vorige, overslaan, toonToast, isEersteStap: stapIndex === 0 };
@@ -48,6 +52,8 @@ export default function OchtendFlow({ toonToast, onNaarDefusie }) {
           kinNaarBorstTussenGeluid={instellingen.kinNaarBorstTussenGeluid}
           kinNaarBorstEindGeluid={instellingen.kinNaarBorstEindGeluid}
           trainingsherinnering={trainingsherinnering?.tekst}
+          geschiedenis={activeringGeschiedenis}
+          progressie={activeringProgressie}
         />
       )}
       {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} onNaarDefusie={onNaarDefusie} />}

@@ -16,7 +16,17 @@ function uniekeOefeningen(programma) {
   });
 }
 
-export default function TrainingProgressie({ profiel, programma, geschiedenis, extraOefeningen }) {
+function activeringChart(sessies, veldGedaan, veldWaarde) {
+  return sessies
+    .filter((s) => s[veldGedaan] && (s[veldWaarde] ?? 0) > 0)
+    .sort((a, b) => (a.datum > b.datum ? 1 : -1))
+    .slice(-14)
+    .map((s) => ({ datum: s.datum, waarde: s[veldWaarde] }));
+}
+
+export default function TrainingProgressie({
+  profiel, programma, geschiedenis, extraOefeningen, activeringGeschiedenis, activeringDoelen,
+}) {
   const oefeningen = uniekeOefeningen(programma);
   const [oefeningId, setOefeningId] = useState(() => oefeningen[0]?.id);
   const huidigeOef = oefeningen.find((o) => o.id === oefeningId) ?? oefeningen[0];
@@ -29,6 +39,11 @@ export default function TrainingProgressie({ profiel, programma, geschiedenis, e
   const eerste = punten[0];
   const recent = punten.slice(-14);
   const maxSchaal = recent.length ? Math.max(...recent.map((p) => p.gewicht)) * 1.1 : 1;
+
+  const plankPunten = activeringGeschiedenis ? activeringChart(activeringGeschiedenis.sessies, 'plankGedaan', 'plankSeconden') : [];
+  const pushPunten = activeringGeschiedenis ? activeringChart(activeringGeschiedenis.sessies, 'pushGedaan', 'pushReps') : [];
+  const plankMaxSchaal = plankPunten.length ? Math.max(...plankPunten.map((p) => p.waarde)) * 1.1 : 1;
+  const pushMaxSchaal = pushPunten.length ? Math.max(...pushPunten.map((p) => p.waarde)) * 1.1 : 1;
 
   const alleExtra = alleExtraOefeningen();
   const actieveExtraMetData = alleExtra.filter(
@@ -94,6 +109,50 @@ export default function TrainingProgressie({ profiel, programma, geschiedenis, e
         </div>
         <p className="tp-epley-hint">Alleen als richtlijn — geen vervanging voor een echte 1RM-test.</p>
       </div>
+
+      {activeringDoelen && (
+        <div className="card">
+          <div className="td-label">Ochtend-activering — plank &amp; push-ups</div>
+          <div className="tp-huidig-rij">
+            <span className="tp-huidig" style={{ fontSize: 'var(--font-size-lg)' }}>{activeringDoelen.plankDoel}s</span>
+            <span className="tp-huidig-lbl">plank-doel</span>
+          </div>
+          {plankPunten.length === 0 ? (
+            <p className="of-stap-tekst">Nog geen data — doe de Ochtend-activering.</p>
+          ) : (
+            <>
+              <div className="tp-chart">
+                {plankPunten.map((p, i) => (
+                  <div key={i} className="tp-bar" style={{ height: `${Math.round((p.waarde / plankMaxSchaal) * 100)}%` }} title={`${p.waarde}s`} />
+                ))}
+              </div>
+              <div className="tp-chart-labels">
+                {plankPunten.map((p, i) => <div key={i} className="tp-chart-lbl">{datumKort(p.datum)}</div>)}
+              </div>
+            </>
+          )}
+
+          <div className="tp-huidig-rij" style={{ marginTop: 'var(--space-md)' }}>
+            <span className="tp-huidig" style={{ fontSize: 'var(--font-size-lg)' }}>{activeringDoelen.pushAantal}</span>
+            <span className="tp-huidig-lbl">push-up-doel (reps)</span>
+          </div>
+          {pushPunten.length === 0 ? (
+            <p className="of-stap-tekst">Nog geen data — doe de Ochtend-activering.</p>
+          ) : (
+            <>
+              <div className="tp-chart">
+                {pushPunten.map((p, i) => (
+                  <div key={i} className="tp-bar" style={{ height: `${Math.round((p.waarde / pushMaxSchaal) * 100)}%` }} title={`${p.waarde} reps`} />
+                ))}
+              </div>
+              <div className="tp-chart-labels">
+                {pushPunten.map((p, i) => <div key={i} className="tp-chart-lbl">{datumKort(p.datum)}</div>)}
+              </div>
+            </>
+          )}
+          <p className="tp-epley-hint">Bouwt vanzelf op na 3+ geslaagde dagen in de afgelopen week, bouwt af na 10+ dagen pauze.</p>
+        </div>
+      )}
 
       <div className="td-label" style={{ marginTop: 'var(--space-md)' }}>Extra oefeningen</div>
       {actieveExtraMetData.length === 0 && actieveExtraZonderData.length === 0 && (
