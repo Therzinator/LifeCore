@@ -42,7 +42,13 @@ export default function OchtendFlow({ toonToast, onNaarDefusie }) {
       {stapNaam === 'checkin' && <StapCheckin {...gedeeld} />}
       {stapNaam === 'ademhaling' && <StapAdemhaling {...gedeeld} geluidFragment={instellingen.geluidFragment} />}
       {stapNaam === 'activering' && (
-        <StapActivering {...gedeeld} geluidFragment={instellingen.geluidFragment} trainingsherinnering={trainingsherinnering?.tekst} />
+        <StapActivering
+          {...gedeeld}
+          geluidFragment={instellingen.geluidFragment}
+          kinNaarBorstTussenGeluid={instellingen.kinNaarBorstTussenGeluid}
+          kinNaarBorstEindGeluid={instellingen.kinNaarBorstEindGeluid}
+          trainingsherinnering={trainingsherinnering?.tekst}
+        />
       )}
       {stapNaam === 'brainDump' && <StapBrainDump {...gedeeld} onNaarDefusie={onNaarDefusie} />}
       {stapNaam === 'dagfocus' && <StapDagfocus {...gedeeld} />}

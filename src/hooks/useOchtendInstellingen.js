@@ -19,6 +19,10 @@ const STANDAARD = {
   stappenVolgorde: [...STAPPEN_CONFIGUREERBAAR],
   stappenAan: { checkin: true, ademhaling: true, activering: true, brainDump: true, dagfocus: true },
   toonTrainingsherinnering: true,
+  // Los van geluidFragment (plank/kindhouding/ademhaling) — 'Kin naar borst'
+  // heeft een eigen tussen- en eindsignaal, elk met een eigen fragmentkeuze.
+  kinNaarBorstTussenGeluid: 'digitaal',
+  kinNaarBorstEindGeluid: 'tweetonen',
 };
 
 function standaardRecord() {

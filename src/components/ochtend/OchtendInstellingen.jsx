@@ -87,6 +87,16 @@ export default function OchtendInstellingen({ instellingen, bewaar }) {
           waarde={instellingen.geluidFragment}
           onWaarde={(v) => bewaar({ geluidFragment: v })}
         />
+        <GeluidKiezer
+          label="Kin naar borst — tussensignaal (bij 25s)"
+          waarde={instellingen.kinNaarBorstTussenGeluid}
+          onWaarde={(v) => bewaar({ kinNaarBorstTussenGeluid: v })}
+        />
+        <GeluidKiezer
+          label="Kin naar borst — eindsignaal (bij 35s)"
+          waarde={instellingen.kinNaarBorstEindGeluid}
+          onWaarde={(v) => bewaar({ kinNaarBorstEindGeluid: v })}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
-  REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN, NEKSTREK_ID, NEKSTREK_TIMER_SECONDEN,
+  REK_OEFENINGEN, energieHint, KINDHOUDING_ID, KINDHOUDING_TIMER_SECONDEN,
+  KIN_NAAR_BORST_ID, KIN_NAAR_BORST_TIMER_SECONDEN, KIN_NAAR_BORST_TUSSENSIGNAAL_SECONDEN,
 } from '../../lib/ochtend/activering.js';
 import { SPANNING_OEFENINGEN, spanningOefeningKernSet } from '../../lib/oefeningen/vrijeOefeningenDb.js';
 import { useRustTimer } from '../../hooks/useRustTimer.js';
@@ -10,7 +11,9 @@ import OefeningPopup from '../ui/OefeningPopup.jsx';
 import OefeningenBibliotheek from '../ui/OefeningenBibliotheek.jsx';
 import './StapActivering.css';
 
-export default function StapActivering({ dagdata, volgende, vorige, overslaan, geluidFragment, trainingsherinnering }) {
+export default function StapActivering({
+  dagdata, volgende, vorige, overslaan, geluidFragment, kinNaarBorstTussenGeluid, kinNaarBorstEindGeluid, trainingsherinnering,
+}) {
   const [rekGedaan, setRekGedaan] = useState(() => new Set());
   const [plankDoel, setPlankDoel] = useState(30);
   const [plankGedaan, setPlankGedaan] = useState(false);
@@ -19,7 +22,7 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
   const [toonUitleg, setToonUitleg] = useState(false);
   const plankTimer = useRustTimer(geluidFragment);
   const kindhoudingTimer = useRustTimer(geluidFragment);
-  const nekstrekTimer = useRustTimer(geluidFragment);
+  const kinNaarBorstTimer = useRustTimer(kinNaarBorstEindGeluid);
 
   useEffect(() => {
     if (plankTimer.totaal > 0 && !plankTimer.actief && plankTimer.resterend === 0) {
@@ -34,17 +37,27 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
   }, [kindhoudingTimer.actief, kindhoudingTimer.resterend, kindhoudingTimer.totaal]);
 
   useEffect(() => {
-    if (nekstrekTimer.totaal > 0 && !nekstrekTimer.actief && nekstrekTimer.resterend === 0) {
-      setRekGedaan((huidig) => (huidig.has(NEKSTREK_ID) ? huidig : new Set(huidig).add(NEKSTREK_ID)));
+    if (kinNaarBorstTimer.totaal > 0 && !kinNaarBorstTimer.actief && kinNaarBorstTimer.resterend === 0) {
+      setRekGedaan((huidig) => (huidig.has(KIN_NAAR_BORST_ID) ? huidig : new Set(huidig).add(KIN_NAAR_BORST_ID)));
     }
-  }, [nekstrekTimer.actief, nekstrekTimer.resterend, nekstrekTimer.totaal]);
+  }, [kinNaarBorstTimer.actief, kinNaarBorstTimer.resterend, kinNaarBorstTimer.totaal]);
 
-  // Kindhouding en nek-rek delen dezelfde 'eigen timer i.p.v. vinkje'-opzet
-  // (zie activering.js) — één opzoektabel i.p.v. de JSX hieronder tweemaal
-  // uit te schrijven.
+  // Kindhouding en 'Kin naar borst' delen dezelfde 'eigen timer i.p.v.
+  // alleen een vinkje'-opzet (zie activering.js) — één opzoektabel i.p.v. de
+  // JSX hieronder tweemaal uit te schrijven. Los daarvan blijft elke
+  // timer-oefening ook gewoon handmatig af te vinken (vinkRek hieronder) —
+  // de timer is een hulpmiddel, geen voorwaarde om 'm als gedaan te mogen
+  // markeren.
   const TIMER_OEFENINGEN = {
     [KINDHOUDING_ID]: { timer: kindhoudingTimer, seconden: KINDHOUDING_TIMER_SECONDEN },
-    [NEKSTREK_ID]: { timer: nekstrekTimer, seconden: NEKSTREK_TIMER_SECONDEN },
+    [KIN_NAAR_BORST_ID]: {
+      timer: kinNaarBorstTimer,
+      seconden: KIN_NAAR_BORST_TIMER_SECONDEN,
+      tussensignaal: {
+        bijResterend: KIN_NAAR_BORST_TIMER_SECONDEN - KIN_NAAR_BORST_TUSSENSIGNAAL_SECONDEN,
+        geluidFragment: kinNaarBorstTussenGeluid,
+      },
+    },
   };
 
   const hint = energieHint(dagdata.dag.checkin?.energie);
@@ -83,19 +96,21 @@ export default function StapActivering({ dagdata, volgende, vorige, overslaan, g
             if (timerOef) {
               return (
                 <div key={oef.id} className={`sa-item ${gedaan ? 'gedaan' : ''}`}>
-                  <span className="sa-check">{gedaan ? '✓' : ''}</span>
-                  <span className="sa-item-tekst">
-                    <span className="sa-item-naam">{oef.naam}</span>
-                    <span className="sa-item-uitleg">{oef.uitleg}</span>
-                    <span className="sa-item-duur">{oef.duur}</span>
-                  </span>
+                  <button type="button" className="sa-item-toggle" onClick={() => vinkRek(oef.id)}>
+                    <span className="sa-check">{gedaan ? '✓' : ''}</span>
+                    <span className="sa-item-tekst">
+                      <span className="sa-item-naam">{oef.naam}</span>
+                      <span className="sa-item-uitleg">{oef.uitleg}</span>
+                      <span className="sa-item-duur">{oef.duur}</span>
+                    </span>
+                  </button>
                   {timerOef.timer.actief ? (
                     <span className="sa-item-timer-actief">{timerOef.timer.resterend}s</span>
                   ) : (
                     <button
                       type="button"
                       className="sa-item-timer-btn"
-                      onClick={() => timerOef.timer.start(timerOef.seconden)}
+                      onClick={() => timerOef.timer.start(timerOef.seconden, timerOef.tussensignaal)}
                     >
                       ▶ Start
                     </button>

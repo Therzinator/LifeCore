@@ -14,6 +14,8 @@ export function useRustTimer(geluidFragment) {
   const [totaal, setTotaal] = useState(0);
   const [actief, setActief] = useState(false);
   const intervalRef = useRef(null);
+  const tussensignaalRef = useRef(null);
+  const tussenGespeeldRef = useRef(false);
 
   const stop = useCallback(() => {
     clearInterval(intervalRef.current);
@@ -21,11 +23,17 @@ export function useRustTimer(geluidFragment) {
     setActief(false);
   }, []);
 
-  const start = useCallback((seconden) => {
+  // tussensignaal (optioneel): { bijResterend, geluidFragment } — speelt één
+  // keer een eigen, los van het eindgeluid instelbaar fragment zodra de
+  // timer dat aantal seconden resterend bereikt (bv. kin-naar-borst: signaal
+  // bij 10s resterend van een 35s-timer = 25s erin).
+  const start = useCallback((seconden, tussensignaal) => {
     clearInterval(intervalRef.current);
     setTotaal(seconden);
     setResterend(seconden);
     setActief(true);
+    tussensignaalRef.current = tussensignaal ?? null;
+    tussenGespeeldRef.current = false;
     intervalRef.current = setInterval(() => {
       setResterend((r) => {
         if (r <= 1) {
@@ -36,7 +44,13 @@ export function useRustTimer(geluidFragment) {
           trilBijEindeTimer();
           return 0;
         }
-        return r - 1;
+        const volgende = r - 1;
+        const tussen = tussensignaalRef.current;
+        if (tussen && !tussenGespeeldRef.current && volgende <= tussen.bijResterend) {
+          tussenGespeeldRef.current = true;
+          speelFragment(tussen.geluidFragment);
+        }
+        return volgende;
       });
     }, 1000);
   }, [geluidFragment]);
