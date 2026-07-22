@@ -25,6 +25,8 @@ export default function NotitiesKnop({ huidigeModule }) {
   const [tekst, setTekst] = useState('');
   const [gekopieerd, setGekopieerd] = useState(false);
   const [gekopieerdModule, setGekopieerdModule] = useState(null);
+  const [bewerkId, setBewerkId] = useState(null);
+  const [bewerkTekst, setBewerkTekst] = useState('');
 
   function voegToe() {
     notities.voegToe(huidigeModule, substap, tekst);
@@ -53,6 +55,22 @@ export default function NotitiesKnop({ huidigeModule }) {
   function wisModule(moduleId, aantal) {
     if (!window.confirm(`Alle ${aantal} notities bij ${moduleLabel(moduleId)} verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
     notities.verwijderModule(moduleId);
+  }
+
+  function startBewerken(notitie) {
+    setBewerkId(notitie.id);
+    setBewerkTekst(notitie.tekst);
+  }
+
+  function annuleerBewerken() {
+    setBewerkId(null);
+    setBewerkTekst('');
+  }
+
+  function slaBewerkingOp() {
+    notities.bewerk(bewerkId, bewerkTekst);
+    setBewerkId(null);
+    setBewerkTekst('');
   }
 
   return (
@@ -110,10 +128,35 @@ export default function NotitiesKnop({ huidigeModule }) {
                             {new Date(n.aangemaaktOp).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
-                        <div className="nk-item-tekst">{n.tekst}</div>
-                        <button type="button" className="nk-item-verwijder" onClick={() => notities.verwijder(n.id)} aria-label="Notitie verwijderen">
-                          ✕
-                        </button>
+                        {bewerkId === n.id ? (
+                          <div className="nk-item-bewerk">
+                            <textarea
+                              className="nk-textarea"
+                              value={bewerkTekst}
+                              onChange={(e) => setBewerkTekst(e.target.value)}
+                              rows={3}
+                              autoFocus
+                            />
+                            <div className="nk-item-bewerk-acties">
+                              <button type="button" className="btn btn-p btn-sm" onClick={slaBewerkingOp} disabled={!bewerkTekst.trim()}>
+                                Opslaan
+                              </button>
+                              <button type="button" className="btn btn-text" onClick={annuleerBewerken}>Annuleren</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="nk-item-tekst">{n.tekst}</div>
+                            <div className="nk-item-acties">
+                              <button type="button" className="nk-item-wijzig" onClick={() => startBewerken(n)} aria-label="Notitie wijzigen">
+                                ✎
+                              </button>
+                              <button type="button" className="nk-item-verwijder" onClick={() => notities.verwijder(n.id)} aria-label="Notitie verwijderen">
+                                ✕
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

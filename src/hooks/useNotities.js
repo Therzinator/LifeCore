@@ -26,6 +26,18 @@ export function useNotities() {
     });
   }, []);
 
+  const bewerk = useCallback((id, tekst) => {
+    const schoon = tekst.trim();
+    if (!schoon) return;
+    setRecordState((huidig) => {
+      const bijgewerkt = nieuwRecord({
+        notities: (huidig.notities ?? []).map((n) => (n.id === id ? { ...n, tekst: schoon } : n)),
+      });
+      schrijfLokaal('notities', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, []);
+
   const verwijder = useCallback((id) => {
     setRecordState((huidig) => {
       const bijgewerkt = nieuwRecord({ notities: (huidig.notities ?? []).filter((n) => n.id !== id) });
@@ -50,5 +62,5 @@ export function useNotities() {
     setRecordState(bijgewerkt);
   }, []);
 
-  return { notities: record.notities ?? [], voegToe, verwijder, verwijderModule, wisAlles };
+  return { notities: record.notities ?? [], voegToe, bewerk, verwijder, verwijderModule, wisAlles };
 }
