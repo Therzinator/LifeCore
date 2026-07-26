@@ -1,0 +1,71 @@
+.frt-box {
+  position: fixed;
+  z-index: 250;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.frt-box:active {
+  cursor: grabbing;
+}
+
+.frt-sluit {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-3);
+  color: var(--txt-muted);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.frt-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--accent) var(--frt-pct), var(--bg-3) var(--frt-pct));
+}
+
+.frt-ring::before {
+  content: '';
+  position: absolute;
+}
+
+.frt-val {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--txt);
+}
+
+.frt-lbl {
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+}

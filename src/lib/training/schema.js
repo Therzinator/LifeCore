@@ -63,6 +63,7 @@ export const EXTRA = {
     { id: 'good-morning', naam: 'Good Mornings', spier: 'Hamstrings, rugstrekkers', equip: 'Barbell' },
     { id: 'shrugs', naam: 'Barbell Shrugs', spier: 'Trapezius', equip: 'Barbell' },
     { id: 'superman', naam: 'Superman Hold', spier: 'Rugstrekkers', equip: 'Lichaamsgewicht' },
+    { id: 'hammer-curl', naam: 'Hammer Curl', spier: 'Biceps, onderarm', equip: '2× dumbbell' },
   ],
 };
 

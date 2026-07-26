@@ -26,6 +26,7 @@ export default [
         Worker: 'readonly',
         MediaRecorder: 'readonly',
         OfflineAudioContext: 'readonly',
+        Notification: 'readonly',
         __APP_VERSION__: 'readonly',
       },
     },

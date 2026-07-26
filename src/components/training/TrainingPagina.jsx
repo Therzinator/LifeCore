@@ -5,7 +5,7 @@ import { useActieveTraining } from '../../hooks/useActieveTraining.js';
 import { useTrainingInstellingen } from '../../hooks/useTrainingInstellingen.js';
 import { useExtraOefeningen } from '../../hooks/useExtraOefeningen.js';
 import { usePersoonsProfiel } from '../../hooks/usePersoonsProfiel.js';
-import { useRustTimer } from '../../hooks/useRustTimer.js';
+import { useRustTimerContext } from '../../contexts/RustTimerContext.jsx';
 import { useProgramma } from '../../hooks/useProgramma.js';
 import { useCardioSessies } from '../../hooks/useCardioSessies.js';
 import { useActiveringGeschiedenis } from '../../hooks/useActiveringGeschiedenis.js';
@@ -47,7 +47,7 @@ export default function TrainingPagina({ toonToast }) {
   const { instellingen, bewaar: bewaarInstellingen, reset: resetInstellingen } = useTrainingInstellingen();
   const extraOefeningen = useExtraOefeningen();
   const persoonsProfiel = usePersoonsProfiel();
-  const rustTimer = useRustTimer(instellingen.geluidFragment);
+  const rustTimer = useRustTimerContext();
   const cardioSessies = useCardioSessies();
   const activeringGeschiedenis = useActiveringGeschiedenis();
   const activeringProgressie = useActiveringProgressie(activeringGeschiedenis.sessies);
@@ -126,7 +126,7 @@ export default function TrainingPagina({ toonToast }) {
 
     const oefeningen = programma.programma[letter].map((oef) => {
       const gewicht = profiel.profiel.gewichten[oef.id] ?? 20;
-      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen).length;
+      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen, oef.id).length;
       return {
         id: oef.id, naam: oef.naam, sets: oef.sets, reps: oef.reps, type: oef.type,
         stangType: oef.stangType, spier: oef.spier, increment: oef.increment ?? instellingen.gewichtStap,

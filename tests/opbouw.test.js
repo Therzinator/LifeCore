@@ -24,4 +24,21 @@ describe('berekenOpbouwsets', () => {
     expect(sets.some((s) => s.gewicht >= 20)).toBe(false);
     expect(sets.map((s) => s.gewicht)).toEqual([7.5, 12.5, 15]);
   });
+
+  it('gebruikt minder, grotere opbouwsets zonder lege stang voor deadlift', () => {
+    const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'deadlift');
+    expect(sets.map((s) => s.label)).toEqual(['50%', '70%', '85%']);
+    expect(sets.map((s) => s.gewicht)).toEqual([50, 70, 85]);
+    expect(sets.map((s) => s.reps)).toEqual([5, 3, 1]);
+  });
+
+  it('past dezelfde deadlift-opbouw toe op sumo-deadlift', () => {
+    const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'sumo-deadlift');
+    expect(sets.map((s) => s.label)).toEqual(['50%', '70%', '85%']);
+  });
+
+  it('blijft de standaardopbouw gebruiken voor andere oefeningen', () => {
+    const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'squat');
+    expect(sets.map((s) => s.label)).toEqual(['Lege stang', '40%', '60%', '80%']);
+  });
 });

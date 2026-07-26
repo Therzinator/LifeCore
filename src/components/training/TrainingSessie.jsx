@@ -237,7 +237,7 @@ export default function TrainingSessie({
       </div>
 
       {oefeningen.map((oef, oefIndex) => {
-        const opbouw = berekenOpbouwsets(oef.gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen);
+        const opbouw = berekenOpbouwsets(oef.gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen, oef.id);
         const isPR = isNieuwePR(oef.id, oef.gewicht, geschiedenis.sessies);
         const maxGew = Math.max(...oef.setGew);
 

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import { SubstapProvider } from './contexts/SubstapContext.jsx';
+import { RustTimerProvider } from './contexts/RustTimerContext.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         vallen — zonder deze bleef een crash daar de app permanent blanco. */}
     <ErrorBoundary>
       <SubstapProvider>
-        <App />
+        <RustTimerProvider>
+          <App />
+        </RustTimerProvider>
       </SubstapProvider>
     </ErrorBoundary>
   </React.StrictMode>,

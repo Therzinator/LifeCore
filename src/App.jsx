@@ -4,6 +4,7 @@ import BottomNav from './components/layout/BottomNav.jsx';
 import DesktopShell from './components/layout/DesktopShell.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import Toast from './components/ui/Toast.jsx';
+import FloatingRustTimer from './components/ui/FloatingRustTimer.jsx';
 import UpdateBanner from './components/ui/UpdateBanner.jsx';
 import InstallBanner from './components/ui/InstallBanner.jsx';
 import SnelkeuzeScherm from './components/nav/SnelkeuzeScherm.jsx';
@@ -25,6 +26,7 @@ import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 import { useIsDesktop } from './hooks/useIsDesktop.js';
 import { useAppUpdate } from './hooks/useAppUpdate.js';
+import { useRustTimerContext } from './contexts/RustTimerContext.jsx';
 import { useModuleVoorkeuren } from './hooks/useModuleVoorkeuren.js';
 import { useHuishouden } from './hooks/useHuishouden.js';
 import { MODULES, MODULE_CATEGORIEEN } from './lib/nav/modules.js';
@@ -69,6 +71,7 @@ export default function App() {
   const auth = useAuth();
   const isDesktop = useIsDesktop();
   const appUpdate = useAppUpdate();
+  const rustTimer = useRustTimerContext();
   const moduleVoorkeuren = useModuleVoorkeuren();
   // Opgetild i.p.v. alleen binnen ProfielInstellingenModal aangeroepen —
   // anders lopen twee losse hook-instanties uit de pas (exact het
@@ -179,6 +182,7 @@ export default function App() {
           </ErrorBoundary>
         </DesktopShell>
         <Toast toasts={toasts} />
+        <FloatingRustTimer timer={rustTimer} verborgen={pagina === 'training'} onNavigeerNaarTraining={() => setPagina('training')} />
       </>
     );
   }
@@ -195,6 +199,7 @@ export default function App() {
       </ErrorBoundary>
       <BottomNav pagina={pagina} setPagina={setPagina} actieveModules={moduleVoorkeuren.actieveModules} />
       <Toast toasts={toasts} />
+      <FloatingRustTimer timer={rustTimer} verborgen={pagina === 'training'} onNavigeerNaarTraining={() => setPagina('training')} />
     </>
   );
 }

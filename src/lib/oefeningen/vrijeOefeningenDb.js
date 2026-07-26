@@ -51,6 +51,7 @@ const EXTRA_OVERRIDES = {
   'good-morning': 'Good_Morning',
   shrugs: 'Barbell_Shrug',
   superman: 'Superman',
+  'hammer-curl': 'Hammer_Curls',
 };
 
 function afbeeldingVoorOefening(id, naam, overrides) {

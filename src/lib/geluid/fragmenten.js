@@ -78,8 +78,12 @@ export function speelFragment(fragmentId) {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = new Ctx();
-    synthese(ctx);
-    setTimeout(() => ctx.close(), 2000);
+    // Na een periode op de achtergrond staat een AudioContext soms nog op
+    // 'suspended' (browser-optimalisatie voor inactieve tabbladen) — zonder
+    // resume() blijven de oscillators stil terwijl er geen fout optreedt.
+    const speelAf = () => { synthese(ctx); setTimeout(() => ctx.close(), 2000); };
+    if (ctx.state === 'suspended') ctx.resume().then(speelAf).catch(speelAf);
+    else speelAf();
   } catch {
     // Web Audio niet beschikbaar — stilletjes negeren.
   }
