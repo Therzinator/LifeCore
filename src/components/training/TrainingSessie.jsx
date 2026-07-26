@@ -67,6 +67,11 @@ export default function TrainingSessie({
 }) {
   const { oefeningen, extras = [] } = training;
   const instStangen = { stangRecht: instellingen.stangRecht, stangCurl: instellingen.stangCurl };
+  // Naast de ingestelde stapgrootte (Training-instellingen) altijd ook de
+  // andere standaardstap (1,25 of 2,5 kg) als los knoppenpaar aanbieden —
+  // welke van de twee 'de ingestelde' is verschilt per gebruiker, dus dit
+  // is altijd de ANDERE dan instellingen.gewichtStap, nooit een vaste kant.
+  const altGewichtStap = instellingen.gewichtStap === 2.5 ? 1.25 : 2.5;
   const [detailId, setDetailId] = useState(null);
   const detailOefening = detailId ? oefeningMetAfbeeldingPerId(detailId) : null;
   const [detailExtraId, setDetailExtraId] = useState(null);
@@ -231,7 +236,9 @@ export default function TrainingSessie({
         <div className="ts-hele-training-lbl">Hele training</div>
         <div className="ts-gewicht-kies">
           <button className="btn btn-g btn-sm" onClick={() => pasHeleTraining(-instellingen.gewichtStap)}>−{instellingen.gewichtStap}</button>
+          <button className="btn btn-g btn-sm" onClick={() => pasHeleTraining(-altGewichtStap)}>−{altGewichtStap}</button>
           <span className="ts-hele-training-stap">alle sets</span>
+          <button className="btn btn-g btn-sm" onClick={() => pasHeleTraining(altGewichtStap)}>+{altGewichtStap}</button>
           <button className="btn btn-g btn-sm" onClick={() => pasHeleTraining(instellingen.gewichtStap)}>+{instellingen.gewichtStap}</button>
         </div>
       </div>
@@ -280,6 +287,8 @@ export default function TrainingSessie({
             <div className="ts-alle-sets">
               <span>Alle werksets</span>
               <button className="btn btn-g btn-sm" onClick={() => pasAlleSetGewicht(oefIndex, -instellingen.gewichtStap)}>−{instellingen.gewichtStap}</button>
+              <button className="btn btn-g btn-sm" onClick={() => pasAlleSetGewicht(oefIndex, -altGewichtStap)}>−{altGewichtStap}</button>
+              <button className="btn btn-g btn-sm" onClick={() => pasAlleSetGewicht(oefIndex, altGewichtStap)}>+{altGewichtStap}</button>
               <button className="btn btn-g btn-sm" onClick={() => pasAlleSetGewicht(oefIndex, instellingen.gewichtStap)}>+{instellingen.gewichtStap}</button>
             </div>
 
@@ -288,9 +297,11 @@ export default function TrainingSessie({
                 <div className={`ts-set-rij ${oef.werk[si] ? 'gedaan' : ''}`} key={si}>
                   <span className="ts-set-nr">{si + 1}</span>
                   <div className="ts-set-ctrl">
+                    <button className="ts-mini-btn ts-mini-btn-alt" onClick={() => pasSetGewicht(oefIndex, si, -altGewichtStap)}>−{altGewichtStap}</button>
                     <button className="ts-mini-btn" onClick={() => pasSetGewicht(oefIndex, si, -instellingen.gewichtStap)}>−</button>
                     <span className="ts-set-waarde">{gew} kg</span>
                     <button className="ts-mini-btn" onClick={() => pasSetGewicht(oefIndex, si, instellingen.gewichtStap)}>+</button>
+                    <button className="ts-mini-btn ts-mini-btn-alt" onClick={() => pasSetGewicht(oefIndex, si, altGewichtStap)}>+{altGewichtStap}</button>
                   </div>
                   <div className="ts-set-ctrl">
                     <button className="ts-mini-btn" onClick={() => pasSetReps(oefIndex, si, -1)}>−</button>
@@ -327,6 +338,8 @@ export default function TrainingSessie({
               <div className="ts-alle-sets">
                 <span>Alle werksets</span>
                 <button className="btn btn-g btn-sm" onClick={() => pasAlleExtraSetGewicht(ei, -instellingen.gewichtStap)}>−{instellingen.gewichtStap}</button>
+                <button className="btn btn-g btn-sm" onClick={() => pasAlleExtraSetGewicht(ei, -altGewichtStap)}>−{altGewichtStap}</button>
+                <button className="btn btn-g btn-sm" onClick={() => pasAlleExtraSetGewicht(ei, altGewichtStap)}>+{altGewichtStap}</button>
                 <button className="btn btn-g btn-sm" onClick={() => pasAlleExtraSetGewicht(ei, instellingen.gewichtStap)}>+{instellingen.gewichtStap}</button>
               </div>
 
@@ -335,9 +348,11 @@ export default function TrainingSessie({
                   <div className={`ts-set-rij ${ext.werk[si] ? 'gedaan' : ''}`} key={si}>
                     <span className="ts-set-nr">{si + 1}</span>
                     <div className="ts-set-ctrl">
+                      <button className="ts-mini-btn ts-mini-btn-alt" onClick={() => pasExtraSetGewicht(ei, si, -altGewichtStap)}>−{altGewichtStap}</button>
                       <button className="ts-mini-btn" onClick={() => pasExtraSetGewicht(ei, si, -instellingen.gewichtStap)}>−</button>
                       <span className="ts-set-waarde">{gew} kg</span>
                       <button className="ts-mini-btn" onClick={() => pasExtraSetGewicht(ei, si, instellingen.gewichtStap)}>+</button>
+                      <button className="ts-mini-btn ts-mini-btn-alt" onClick={() => pasExtraSetGewicht(ei, si, altGewichtStap)}>+{altGewichtStap}</button>
                     </div>
                     <div className="ts-set-ctrl">
                       <button className="ts-mini-btn" onClick={() => pasExtraSetReps(ei, si, -1)}>−</button>

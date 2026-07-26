@@ -185,7 +185,8 @@
 .ts-set-rij {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-xs);
   padding: var(--space-xs) 0;
   transition: var(--tx);
 }
@@ -205,6 +206,18 @@
   flex-shrink: 0;
 }
 .ts-mini-btn:hover { background: var(--bg-3); }
+/* Alternatieve stapgrootte (1,25 kg naast de ingestelde 2,5 kg, of andersom)
+   — bewust kleiner en gedimd i.p.v. gelijk aan de hoofd−/+-knoppen: dit is
+   de secundaire, minder vaak gebruikte optie, geen gelijkwaardig duo. */
+.ts-mini-btn-alt {
+  width: auto;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 4px;
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+}
+.ts-mini-btn-alt:hover { color: var(--txt); background: var(--bg-3); }
 .ts-set-check {
   width: 28px; height: 28px;
   border-radius: 50%;
