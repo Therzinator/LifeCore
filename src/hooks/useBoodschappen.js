@@ -83,7 +83,14 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
 
   const voegToe = useCallback((tekst, frequentie) => {
     if (huishoudenId) {
-      voegItemToeGedeeld(huishoudenId, tekst, frequentie);
+      // Niet wachten op de Realtime-postgres_changes-round-trip om het net
+      // toegevoegde item te tonen — dat voelde traag/onbetrouwbaar aan (leek
+      // een pagina-ververs nodig). Zodra de insert teruggeeft, meteen zelf
+      // in de lokale state zetten; de Realtime-events blijven daarnaast
+      // draaien voor wijzigingen van andere huisgenoten.
+      voegItemToeGedeeld(huishoudenId, tekst, frequentie).then((rij) => {
+        if (rij) setRecordState((huidig) => nieuwRecord({ items: [...(huidig.items ?? []), rijNaarItem(rij)] }));
+      });
       return;
     }
 
@@ -100,7 +107,11 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
 
   const zetAantal = useCallback((id, aantal) => {
     if (huishoudenId) {
-      werkItemBij(id, { aantal: Math.max(1, aantal) });
+      const nieuweWaarde = Math.max(1, aantal);
+      setRecordState((huidig) => nieuwRecord({
+        items: (huidig.items ?? []).map((i) => (i.id === id ? { ...i, aantal: nieuweWaarde } : i)),
+      }));
+      werkItemBij(id, { aantal: nieuweWaarde });
       return;
     }
 
@@ -115,7 +126,11 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
   const toggleGekocht = useCallback((id) => {
     if (huishoudenId) {
       const item = record.items.find((i) => i.id === id);
-      werkItemBij(id, { op_lijst: false, laatst_gekocht_op: new Date().toISOString(), laatst_gekocht_door: userId });
+      const laatstGekochtOp = new Date().toISOString();
+      setRecordState((huidig) => nieuwRecord({
+        items: (huidig.items ?? []).map((i) => (i.id === id ? { ...i, opLijst: false, laatstGekochtOp } : i)),
+      }));
+      werkItemBij(id, { op_lijst: false, laatst_gekocht_op: laatstGekochtOp, laatst_gekocht_door: userId });
       if (item) logBoodschappenBeurt(huishoudenId, userId, item.tekst, item.aantal);
       return;
     }
@@ -142,6 +157,9 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
 
   const heractiveren = useCallback((id) => {
     if (huishoudenId) {
+      setRecordState((huidig) => nieuwRecord({
+        items: (huidig.items ?? []).map((i) => (i.id === id ? { ...i, opLijst: true } : i)),
+      }));
       werkItemBij(id, { op_lijst: true });
       return;
     }
@@ -156,6 +174,9 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
 
   const hernoemItem = useCallback((id, tekst) => {
     if (huishoudenId) {
+      setRecordState((huidig) => nieuwRecord({
+        items: (huidig.items ?? []).map((i) => (i.id === id ? { ...i, tekst } : i)),
+      }));
       werkItemBij(id, { tekst });
       return;
     }
@@ -170,6 +191,7 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
 
   const verwijder = useCallback((id) => {
     if (huishoudenId) {
+      setRecordState((huidig) => nieuwRecord({ items: (huidig.items ?? []).filter((i) => i.id !== id) }));
       verwijderItemGedeeld(id);
       return;
     }
