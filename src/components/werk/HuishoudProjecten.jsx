@@ -8,6 +8,7 @@ import SpraakInvoer from './SpraakInvoer.jsx';
 import WerkvoorbereidingLijst from './WerkvoorbereidingLijst.jsx';
 import FotosLijst from './FotosLijst.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './HuishoudProjecten.css';
 
 function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
@@ -31,9 +32,9 @@ function NieuwProjectForm({ onToevoegen, onAnnuleren }) {
       </div>
       <div className="ti-veld-grp">
         <label className="ti-lbl" htmlFor="hhp-maanden">Uitgesmeerd over hoeveel maanden</label>
-        <input
-          id="hhp-maanden" type="number" className="ti-veld" min="1" max="24"
-          value={aantalMaanden} onChange={(e) => setAantalMaanden(parseInt(e.target.value) || 1)}
+        <GetalVeld
+          id="hhp-maanden" className="ti-veld" min={1} max={24} fallback={1}
+          value={aantalMaanden} onCommit={setAantalMaanden}
         />
       </div>
       <div className="ti-veld-grp">
@@ -92,13 +93,14 @@ function UrenVeld({ waarde, stap, onCommit }) {
   return (
     <div className="hhp-uren-ctrl">
       <button type="button" className="wt-mini-btn" onClick={() => plan(lokaal - stap)}>−</button>
-      <input
-        type="number"
+      <GetalVeld
         className="hhp-uren-input"
         value={lokaal}
         min={stap}
         step={stap}
-        onChange={(e) => plan(parseFloat(e.target.value) || stap)}
+        geheel={false}
+        fallback={stap}
+        onCommit={(v) => { clearTimeout(timerRef.current); setLokaal(v); onCommit(v); }}
         aria-label="Geschatte uren"
       />
       <button type="button" className="wt-mini-btn" onClick={() => plan(lokaal + stap)}>+</button>

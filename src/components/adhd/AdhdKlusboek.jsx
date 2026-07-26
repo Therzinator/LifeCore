@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './AdhdKlusboek.css';
 
 export default function AdhdKlusboek({ klusboek, werkTaken, toonToast }) {
@@ -37,13 +38,13 @@ export default function AdhdKlusboek({ klusboek, werkTaken, toonToast }) {
             onChange={(e) => setNaam(e.target.value)}
           />
           <SpraakKnop waarde={naam} onWaarde={setNaam} compact />
-          <input
+          <GetalVeld
             className="ak-veld ak-veld-min"
-            type="number"
-            min="1"
-            max="180"
+            min={1}
+            max={180}
+            fallback={5}
             value={minuten}
-            onChange={(e) => setMinuten(parseInt(e.target.value, 10) || 5)}
+            onCommit={setMinuten}
           />
         </div>
         <button className="btn btn-p btn-full" type="submit">Toevoegen aan klusboek</button>

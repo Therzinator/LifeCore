@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { percentageAfgerond, huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './HuishoudTaken.css';
 
 const DAGLABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
@@ -71,26 +72,27 @@ export default function HuishoudTaken({
         {frequentie === 'aangepast' && (
           <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
             <label className="ti-lbl" htmlFor="ht-interval">Elke hoeveel dagen (herhaalt steeds)</label>
-            <input
+            <GetalVeld
               id="ht-interval"
-              type="number"
               className="ti-veld"
-              min="1"
+              min={1}
+              fallback={1}
               value={intervalDagen}
-              onChange={(e) => setIntervalDagen(parseInt(e.target.value, 10) || 1)}
+              onCommit={setIntervalDagen}
             />
           </div>
         )}
         <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
           <label className="ti-lbl" htmlFor="ht-uren">Geschatte tijd (uren)</label>
-          <input
+          <GetalVeld
             id="ht-uren"
-            type="number"
             className="ti-veld"
-            min="0.25"
-            step="0.25"
+            min={0.25}
+            step={0.25}
+            geheel={false}
+            fallback={0.5}
             value={geschatteUren}
-            onChange={(e) => setGeschatteUren(parseFloat(e.target.value) || 0.5)}
+            onCommit={setGeschatteUren}
           />
           <p className="ti-hint">Gebruikt door de Agenda om een passend tijdvak voor te stellen.</p>
         </div>
@@ -142,13 +144,14 @@ export default function HuishoudTaken({
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
                 <span className="hhp-uren-rij">
-                  <input
-                    type="number"
+                  <GetalVeld
                     className="hhp-uren-invoer"
-                    min="0.25"
-                    step="0.25"
+                    min={0.25}
+                    step={0.25}
+                    geheel={false}
+                    fallback={0.25}
                     value={t.geschatteUren}
-                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                    onCommit={(v) => huishoudTaken.pasUrenAan(t.id, v)}
                     aria-label={`Geschatte tijd voor ${t.tekst}`}
                   />u
                 </span>
@@ -177,13 +180,14 @@ export default function HuishoudTaken({
                 </button>
                 <span className={`hh-tekst ${klaar ? 'gedaan' : ''}`}>{t.tekst}</span>
                 <span className="hhp-uren-rij">
-                  <input
-                    type="number"
+                  <GetalVeld
                     className="hhp-uren-invoer"
-                    min="0.25"
-                    step="0.25"
+                    min={0.25}
+                    step={0.25}
+                    geheel={false}
+                    fallback={0.25}
                     value={t.geschatteUren}
-                    onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                    onCommit={(v) => huishoudTaken.pasUrenAan(t.id, v)}
                     aria-label={`Geschatte tijd voor ${t.tekst}`}
                   />u
                 </span>
@@ -219,13 +223,14 @@ export default function HuishoudTaken({
                     <span className="hhp-werk-badge"> · elke {t.intervalDagen} dagen</span>
                   </span>
                   <span className="hhp-uren-rij">
-                    <input
-                      type="number"
+                    <GetalVeld
                       className="hhp-uren-invoer"
-                      min="0.25"
-                      step="0.25"
+                      min={0.25}
+                      step={0.25}
+                      geheel={false}
+                      fallback={0.25}
                       value={t.geschatteUren}
-                      onChange={(e) => huishoudTaken.pasUrenAan(t.id, parseFloat(e.target.value) || 0.25)}
+                      onCommit={(v) => huishoudTaken.pasUrenAan(t.id, v)}
                       aria-label={`Geschatte tijd voor ${t.tekst}`}
                     />u
                   </span>

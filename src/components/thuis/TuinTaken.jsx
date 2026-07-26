@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { percentageAfgerond, huidigePeriodeKey, inSeizoen } from '../../lib/werk/huishoudPeriode.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 // Hergebruikt de hh-*/td-*-klassen van HuishoudTaken.css — zelfde terugkerende-
 // checklist-vorm, geen aparte styling nodig voor een tweede lijst.
 import '../werk/HuishoudTaken.css';
@@ -79,26 +80,27 @@ export default function TuinTaken({ tuinTaken, toonToast }) {
         {frequentie === 'aangepast' && (
           <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
             <label className="ti-lbl" htmlFor="tt-interval">Elke hoeveel dagen (herhaalt steeds)</label>
-            <input
+            <GetalVeld
               id="tt-interval"
-              type="number"
               className="ti-veld"
-              min="1"
+              min={1}
+              fallback={1}
               value={intervalDagen}
-              onChange={(e) => setIntervalDagen(parseInt(e.target.value, 10) || 1)}
+              onCommit={setIntervalDagen}
             />
           </div>
         )}
         <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
           <label className="ti-lbl" htmlFor="tt-uren">Geschatte tijd (uren)</label>
-          <input
+          <GetalVeld
             id="tt-uren"
-            type="number"
             className="ti-veld"
-            min="0.25"
-            step="0.25"
+            min={0.25}
+            step={0.25}
+            geheel={false}
+            fallback={0.5}
             value={geschatteUren}
-            onChange={(e) => setGeschatteUren(parseFloat(e.target.value) || 0.5)}
+            onCommit={setGeschatteUren}
           />
           <p className="ti-hint">Gebruikt door de Agenda om een passend tijdvak voor te stellen.</p>
         </div>

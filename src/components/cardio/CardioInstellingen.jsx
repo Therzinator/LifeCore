@@ -1,10 +1,7 @@
 import GeluidKiezer from '../ui/GeluidKiezer.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 
 export default function CardioInstellingen({ instellingen, bewaar }) {
-  function veld(key, parse = (v) => v) {
-    return (e) => bewaar({ [key]: parse(e.target.value) });
-  }
-
   return (
     <div>
       <p className="of-stap-tekst">Intervalvoorkeuren voor de HIIT-variant van het roeiprogramma.</p>
@@ -14,24 +11,24 @@ export default function CardioInstellingen({ instellingen, bewaar }) {
         <div className="ti-rij">
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="cro-werk">Werkduur (sec)</label>
-            <input
-              id="cro-werk" type="number" className="ti-veld" min="10" max="180" step="5"
-              value={instellingen.hiitWerkSec} onChange={veld('hiitWerkSec', (v) => parseInt(v) || 30)}
+            <GetalVeld
+              id="cro-werk" className="ti-veld" min={10} max={180} step={5} fallback={30}
+              value={instellingen.hiitWerkSec} onCommit={(v) => bewaar({ hiitWerkSec: v })}
             />
           </div>
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="cro-rust">Rustduur (sec)</label>
-            <input
-              id="cro-rust" type="number" className="ti-veld" min="10" max="180" step="5"
-              value={instellingen.hiitRustSec} onChange={veld('hiitRustSec', (v) => parseInt(v) || 30)}
+            <GetalVeld
+              id="cro-rust" className="ti-veld" min={10} max={180} step={5} fallback={30}
+              value={instellingen.hiitRustSec} onCommit={(v) => bewaar({ hiitRustSec: v })}
             />
           </div>
         </div>
         <div className="ti-veld-grp">
           <label className="ti-lbl" htmlFor="cro-rondes">Aantal rondes</label>
-          <input
-            id="cro-rondes" type="number" className="ti-veld" min="2" max="20" step="1"
-            value={instellingen.hiitRondes} onChange={veld('hiitRondes', (v) => parseInt(v) || 8)}
+          <GetalVeld
+            id="cro-rondes" className="ti-veld" min={2} max={20} step={1} fallback={8}
+            value={instellingen.hiitRondes} onCommit={(v) => bewaar({ hiitRondes: v })}
           />
         </div>
         <p className="ti-hint">

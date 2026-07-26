@@ -1,3 +1,5 @@
+import GetalVeld from '../ui/GetalVeld.jsx';
+
 export default function WelzijnInstellingen({ instellingen, bewaar }) {
   return (
     <div>
@@ -5,10 +7,10 @@ export default function WelzijnInstellingen({ instellingen, bewaar }) {
         <div className="td-label">Check-cadans</div>
         <div className="ti-veld-grp">
           <label className="ti-lbl" htmlFor="wzi-cadans">Elke hoeveel dagen een nieuwe check</label>
-          <input
-            id="wzi-cadans" type="number" className="ti-veld" min="7" max="60" step="1"
+          <GetalVeld
+            id="wzi-cadans" className="ti-veld" min={7} max={60} step={1} fallback={14}
             value={instellingen.cadansDagen}
-            onChange={(e) => bewaar({ cadansDagen: parseInt(e.target.value) || 14 })}
+            onCommit={(v) => bewaar({ cadansDagen: v })}
           />
         </div>
         <p className="ti-hint">Standaard elke 14 dagen — vaker gemeten geeft een gevoeliger trend, maar ook meer ruis per punt.</p>

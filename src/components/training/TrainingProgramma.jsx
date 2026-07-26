@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { OEFENINGEN_BIBLIOTHEEK } from '../../lib/training/schema.js';
 import SpraakKnop from '../ui/SpraakKnop.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './TrainingProgramma.css';
 
 const LETTERS = ['A', 'B'];
@@ -88,26 +89,26 @@ export default function TrainingProgramma({ programma, profiel, instellingen, to
                 <div className="tpr-velden">
                   <label className="tpr-veld-grp">
                     <span className="tpr-veld-lbl">Sets</span>
-                    <input
-                      type="number" min="1" max="10" className="tpr-veld-input"
+                    <GetalVeld
+                      min={1} max={10} className="tpr-veld-input" fallback={1}
                       value={oef.sets}
-                      onChange={(e) => programma.bewerkOefening(letter, index, { sets: parseInt(e.target.value, 10) || 1 })}
+                      onCommit={(v) => programma.bewerkOefening(letter, index, { sets: v })}
                     />
                   </label>
                   <label className="tpr-veld-grp">
                     <span className="tpr-veld-lbl">Reps</span>
-                    <input
-                      type="number" min="1" max="20" className="tpr-veld-input"
+                    <GetalVeld
+                      min={1} max={20} className="tpr-veld-input" fallback={1}
                       value={oef.reps}
-                      onChange={(e) => programma.bewerkOefening(letter, index, { reps: parseInt(e.target.value, 10) || 1 })}
+                      onCommit={(v) => programma.bewerkOefening(letter, index, { reps: v })}
                     />
                   </label>
                   <label className="tpr-veld-grp">
                     <span className="tpr-veld-lbl">Increment (kg)</span>
-                    <input
-                      type="number" min="0.5" step="0.5" className="tpr-veld-input"
+                    <GetalVeld
+                      min={0.5} step={0.5} className="tpr-veld-input" geheel={false} fallback={2.5}
                       value={oef.increment}
-                      onChange={(e) => programma.bewerkOefening(letter, index, { increment: parseFloat(e.target.value) || 2.5 })}
+                      onCommit={(v) => programma.bewerkOefening(letter, index, { increment: v })}
                     />
                   </label>
                   <label className="tpr-veld-grp">
@@ -156,19 +157,19 @@ export default function TrainingProgramma({ programma, profiel, instellingen, to
               <div className="tpr-velden">
                 <label className="tpr-veld-grp">
                   <span className="tpr-veld-lbl">Sets</span>
-                  <input type="number" min="1" max="10" className="tpr-veld-input" value={form.sets} onChange={(e) => setForm({ ...form, sets: parseInt(e.target.value, 10) || 1 })} />
+                  <GetalVeld min={1} max={10} className="tpr-veld-input" fallback={1} value={form.sets} onCommit={(v) => setForm({ ...form, sets: v })} />
                 </label>
                 <label className="tpr-veld-grp">
                   <span className="tpr-veld-lbl">Reps</span>
-                  <input type="number" min="1" max="20" className="tpr-veld-input" value={form.reps} onChange={(e) => setForm({ ...form, reps: parseInt(e.target.value, 10) || 1 })} />
+                  <GetalVeld min={1} max={20} className="tpr-veld-input" fallback={1} value={form.reps} onCommit={(v) => setForm({ ...form, reps: v })} />
                 </label>
                 <label className="tpr-veld-grp">
                   <span className="tpr-veld-lbl">Increment (kg)</span>
-                  <input type="number" min="0.5" step="0.5" className="tpr-veld-input" value={form.increment} onChange={(e) => setForm({ ...form, increment: parseFloat(e.target.value) || 2.5 })} />
+                  <GetalVeld min={0.5} step={0.5} className="tpr-veld-input" geheel={false} fallback={2.5} value={form.increment} onCommit={(v) => setForm({ ...form, increment: v })} />
                 </label>
                 <label className="tpr-veld-grp">
                   <span className="tpr-veld-lbl">Startgewicht (kg)</span>
-                  <input type="number" min="0" step="1.25" className="tpr-veld-input" value={form.startgewicht} onChange={(e) => setForm({ ...form, startgewicht: parseFloat(e.target.value) || 0 })} />
+                  <GetalVeld min={0} step={1.25} className="tpr-veld-input" geheel={false} fallback={0} value={form.startgewicht} onCommit={(v) => setForm({ ...form, startgewicht: v })} />
                 </label>
               </div>
 

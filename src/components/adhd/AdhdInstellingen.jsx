@@ -1,4 +1,5 @@
 import GeluidKiezer from '../ui/GeluidKiezer.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './AdhdInstellingen.css';
 
 export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, toonToast }) {
@@ -32,10 +33,10 @@ export default function AdhdInstellingen({ instellingen, bewaar, onResetAlles, t
         </div>
         <label className="ains-veld-grp">
           <span className="ains-lbl">Werkuren per dag (volle daglimiet bij hoge energie)</span>
-          <input
-            type="number" className="ains-veld" min="1" max="12" step="0.5"
+          <GetalVeld
+            className="ains-veld" min={1} max={12} step={0.5} geheel={false} fallback={8}
             value={instellingen.werkurenPerDag}
-            onChange={(e) => bewaar({ werkurenPerDag: parseFloat(e.target.value) || 8 })}
+            onCommit={(v) => bewaar({ werkurenPerDag: v })}
           />
         </label>
         <p className="ains-hint">

@@ -1,4 +1,5 @@
 import GeluidKiezer from '../ui/GeluidKiezer.jsx';
+import GetalVeld from '../ui/GetalVeld.jsx';
 import './TrainingInstellingen.css';
 
 export default function TrainingInstellingen({ instellingen, bewaar, onResetAlles, toonToast }) {
@@ -6,9 +7,8 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
     return (e) => bewaar({ [key]: parse(e.target.value) });
   }
 
-  function pasOpbouwStap(i, key, parse) {
-    return (e) => {
-      const waarde = parse(e.target.value);
+  function pasOpbouwStap(i, key) {
+    return (waarde) => {
       const stappen = instellingen.opbouwStappen.map((stap, idx) => (idx === i ? { ...stap, [key]: waarde } : stap));
       bewaar({ opbouwStappen: stappen });
     };
@@ -65,13 +65,13 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
         <div className="ti-rij">
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="ti-zw">Squat / Deadlift (sec)</label>
-            <input id="ti-zw" type="number" className="ti-veld" min="60" max="600" step="15"
-              value={instellingen.rustZwaar} onChange={veld('rustZwaar', (v) => parseInt(v) || 90)} />
+            <GetalVeld id="ti-zw" className="ti-veld" min={60} max={600} step={15} fallback={90}
+              value={instellingen.rustZwaar} onCommit={(v) => bewaar({ rustZwaar: v })} />
           </div>
           <div className="ti-veld-grp">
             <label className="ti-lbl" htmlFor="ti-li">Bench / OHP / Row (sec)</label>
-            <input id="ti-li" type="number" className="ti-veld" min="60" max="600" step="15"
-              value={instellingen.rustLicht} onChange={veld('rustLicht', (v) => parseInt(v) || 90)} />
+            <GetalVeld id="ti-li" className="ti-veld" min={60} max={600} step={15} fallback={90}
+              value={instellingen.rustLicht} onCommit={(v) => bewaar({ rustLicht: v })} />
           </div>
         </div>
         <GeluidKiezer
@@ -185,11 +185,11 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
             <span className="ti-lbl" style={{ margin: 0 }}>Eigen startgewicht i.p.v. de lege stang</span>
           </label>
           {instellingen.opbouwStartGewicht != null && (
-            <input
-              type="number" className="ti-veld" min="0" step={instellingen.gewichtStap}
+            <GetalVeld
+              className="ti-veld" min={0} step={instellingen.gewichtStap} geheel={false} fallback={0}
               style={{ marginTop: 'var(--space-xs)' }}
               value={instellingen.opbouwStartGewicht}
-              onChange={veld('opbouwStartGewicht', (v) => Math.max(0, parseFloat(v) || 0))}
+              onCommit={(v) => bewaar({ opbouwStartGewicht: v })}
             />
           )}
         </div>
@@ -197,16 +197,16 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           <div className="ti-rij ti-rij-ob" key={i}>
             <div className="ti-veld-grp">
               <label className="ti-lbl" htmlFor={`ti-ob-pct-${i}`}>Stap {i + 1} — % van werkgewicht</label>
-              <input
-                id={`ti-ob-pct-${i}`} type="number" className="ti-veld" min="1" max="99" step="5"
-                value={stap.pct} onChange={pasOpbouwStap(i, 'pct', (v) => Math.min(99, Math.max(1, parseInt(v) || 1)))}
+              <GetalVeld
+                id={`ti-ob-pct-${i}`} className="ti-veld" min={1} max={99} step={5} fallback={1}
+                value={stap.pct} onCommit={pasOpbouwStap(i, 'pct')}
               />
             </div>
             <div className="ti-veld-grp">
               <label className="ti-lbl" htmlFor={`ti-ob-reps-${i}`}>Reps</label>
-              <input
-                id={`ti-ob-reps-${i}`} type="number" className="ti-veld" min="1" max="20" step="1"
-                value={stap.reps} onChange={pasOpbouwStap(i, 'reps', (v) => Math.max(1, parseInt(v) || 1))}
+              <GetalVeld
+                id={`ti-ob-reps-${i}`} className="ti-veld" min={1} max={20} step={1} fallback={1}
+                value={stap.reps} onCommit={pasOpbouwStap(i, 'reps')}
               />
             </div>
             <button
