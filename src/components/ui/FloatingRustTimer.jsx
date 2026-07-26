@@ -15,8 +15,11 @@ function klemPositie(x, y, breedte, hoogte) {
 // RustTimerContext (boven de paginawissel-logica), dit is puur de UI ervoor.
 // Een tik (zonder te slepen) navigeert terug naar de trainingspagina; de
 // aparte sluitknop stopt de timer zonder te navigeren.
+const BOX_BREEDTE = 168;
+const BOX_HOOGTE = 168;
+
 export default function FloatingRustTimer({ timer, onNavigeerNaarTraining, verborgen }) {
-  const [positie, setPositie] = useState(() => klemPositie(window.innerWidth - 132, window.innerHeight - 220, 120, 88));
+  const [positie, setPositie] = useState(() => klemPositie(window.innerWidth - BOX_BREEDTE - 12, window.innerHeight - BOX_HOOGTE - 132, BOX_BREEDTE, BOX_HOOGTE));
   const sleepRef = useRef(null);
 
   if (!timer.actief || verborgen) return null;
@@ -35,7 +38,7 @@ export default function FloatingRustTimer({ timer, onNavigeerNaarTraining, verbo
     const dx = e.clientX - sleepRef.current.startX;
     const dy = e.clientY - sleepRef.current.startY;
     if (Math.abs(dx) > SLEEP_DREMPEL || Math.abs(dy) > SLEEP_DREMPEL) sleepRef.current.verplaatst = true;
-    setPositie(klemPositie(sleepRef.current.origX + dx, sleepRef.current.origY + dy, 120, 88));
+    setPositie(klemPositie(sleepRef.current.origX + dx, sleepRef.current.origY + dy, BOX_BREEDTE, BOX_HOOGTE));
   }
 
   function opPointerUp() {
@@ -43,6 +46,15 @@ export default function FloatingRustTimer({ timer, onNavigeerNaarTraining, verbo
     sleepRef.current = null;
     if (!verplaatst) onNavigeerNaarTraining?.();
   }
+
+  // Knoppen binnen de widget mogen het slepen/tikken van de omringende box
+  // niet triggeren. stopPropagation() op alléén de click-handler is niet
+  // genoeg: de drag/tik-navigatie hierboven luistert op pointerdown/-up, dus
+  // zonder ook dáár te blokkeren bubbelt een pointerup vanaf de knop alsnog
+  // naar opPointerUp() — dat ziet dan geen sleepRef (want pointerdown werd
+  // al gestopt) en navigeert dus alsnog naar Training, boven op de eigenlijke
+  // knopactie. Beide pointer-events blokkeren voorkomt dat.
+  const blokkeerSlepen = { onPointerDown: (e) => e.stopPropagation(), onPointerUp: (e) => e.stopPropagation() };
 
   return (
     <div
@@ -54,28 +66,25 @@ export default function FloatingRustTimer({ timer, onNavigeerNaarTraining, verbo
       onPointerMove={opPointerMove}
       onPointerUp={opPointerUp}
     >
-      <button
-        type="button"
-        className="frt-sluit"
-        aria-label="Timer sluiten"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={(e) => { e.stopPropagation(); timer.stop(); }}
-      >
+      <button type="button" className="frt-sluit" aria-label="Timer sluiten" {...blokkeerSlepen} onClick={timer.stop}>
         ✕
       </button>
       <div className="frt-ring" style={{ '--frt-pct': `${pct}%` }}>
         <span className="frt-val">{minuten}:{seconden < 10 ? '0' : ''}{seconden}</span>
       </div>
       <div className="frt-lbl">Rust</div>
-      {timer.pip.ondersteund && !timer.pip.actief && (
+      <div className="frt-acts">
+        <button type="button" className="btn btn-g btn-sm" {...blokkeerSlepen} onClick={timer.stop}>Stop</button>
+        <button type="button" className="btn btn-g btn-sm" {...blokkeerSlepen} onClick={() => timer.plus(30)}>+30s</button>
+      </div>
+      {timer.pip.ondersteund && (
         <button
           type="button"
-          className="frt-pip"
-          aria-label="Open als zwevend venster"
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => { e.stopPropagation(); timer.pip.activeer(); }}
+          className="btn btn-g btn-sm frt-pip"
+          {...blokkeerSlepen}
+          onClick={timer.pip.actief ? timer.pip.sluiten : timer.pip.activeer}
         >
-          ⧉
+          {timer.pip.actief ? 'Zwevend venster actief ✓' : '⧉ Open als zwevend venster'}
         </button>
       )}
     </div>
