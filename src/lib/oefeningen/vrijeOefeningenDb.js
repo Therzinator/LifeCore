@@ -36,8 +36,6 @@ const EXTRA_OVERRIDES = {
   'floor-press': 'Dumbbell_Floor_Press',
   'chest-flye': 'Dumbbell_Flyes',
   'closegrip-fp': 'Close-Grip_Dumbbell_Press',
-  // Diamond Push-ups staat niet in de FED — geen afbeelding, fedMatcher
-  // vindt hier ook niets betrouwbaars voor.
   'chin-ups': 'Chin-Up',
   'inv-row': 'Inverted_Row',
   'db-row': 'One-Arm_Dumbbell_Row',
@@ -47,11 +45,13 @@ const EXTRA_OVERRIDES = {
   'front-raise': 'Front_Dumbbell_Raise',
   'arnold-press': 'Arnold_Dumbbell_Press',
   'skull-crusher': 'Lying_Close-Grip_Barbell_Triceps_Extension_Behind_The_Head',
+  'oh-tricep-ext': 'Standing_Dumbbell_Triceps_Extension',
   rdl: 'Romanian_Deadlift',
   'good-morning': 'Good_Morning',
   shrugs: 'Barbell_Shrug',
   superman: 'Superman',
   'hammer-curl': 'Hammer_Curls',
+  'drag-curl': 'Drag_Curl',
 };
 
 function afbeeldingVoorOefening(id, naam, overrides) {

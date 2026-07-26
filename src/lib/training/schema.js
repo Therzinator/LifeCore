@@ -43,7 +43,6 @@ export const EXTRA = {
     { id: 'floor-press', naam: 'Dumbbell Floor Press', spier: 'Pecs, triceps', equip: '2× dumbbell' },
     { id: 'chest-flye', naam: 'Chest Flye (vloer)', spier: 'Pecs', equip: '2× dumbbell' },
     { id: 'closegrip-fp', naam: 'Close-Grip Floor Press', spier: 'Triceps, pecs', equip: 'Barbell' },
-    { id: 'diamond-pu', naam: 'Diamond Push-ups', spier: 'Triceps, pecs', equip: 'Lichaamsgewicht' },
   ],
   'A-pull': [
     { id: 'chin-ups', naam: 'Chin-ups', spier: 'Lats, biceps', equip: 'Pull-up stang' },
@@ -57,6 +56,10 @@ export const EXTRA = {
     { id: 'front-raise', naam: 'Front Raise', spier: 'Voorste deltavormige', equip: '2× dumbbell' },
     { id: 'arnold-press', naam: 'Arnold Press (vloer)', spier: 'Deltavormige', equip: '2× dumbbell' },
     { id: 'skull-crusher', naam: 'Skull Crushers', spier: 'Triceps', equip: 'Barbell' },
+    // Overhead i.p.v. liggend (skull crusher) — arm volledig boven het hoofd
+    // geeft de langste kop van de triceps juist de rek die skull crushers
+    // mist, complementair i.p.v. dubbelop.
+    { id: 'oh-tricep-ext', naam: 'Staande Dumbbell Overhead Triceps Extension', spier: 'Triceps (lange kop)', equip: '1× dumbbell' },
   ],
   'B-pull': [
     { id: 'rdl', naam: 'Romanian Deadlift', spier: 'Hamstrings, bilspieren', equip: 'Barbell' },
@@ -64,6 +67,10 @@ export const EXTRA = {
     { id: 'shrugs', naam: 'Barbell Shrugs', spier: 'Trapezius', equip: 'Barbell' },
     { id: 'superman', naam: 'Superman Hold', spier: 'Rugstrekkers', equip: 'Lichaamsgewicht' },
     { id: 'hammer-curl', naam: 'Hammer Curl', spier: 'Biceps, onderarm', equip: '2× dumbbell' },
+    // Ellebogen gaan tijdens de curl naar achteren langs de torso — de
+    // 'achter het lichaam'-positie die een incline curl normaal vereist
+    // (geen bank nodig), complementair aan de gewone Barbell Bicep Curl (A-pull).
+    { id: 'drag-curl', naam: 'Drag Curl', spier: 'Biceps (lange kop)', equip: 'EZ-bar of barbell' },
   ],
 };
 
