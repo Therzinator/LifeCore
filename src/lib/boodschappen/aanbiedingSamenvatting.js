@@ -21,3 +21,24 @@ export function groepeerPerSupermarkt(items, aanbiedingen) {
 
   return [...perRetailer.values()].sort((a, b) => b.totaalVoordeel - a.totaalVoordeel);
 }
+
+// Voor de 'Sorteren op aanbieding'-weergave: verdeelt de VOLLEDIGE actieve
+// boodschappenlijst per supermarkt, in tegenstelling tot groepeerPerSupermarkt
+// (dat alleen items met een gevonden aanbieding toont, voor de losse
+// samenvattingskaart). Items zonder gevonden aanbieding belanden in een aparte
+// 'Geen aanbieding gevonden'-groep zodat de hele lijst zichtbaar blijft.
+export function verdeelVoorSortering(items, aanbiedingen) {
+  const metAanbieding = groepeerPerSupermarkt(items, aanbiedingen);
+  const idsMetAanbieding = new Set(metAanbieding.flatMap((g) => g.items.map((it) => it.itemId)));
+  const zonder = items.filter((item) => !idsMetAanbieding.has(item.id));
+  if (zonder.length === 0) return metAanbieding;
+  return [
+    ...metAanbieding,
+    {
+      retailerSlug: null,
+      retailerNaam: 'Geen aanbieding gevonden',
+      items: zonder.map((item) => ({ itemId: item.id, boodschapTekst: item.tekst, aanbiedingNaam: null, prijs: null, voordeel: 0 })),
+      totaalVoordeel: 0,
+    },
+  ];
+}

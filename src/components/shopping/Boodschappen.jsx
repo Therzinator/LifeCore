@@ -9,9 +9,9 @@ function exacteDatum(isoDatum) {
   return new Date(isoDatum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 import { detecteerFavorieten, detecteerPopulair } from '../../lib/werk/boodschappenLeren.js';
-import { groepeerOpAfdeling, AFDELINGEN } from '../../lib/boodschappen/categorieDetectie.js';
+import { groepeerOpAfdeling, bepaalCategorie, AFDELINGEN } from '../../lib/boodschappen/categorieDetectie.js';
 import { ketenNaarSlug, slugNaarNaam } from '../../lib/boodschappen/supermarktKetens.js';
-import { groepeerPerSupermarkt } from '../../lib/boodschappen/aanbiedingSamenvatting.js';
+import { groepeerPerSupermarkt, verdeelVoorSortering } from '../../lib/boodschappen/aanbiedingSamenvatting.js';
 import { checkAanbiedingen } from '../../lib/supabase/aanbiedingCheck.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
@@ -37,7 +37,7 @@ function BoodschapItem({ item, boodschappen, categorie, aanbieding }) {
         <BewerkbareTekst waarde={item.tekst} onWijzig={(t) => boodschappen.hernoemItem(item.id, t)} label="Naam" />
         {aanbieding && (
           <span className="bd-aanbieding-badge" title={aanbieding.naam}>
-            🏷️ €{aanbieding.prijs.toFixed(2)} bij {slugNaarNaam(aanbieding.retailer)}
+            🏷️ {aanbieding.promotieTekst ? `${aanbieding.promotieTekst} — ` : ''}€{aanbieding.prijs.toFixed(2)} bij {slugNaarNaam(aanbieding.retailer)}
             {aanbieding.voordeel > 0 && ` (−€${aanbieding.voordeel.toFixed(2)})`}
           </span>
         )}
@@ -81,10 +81,12 @@ export default function Boodschappen({ boodschappen, toonToast }) {
   const [toonLaatstGekocht, setToonLaatstGekocht] = useState(false);
   const [aanbiedingen, setAanbiedingen] = useState({}); // { [itemId]: kandidaten[] }
   const [aanbiedingenBezig, setAanbiedingenBezig] = useState(false);
+  const [weergave, setWeergave] = useState('afdeling'); // 'afdeling' | 'aanbieding'
 
   const actief = boodschappen.items.filter((i) => i.opLijst);
   const afdelingen = groepeerOpAfdeling(actief, 'tekst', boodschappen.categorieOverrides);
   const supermarktSamenvatting = groepeerPerSupermarkt(actief, aanbiedingen);
+  const supermarktVerdeling = verdeelVoorSortering(actief, aanbiedingen);
 
   // Handmatige actie (geen automatische achtergrond-check) — vraagt de
   // PrijsProfeet-Edge Function per boodschap de actuele aanbiedingen op.
@@ -102,6 +104,21 @@ export default function Boodschappen({ boodschappen, toonToast }) {
     setAanbiedingen(resultaat);
     const aantalGevonden = Object.values(resultaat).filter((k) => k.length > 0).length;
     toonToast(aantalGevonden > 0 ? `${aantalGevonden} aanbieding(en) gevonden` : 'Geen actuele aanbiedingen gevonden voor deze lijst', aantalGevonden > 0 ? 'ok' : 'neu');
+    return aantalGevonden > 0;
+  }
+
+  // 'Sorteren op aanbieding' hergebruikt de aanbiedingenChecken-actie als er
+  // nog niets opgehaald is (i.p.v. een lege verdeling te tonen) — zo hoeft de
+  // gebruiker niet eerst zelf op 'Aanbiedingen checken' te klikken. Nogmaals
+  // klikken schakelt terug naar de normale afdelingen-weergave.
+  async function sorteerOpAanbieding() {
+    if (weergave === 'aanbieding') { setWeergave('afdeling'); return; }
+    if (actief.length === 0) { toonToast('Niets op de lijst om te sorteren', 'wn'); return; }
+    if (Object.keys(aanbiedingen).length === 0) {
+      const gevonden = await aanbiedingenChecken();
+      if (!gevonden) return;
+    }
+    setWeergave('aanbieding');
   }
   const laatstGekocht = boodschappen.items
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
@@ -192,20 +209,48 @@ export default function Boodschappen({ boodschappen, toonToast }) {
         <div className="td-label">Boodschappenlijst ({actief.length})</div>
         {actief.length === 0 && <p className="of-stap-tekst">Niets op de lijst.</p>}
         {actief.length > 0 && (
-          <button
-            type="button" className="btn btn-g btn-sm" style={{ marginBottom: 'var(--space-sm)' }}
-            onClick={aanbiedingenChecken} disabled={aanbiedingenBezig}
-          >
-            {aanbiedingenBezig ? 'Aanbiedingen ophalen…' : '🏷️ Aanbiedingen checken'}
-          </button>
+          <div className="hh-freq-rij" style={{ flexWrap: 'wrap', marginBottom: 'var(--space-sm)' }}>
+            <button
+              type="button" className="btn btn-g btn-sm"
+              onClick={aanbiedingenChecken} disabled={aanbiedingenBezig}
+            >
+              {aanbiedingenBezig ? 'Aanbiedingen ophalen…' : '🏷️ Aanbiedingen checken'}
+            </button>
+            <button
+              type="button" className="btn btn-g btn-sm"
+              onClick={sorteerOpAanbieding} disabled={aanbiedingenBezig}
+            >
+              {weergave === 'aanbieding' ? '↺ Sorteren op afdeling' : '🛒 Sorteren op aanbieding'}
+            </button>
+          </div>
         )}
-        {afdelingen.map(({ afdeling, items }) => (
+        {weergave === 'afdeling' && afdelingen.map(({ afdeling, items }) => (
           <div key={afdeling} style={{ marginBottom: 'var(--space-sm)' }}>
             <label className="ti-lbl">{afdeling}</label>
             <div className="hh-lijst">
               {items.map((i) => (
                 <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} categorie={afdeling} aanbieding={aanbiedingen[i.id]?.[0]} />
               ))}
+            </div>
+          </div>
+        ))}
+        {weergave === 'aanbieding' && supermarktVerdeling.map((g) => (
+          <div key={g.retailerSlug ?? 'geen'} style={{ marginBottom: 'var(--space-sm)' }}>
+            <label className="ti-lbl">
+              {g.retailerNaam}{g.retailerSlug && ` — voordeel €${g.totaalVoordeel.toFixed(2)}`}
+            </label>
+            <div className="hh-lijst">
+              {g.items.map((it) => {
+                const item = actief.find((i) => i.id === it.itemId);
+                if (!item) return null;
+                return (
+                  <BoodschapItem
+                    key={item.id} item={item} boodschappen={boodschappen}
+                    categorie={bepaalCategorie(item.tekst, boodschappen.categorieOverrides)}
+                    aanbieding={aanbiedingen[item.id]?.[0]}
+                  />
+                );
+              })}
             </div>
           </div>
         ))}

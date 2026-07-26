@@ -36,10 +36,42 @@ interface PrijsProfeetProduct {
   quantity: string | null;
   retailer: string;
   is_promotional: boolean;
+  promotion_type: string | null;
   promotion_status: string;
+  promotional_keywords: string[] | null;
   valid_from: string | null;
   valid_until: string | null;
   product_url: string | null;
+}
+
+const GEWICHT_NAAR_KG: Record<string, number> = { mg: 1e-6, g: 0.001, gr: 0.001, gram: 0.001, kg: 1, kilo: 1 };
+const VOLUME_NAAR_L: Record<string, number> = { ml: 0.001, cl: 0.01, dl: 0.1, l: 1, liter: 1, liters: 1 };
+
+// PrijsProfeet's eigen unit_price is regelmatig null bij bundel-aanbiedingen
+// ('1+1 gratis', '2+1 gratis', 'X voor Y') — juist bij dit soort deals is de
+// prijs per kilo/liter vaak voordeliger dan een kale percentage-korting,
+// maar zonder deze fallback zou de sortering terugvallen op de kale
+// (pakketgrootte-afhankelijke) prijs en dat soort aanbiedingen onterecht
+// laag laten scoren. Live getest (2026-07) tegen echte PrijsProfeet-data:
+// bij one_plus_one-producten is unit_price vrijwel altijd null, terwijl
+// quantity ("0.9 Liters", "75 g", "20 wasbeurten") wél gevuld is.
+function parseHoeveelheid(tekst: string | null): { waarde: number; eenheid: string } | null {
+  if (!tekst) return null;
+  const match = tekst.trim().toLowerCase().match(/^([\d.,]+)\s*([a-zé]+)/);
+  if (!match) return null;
+  const waarde = parseFloat(match[1].replace(',', '.'));
+  if (!Number.isFinite(waarde) || waarde <= 0) return null;
+  const eenheidRuw = match[2];
+  if (eenheidRuw in GEWICHT_NAAR_KG) return { waarde: waarde * GEWICHT_NAAR_KG[eenheidRuw], eenheid: 'kg' };
+  if (eenheidRuw in VOLUME_NAAR_L) return { waarde: waarde * VOLUME_NAAR_L[eenheidRuw], eenheid: 'l' };
+  return { waarde, eenheid: eenheidRuw };
+}
+
+function effectieveEenheidsprijs(p: PrijsProfeetProduct): number {
+  if (p.unit_price != null) return p.unit_price;
+  const hv = parseHoeveelheid(p.quantity);
+  if (hv) return p.price / hv.waarde;
+  return p.price;
 }
 
 async function zoekAanbiedingen(tekst: string, apiKey: string, ketenSlugs: string[]) {
@@ -53,7 +85,7 @@ async function zoekAanbiedingen(tekst: string, apiKey: string, ketenSlugs: strin
   return producten
     .filter((p) => p.is_promotional && p.promotion_status === 'active')
     .filter((p) => ketenSlugs.length === 0 || ketenSlugs.includes(p.retailer))
-    .sort((a, b) => (a.unit_price ?? a.price) - (b.unit_price ?? b.price))
+    .sort((a, b) => effectieveEenheidsprijs(a) - effectieveEenheidsprijs(b))
     .slice(0, KANDIDATEN_PER_ITEM)
     .map((p) => ({
       naam: p.name,
@@ -63,6 +95,8 @@ async function zoekAanbiedingen(tekst: string, apiKey: string, ketenSlugs: strin
       voordeel: p.savings_amount,
       kortingPct: p.discount_percentage,
       eenheid: p.quantity,
+      promotieType: p.promotion_type,
+      promotieTekst: p.promotional_keywords?.[0] ?? null,
       geldigTot: p.valid_until,
       url: p.product_url,
     }));
