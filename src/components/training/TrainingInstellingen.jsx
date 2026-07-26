@@ -87,6 +87,17 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           />
           <span className="ti-lbl" style={{ margin: 0 }}>Rusttimer automatisch als zwevend venster openen (Android)</span>
         </label>
+        <div className="ti-veld-grp" style={{ marginTop: 'var(--space-sm)' }}>
+          <label className="ti-lbl" htmlFor="ti-rust-einde">Bij einde rust (terwijl zwevend venster actief was)</label>
+          <select
+            id="ti-rust-einde" className="ti-veld"
+            value={instellingen.rustEindeActie}
+            onChange={veld('rustEindeActie')}
+          >
+            <option value="venster">Venster tonen zodra ik terugkeer naar de app</option>
+            <option value="terugNaarApp">App automatisch terug in beeld brengen</option>
+          </select>
+        </div>
       </div>
 
       <div className="card">

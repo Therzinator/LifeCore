@@ -69,7 +69,15 @@ export function speelFragment(fragmentId) {
   if (!definitie) return;
 
   if (definitie.bestand) {
-    new window.Audio(definitie.bestand).play().catch(() => {});
+    const audio = new window.Audio(definitie.bestand);
+    audio.play().catch(() => {});
+    // Zelfde 2s-cap als de synthetische fragmenten hieronder (ctx.close() na
+    // 2000ms) — zonder deze expliciete stop houdt de browser audio-focus
+    // soms langer vast dan de klip zelf duurt zodra het tabblad/de PWA op de
+    // achtergrond staat (bv. zwevend PiP-venster actief), waardoor het
+    // omlaag gedraaide volume van andere apps (muziek) langer gedrukt blijft
+    // dan de 2 seconden die je op de voorgrond wél ziet.
+    setTimeout(() => { audio.pause(); audio.currentTime = 0; }, 2000);
     return;
   }
 

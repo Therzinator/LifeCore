@@ -24,6 +24,12 @@ const STANDAARD = {
   // als zwevend venster' moet tikken. Alleen effect op platforms waar PiP
   // ondersteund is (o.a. Android); elders negeert de hook dit stilzwijgend.
   pipAutomatisch: true,
+  // Wat er gebeurt zodra een rustperiode afloopt terwijl het zwevende
+  // PiP-venster actief was (dus terwijl je ergens anders zat): 'venster'
+  // toont een 'Begin volgende set'-melding zodra je zelf terugkeert naar de
+  // app, 'terugNaarApp' verlaat het PiP-venster automatisch — hetzelfde als
+  // zelf op de 'terug naar tabblad'-knop van het zwevende venster drukken.
+  rustEindeActie: 'venster',
   eenheid: 'kg',
   // Voorkeurstijden voor de Agenda's lift/cardio-dag-suggesties (zie
   // agendaSignalen.js trainingCardioSignalen) — 's ochtends het liefst, met

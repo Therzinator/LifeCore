@@ -110,7 +110,7 @@ export default function TrainingSessie({
     const oef = nieuw[oi];
     if (oef.werk[si]) {
       if (oef.werk.every(Boolean)) toonToast(`${oef.naam} — alle sets klaar`, 'ok');
-      else rustTimer.start(oef.type === 'zw' ? instellingen.rustZwaar : instellingen.rustLicht);
+      else rustTimer.start(oef.type === 'zw' ? instellingen.rustZwaar : instellingen.rustLicht, null, oef.naam);
     } else {
       rustTimer.stop();
     }
@@ -122,7 +122,7 @@ export default function TrainingSessie({
     const ext = nieuw[ei];
     if (ext.werk[si]) {
       if (ext.werk.every(Boolean)) toonToast(`${ext.naam} — alle sets klaar`, 'ok');
-      else rustTimer.start(instellingen.rustLicht);
+      else rustTimer.start(instellingen.rustLicht, null, ext.naam);
     } else {
       rustTimer.stop();
     }

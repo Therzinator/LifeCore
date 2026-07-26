@@ -41,10 +41,30 @@ function tekenFrame(ctx, resterend, totaal, label) {
 // aangeboden aan een verborgen <video>, waarna PiP daarop wordt aangevraagd.
 // activeer() MOET binnen een echte user-gesture (klik/tik) aangeroepen
 // worden — de Picture-in-Picture-API weigert 'm anders stilzwijgend.
-export function usePipTimer(resterend, totaal, label) {
+// Chrome tekent knoppen die via de MediaSession-API een 'actionhandler'
+// hebben gekregen als extra bedieningsknoppen bovenop de standaard
+// afspelen/pauzeren/sluiten-knoppen van een video-PiP-venster — ook als de
+// video zelf (zoals hier) alleen een canvas-stream is zonder 'echte' track.
+// Zo kan de gebruiker de rusttimer bedienen zonder terug te hoeven naar de
+// app: 'volgende' slaat de rest over (skip), 'vooruit' telt er 30s bij op —
+// dezelfde twee acties als de Stop/+30s-knoppen in FloatingRustTimer.jsx.
+function zetMediaSessionActies(acties) {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    navigator.mediaSession.setActionHandler('nexttrack', acties ? () => acties.stop() : null);
+    navigator.mediaSession.setActionHandler('seekforward', acties ? () => acties.plus(30) : null);
+  } catch {
+    // Actie niet ondersteund door deze browser — negeren, de standaard
+    // PiP-knoppen (afspelen/pauzeren/sluiten) blijven gewoon werken.
+  }
+}
+
+export function usePipTimer(resterend, totaal, label, acties) {
   const [actief, setActief] = useState(false);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
+  const actiesRef = useRef(acties);
+  actiesRef.current = acties;
 
   function elementen() {
     if (!canvasRef.current) {
@@ -57,7 +77,7 @@ export function usePipTimer(resterend, totaal, label) {
       const video = document.createElement('video');
       video.muted = true;
       video.playsInline = true;
-      video.addEventListener('leavepictureinpicture', () => setActief(false));
+      video.addEventListener('leavepictureinpicture', () => { setActief(false); zetMediaSessionActies(null); });
       videoRef.current = video;
     }
     return { canvas: canvasRef.current, video: videoRef.current };
@@ -70,7 +90,15 @@ export function usePipTimer(resterend, totaal, label) {
     if (!video.srcObject) video.srcObject = canvas.captureStream(1);
     video.play()
       .then(() => video.requestPictureInPicture())
-      .then(() => setActief(true))
+      .then(() => {
+        setActief(true);
+        if (actiesRef.current) {
+          zetMediaSessionActies({
+            stop: () => actiesRef.current?.stop(),
+            plus: (n) => actiesRef.current?.plus(n),
+          });
+        }
+      })
       .catch(() => setActief(false));
   }, [resterend, totaal, label]);
 
@@ -88,6 +116,7 @@ export function usePipTimer(resterend, totaal, label) {
 
   useEffect(() => () => {
     if (document.pictureInPictureElement === videoRef.current) document.exitPictureInPicture().catch(() => {});
+    zetMediaSessionActies(null);
   }, []);
 
   return { ondersteund: pipOndersteund(), actief, activeer, sluiten };

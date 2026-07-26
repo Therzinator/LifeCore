@@ -5,6 +5,7 @@ import DesktopShell from './components/layout/DesktopShell.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import Toast from './components/ui/Toast.jsx';
 import FloatingRustTimer from './components/ui/FloatingRustTimer.jsx';
+import RustKlaarVenster from './components/ui/RustKlaarVenster.jsx';
 import UpdateBanner from './components/ui/UpdateBanner.jsx';
 import InstallBanner from './components/ui/InstallBanner.jsx';
 import SnelkeuzeScherm from './components/nav/SnelkeuzeScherm.jsx';
@@ -100,6 +101,11 @@ export default function App() {
   // halverwege gescrold binnenkomt i.p.v. bovenaan.
   useEffect(() => { window.scrollTo(0, 0); }, [pagina]);
 
+  function naarTrainingVanuitRustKlaar() {
+    setPagina('training');
+    rustTimer.wisKlaar();
+  }
+
   function naarAgendaDag(datum) {
     setAgendaInitieleDatum(datum);
     setPagina('agenda');
@@ -183,6 +189,7 @@ export default function App() {
         </DesktopShell>
         <Toast toasts={toasts} />
         <FloatingRustTimer timer={rustTimer} verborgen={pagina === 'training'} onNavigeerNaarTraining={() => setPagina('training')} />
+        <RustKlaarVenster klaarInfo={rustTimer.klaarInfo} onSluiten={rustTimer.wisKlaar} onNaarTraining={naarTrainingVanuitRustKlaar} />
       </>
     );
   }

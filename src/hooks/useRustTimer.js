@@ -56,6 +56,12 @@ export function useRustTimer(geluidFragment) {
   const [resterend, setResterend] = useState(0);
   const [totaal, setTotaal] = useState(0);
   const [actief, setActief] = useState(false);
+  // Gezet zodra een rustperiode natuurlijk afloopt (niet bij handmatig stop()),
+  // met het label dat bij start() is meegegeven — RustTimerContext gebruikt dit
+  // om te bepalen of (en met welke tekst) het 'Begin volgende set'-venster moet
+  // verschijnen. wisKlaar() ruimt 'm op zodra dat venster gezien/afgehandeld is.
+  const [klaarInfo, setKlaarInfo] = useState(null);
+  const labelRef = useRef(null);
   const intervalRef = useRef(null);
   // Wandklok-eindtijdstip (ms) i.p.v. alleen een teller die elke tick met 1
   // afneemt — op de achtergrond (scherm uit, andere app op voorgrond) wordt
@@ -98,6 +104,7 @@ export function useRustTimer(geluidFragment) {
       intervalRef.current = null;
       eindtijdRef.current = null;
       setActief(false);
+      setKlaarInfo({ label: labelRef.current });
       speelFragment(geluidFragmentRef.current);
       trilBijEindeTimer();
       toonEindNotificatie();
@@ -105,18 +112,22 @@ export function useRustTimer(geluidFragment) {
     }
   }, [laatWakeLockLos]);
 
+  const wisKlaar = useCallback(() => setKlaarInfo(null), []);
+
   // tussensignaal (optioneel): { bijResterend, geluidFragment } — speelt één
   // keer een eigen, los van het eindgeluid instelbaar fragment zodra de
   // timer dat aantal seconden resterend bereikt (bv. kin-naar-borst: signaal
   // bij 10s resterend van een 35s-timer = 25s erin).
-  const start = useCallback((seconden, tussensignaal) => {
+  const start = useCallback((seconden, tussensignaal, label) => {
     clearInterval(intervalRef.current);
     setTotaal(seconden);
     setResterend(seconden);
     setActief(true);
+    setKlaarInfo(null);
     eindtijdRef.current = Date.now() + seconden * 1000;
     tussensignaalRef.current = tussensignaal ?? null;
     tussenGespeeldRef.current = false;
+    labelRef.current = label ?? null;
     vraagWakeLock().then((lock) => { wakeLockRef.current = lock; });
     vraagNotificatiePermissie();
     intervalRef.current = setInterval(tik, 1000);
@@ -151,5 +162,5 @@ export function useRustTimer(geluidFragment) {
     laatWakeLockLos();
   }, [laatWakeLockLos]);
 
-  return { resterend, totaal, actief, start, stop, plus };
+  return { resterend, totaal, actief, start, stop, plus, klaarInfo, wisKlaar };
 }
