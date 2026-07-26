@@ -12,6 +12,9 @@ import {
 import {
   haalCategorieOverrides, zetCategorieOverride, abonneerOpCategorieOverrides,
 } from '../lib/supabase/boodschappenCategorieGedeeld.js';
+import {
+  haalKetens, voegKetenToe as voegKetenToeGedeeld, verwijderKeten as verwijderKetenGedeeld, abonneerOpKetens,
+} from '../lib/supabase/boodschappenKetenGedeeld.js';
 
 function leegRecord() {
   return nieuwRecord({ items: [] });
@@ -63,6 +66,12 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
   const [categorieOverrides, setCategorieOverrides] = useState(() => (
     huishoudenId ? {} : leesLokaal('boodschappen_categorie_overrides', {})
   ));
+  // Lijst met supermarktketens waar het huishouden boodschappen doet (bv.
+  // Lidl, Albert Heijn, Dirk) — handmatig ingesteld, gebruikt voor de
+  // voorkeur-supermarkt-keuze per item hieronder.
+  const [ketens, setKetens] = useState(() => (
+    huishoudenId ? [] : leesLokaal('boodschappen_ketens', [])
+  ));
 
   useEffect(() => {
     if (!huishoudenId) return undefined;
@@ -100,6 +109,19 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     }
     laad();
     const stopAbonnement = abonneerOpCategorieOverrides(huishoudenId, laad);
+    return () => { actief = false; stopAbonnement(); };
+  }, [huishoudenId]);
+
+  useEffect(() => {
+    if (!huishoudenId) return undefined;
+
+    let actief = true;
+    async function laad() {
+      const rijen = await haalKetens(huishoudenId);
+      if (actief) setKetens(rijen);
+    }
+    laad();
+    const stopAbonnement = abonneerOpKetens(huishoudenId, laad);
     return () => { actief = false; stopAbonnement(); };
   }, [huishoudenId]);
 
@@ -244,10 +266,64 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
+  const voegKetenToe = useCallback((naam) => {
+    const schoon = naam.trim();
+    if (!schoon) return;
+
+    if (huishoudenId) {
+      setKetens((huidig) => (huidig.includes(schoon) ? huidig : [...huidig, schoon]));
+      voegKetenToeGedeeld(huishoudenId, schoon);
+      return;
+    }
+
+    setKetens((huidig) => {
+      if (huidig.includes(schoon)) return huidig;
+      const bijgewerkt = [...huidig, schoon];
+      schrijfLokaal('boodschappen_ketens', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
+  const verwijderKeten = useCallback((naam) => {
+    if (huishoudenId) {
+      setKetens((huidig) => huidig.filter((k) => k !== naam));
+      verwijderKetenGedeeld(huishoudenId, naam);
+      return;
+    }
+
+    setKetens((huidig) => {
+      const bijgewerkt = huidig.filter((k) => k !== naam);
+      schrijfLokaal('boodschappen_ketens', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
+  // Voorkeur-supermarkt voor dit specifieke item (los van de categorie-
+  // overschrijving hierboven: dit geldt per item, niet per productnaam — je
+  // kunt een keer een aanbieding kennen zonder dat 'hummus' voortaan altijd
+  // bij dezelfde keten hoort).
+  const zetVoorkeurSupermarkt = useCallback((id, supermarkt) => {
+    if (huishoudenId) {
+      setRecordState((huidig) => nieuwRecord({
+        items: (huidig.items ?? []).map((i) => (i.id === id ? { ...i, voorkeurSupermarkt: supermarkt } : i)),
+      }));
+      werkItemBij(id, { voorkeur_supermarkt: supermarkt });
+      return;
+    }
+
+    setRecordState((huidig) => {
+      const items = (huidig.items ?? []).map((i) => (i.id === id ? { ...i, voorkeurSupermarkt: supermarkt } : i));
+      const bijgewerkt = nieuwRecord({ items });
+      schrijfLokaal('boodschappen', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
   return {
     items: record.items ?? [],
     beurten: beurtenRecord.beurten ?? [],
     categorieOverrides,
+    ketens,
     voegToe,
     zetAantal,
     toggleGekocht,
@@ -255,5 +331,8 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     hernoemItem,
     verwijder,
     zetCategorie,
+    voegKetenToe,
+    verwijderKeten,
+    zetVoorkeurSupermarkt,
   };
 }

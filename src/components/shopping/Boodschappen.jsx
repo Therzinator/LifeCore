@@ -12,6 +12,8 @@ import { detecteerFavorieten, detecteerPopulair } from '../../lib/werk/boodschap
 import { groepeerOpAfdeling, AFDELINGEN } from '../../lib/boodschappen/categorieDetectie.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
+import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
+import BoodschappenInstellingen from './BoodschappenInstellingen.jsx';
 import '../werk/HuishoudTaken.css';
 import './Boodschappen.css';
 
@@ -37,6 +39,18 @@ function BoodschapItem({ item, boodschappen, categorie }) {
       >
         {AFDELINGEN.map((a) => <option key={a} value={a}>{a}</option>)}
       </select>
+      {boodschappen.ketens.length > 0 && (
+        <select
+          className="bd-categorie-select"
+          value={item.voorkeurSupermarkt ?? ''}
+          onChange={(e) => boodschappen.zetVoorkeurSupermarkt(item.id, e.target.value || null)}
+          aria-label={`Voorkeur-supermarkt voor ${item.tekst}`}
+          title="Voorkeur-supermarkt (bv. vanwege een aanbieding of kwaliteit)"
+        >
+          <option value="">Geen voorkeur</option>
+          {boodschappen.ketens.map((k) => <option key={k} value={k}>{k}</option>)}
+        </select>
+      )}
       <div className="bd-aantal-ctrl">
         <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(item.id, item.aantal - 1)}>−</button>
         <span className="bd-aantal-val">{item.aantal}</span>
@@ -86,7 +100,12 @@ export default function Boodschappen({ boodschappen, toonToast }) {
 
   return (
     <div>
-      <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Boodschappen</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="of-stap-titel" style={{ fontSize: 'var(--font-size-xl)' }}>Boodschappen</div>
+        <ModuleInstellingenKnop titel="Boodschappen-instellingen">
+          <BoodschappenInstellingen boodschappen={boodschappen} />
+        </ModuleInstellingenKnop>
+      </div>
       <p className="of-stap-tekst">
         Eenmaal ingevoerd blijft een item onthouden, ook nadat je het hebt gekocht — de app leert zelf welke
         producten je wekelijks of maandelijks koopt (zie Favorieten hieronder).

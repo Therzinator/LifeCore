@@ -9,6 +9,7 @@ export function rijNaarItem(rij) {
     aantal: rij.aantal,
     opLijst: rij.op_lijst,
     laatstGekochtOp: rij.laatst_gekocht_op,
+    voorkeurSupermarkt: rij.voorkeur_supermarkt,
   };
 }
 
