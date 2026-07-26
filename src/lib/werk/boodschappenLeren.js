@@ -26,11 +26,11 @@ function dagenTussen(a, b) {
   return Math.round((new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24));
 }
 
-// beurten: [{ datum: 'YYYY-MM-DD', items: [{ tekst, aantal }] }]
-export function detecteerFavorieten(beurten) {
-  // Groeperen op genormaliseerde tekst (trim + lowercase) — voorkomt dat
-  // "Melk" en "melk" als twee losse producten tellen, zonder een echte
-  // fuzzy-match te doen (bewust simpel, geen NLP).
+// Groeperen op genormaliseerde tekst (trim + lowercase) — voorkomt dat "Melk"
+// en "melk" als twee losse producten tellen, zonder een echte fuzzy-match te
+// doen (bewust simpel, geen NLP). Gedeeld tussen detecteerFavorieten en
+// detecteerPopulair hieronder.
+function groepeerOpItem(beurten) {
   const perItem = {};
   beurten.forEach((beurt) => {
     (beurt.items ?? []).forEach((item) => {
@@ -39,6 +39,12 @@ export function detecteerFavorieten(beurten) {
       perItem[key].datums.push(beurt.datum);
     });
   });
+  return perItem;
+}
+
+// beurten: [{ datum: 'YYYY-MM-DD', items: [{ tekst, aantal }] }]
+export function detecteerFavorieten(beurten) {
+  const perItem = groepeerOpItem(beurten);
 
   const wekelijks = [];
   const maandelijks = [];
@@ -57,4 +63,27 @@ export function detecteerFavorieten(beurten) {
 
   const sorteerOpFrequentie = (a, b) => b.aantalKeer - a.aantalKeer;
   return { wekelijks: wekelijks.sort(sorteerOpFrequentie), maandelijks: maandelijks.sort(sorteerOpFrequentie) };
+}
+
+const POPULAIR_MIN_KEER = 3;
+const POPULAIR_MAX_ITEMS = 8;
+
+// Items die vaak gekocht worden maar niet op een herkenbaar wekelijks/
+// maandelijks interval zitten (bv. 'wc-papier' — koop je zodra de voorraad op
+// is, niet op een vaste dag) — detecteerFavorieten laat die bewust vallen
+// (geen mediaan-interval binnen de week/maand-bandbreedte). Aparte, simpelere
+// telling: gewoon de vaakst-gekochte items die nog niet al als wekelijks/
+// maandelijks favoriet zijn herkend, i.p.v. detecteerFavorieten zelf een
+// nieuwe betekenis te geven (zie CLAUDE.md §4/§5 over samengestelde logica
+// een eigen naam geven).
+export function detecteerPopulair(beurten) {
+  const { wekelijks, maandelijks } = detecteerFavorieten(beurten);
+  const uitgesloten = new Set([...wekelijks, ...maandelijks].map((e) => e.tekst.trim().toLowerCase()));
+  const perItem = groepeerOpItem(beurten);
+
+  return Object.values(perItem)
+    .filter(({ tekst, datums }) => datums.length >= POPULAIR_MIN_KEER && !uitgesloten.has(tekst.trim().toLowerCase()))
+    .map(({ tekst, datums }) => ({ tekst, aantalKeer: datums.length, laatstGekocht: [...datums].sort().at(-1) }))
+    .sort((a, b) => b.aantalKeer - a.aantalKeer)
+    .slice(0, POPULAIR_MAX_ITEMS);
 }

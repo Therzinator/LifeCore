@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
 import { relatieveTijd } from '../../utils/datum.js';
-import { detecteerFavorieten } from '../../lib/werk/boodschappenLeren.js';
+
+// 'Laatst gekocht' toont zowel de exacte datum als de relatieve duiding — de
+// gebruiker wil de exacte datum kunnen zien, relatieveTijd() alleen ('3 dagen
+// geleden') liet dat weg.
+function exacteDatum(isoDatum) {
+  return new Date(isoDatum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+import { detecteerFavorieten, detecteerPopulair } from '../../lib/werk/boodschappenLeren.js';
 import { groepeerOpAfdeling } from '../../lib/boodschappen/categorieDetectie.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
@@ -41,6 +48,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
     .sort((a, b) => new Date(b.laatstGekochtOp) - new Date(a.laatstGekochtOp));
   const favorieten = detecteerFavorieten(boodschappen.beurten);
+  const populair = detecteerPopulair(boodschappen.beurten);
 
   function toevoegen() {
     const teksten = parseSpraakTekst(invoer);
@@ -79,7 +87,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
         </button>
       </div>
 
-      {(favorieten.wekelijks.length > 0 || favorieten.maandelijks.length > 0) && (
+      {(favorieten.wekelijks.length > 0 || favorieten.maandelijks.length > 0 || populair.length > 0) && (
         <div className="card">
           <div className="td-label">Favorieten (zelflerend)</div>
           <p className="ti-hint">Op basis van je koopgeschiedenis — één tik voegt het toe aan de lijst.</p>
@@ -96,8 +104,18 @@ export default function Boodschappen({ boodschappen, toonToast }) {
           {favorieten.maandelijks.length > 0 && (
             <>
               <label className="ti-lbl">Maandelijks</label>
-              <div className="hh-freq-rij" style={{ flexWrap: 'wrap' }}>
+              <div className="hh-freq-rij" style={{ flexWrap: 'wrap', marginBottom: populair.length > 0 ? 'var(--space-sm)' : 0 }}>
                 {favorieten.maandelijks.map((f) => (
+                  <button key={f.tekst} type="button" className="btn btn-g btn-sm" onClick={() => voegFavorietToe(f.tekst)}>+ {f.tekst}</button>
+                ))}
+              </div>
+            </>
+          )}
+          {populair.length > 0 && (
+            <>
+              <label className="ti-lbl">Vaak gekocht (onregelmatig)</label>
+              <div className="hh-freq-rij" style={{ flexWrap: 'wrap' }}>
+                {populair.map((f) => (
                   <button key={f.tekst} type="button" className="btn btn-g btn-sm" onClick={() => voegFavorietToe(f.tekst)}>+ {f.tekst}</button>
                 ))}
               </div>
@@ -133,7 +151,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
                 <div className="hh-item" key={i.id}>
                   <span className="hh-tekst">
                     <BewerkbareTekst waarde={i.tekst} onWijzig={(t) => boodschappen.hernoemItem(i.id, t)} label="Naam" />
-                    <span className="hhp-werk-badge"> · {relatieveTijd(i.laatstGekochtOp)}</span>
+                    <span className="hhp-werk-badge"> · {exacteDatum(i.laatstGekochtOp)} ({relatieveTijd(i.laatstGekochtOp)})</span>
                   </span>
                   <button className="btn btn-g btn-sm" onClick={() => boodschappen.heractiveren(i.id)}>+ Weer op lijst</button>
                   <button

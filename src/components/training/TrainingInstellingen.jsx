@@ -14,6 +14,19 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
     };
   }
 
+  function voegOpbouwStapToe() {
+    const laatste = instellingen.opbouwStappen[instellingen.opbouwStappen.length - 1];
+    // Nieuwe stap start net iets zwaarder dan de laatste bestaande — geen
+    // zinloze duplicaat-percentage, en meteen een redelijk startpunt om
+    // verder bij te schaven.
+    const nieuwePct = Math.min(99, (laatste?.pct ?? 0) + 10);
+    bewaar({ opbouwStappen: [...instellingen.opbouwStappen, { pct: nieuwePct, reps: 2 }] });
+  }
+
+  function verwijderOpbouwStap(i) {
+    bewaar({ opbouwStappen: instellingen.opbouwStappen.filter((_, idx) => idx !== i) });
+  }
+
   function reset() {
     if (!window.confirm('Alle trainingsdata wissen? Dit is onomkeerbaar.')) return;
     onResetAlles();
@@ -66,6 +79,14 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
           waarde={instellingen.geluidFragment}
           onWaarde={(v) => bewaar({ geluidFragment: v })}
         />
+        <label className="ti-veld-grp" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--space-xs)', marginTop: 'var(--space-sm)' }}>
+          <input
+            type="checkbox"
+            checked={instellingen.pipAutomatisch}
+            onChange={(e) => bewaar({ pipAutomatisch: e.target.checked })}
+          />
+          <span className="ti-lbl" style={{ margin: 0 }}>Rusttimer automatisch als zwevend venster openen (Android)</span>
+        </label>
       </div>
 
       <div className="card">
@@ -151,10 +172,29 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
         <div className="td-label">Opbouwsets</div>
         <p className="ti-hint">
           De sets waarmee je opwarmt naar je werkgewicht — telkens een percentage van dat werkgewicht, met
-          een eigen aantal reps. Standaard 40/60/80% bij 5/3/2 reps.
+          een eigen aantal reps. Standaard 40/60/80% bij 5/3/2 reps. Geldt niet voor deadlift-achtige
+          oefeningen (die hebben altijd hun eigen, kortere opbouw).
         </p>
+        <div className="ti-veld-grp">
+          <label className="ti-veld-grp" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--space-xs)' }}>
+            <input
+              type="checkbox"
+              checked={instellingen.opbouwStartGewicht != null}
+              onChange={(e) => bewaar({ opbouwStartGewicht: e.target.checked ? instellingen.gewichtStap : null })}
+            />
+            <span className="ti-lbl" style={{ margin: 0 }}>Eigen startgewicht i.p.v. de lege stang</span>
+          </label>
+          {instellingen.opbouwStartGewicht != null && (
+            <input
+              type="number" className="ti-veld" min="0" step={instellingen.gewichtStap}
+              style={{ marginTop: 'var(--space-xs)' }}
+              value={instellingen.opbouwStartGewicht}
+              onChange={veld('opbouwStartGewicht', (v) => Math.max(0, parseFloat(v) || 0))}
+            />
+          )}
+        </div>
         {instellingen.opbouwStappen.map((stap, i) => (
-          <div className="ti-rij" key={i}>
+          <div className="ti-rij ti-rij-ob" key={i}>
             <div className="ti-veld-grp">
               <label className="ti-lbl" htmlFor={`ti-ob-pct-${i}`}>Stap {i + 1} — % van werkgewicht</label>
               <input
@@ -169,8 +209,13 @@ export default function TrainingInstellingen({ instellingen, bewaar, onResetAlle
                 value={stap.reps} onChange={pasOpbouwStap(i, 'reps', (v) => Math.max(1, parseInt(v) || 1))}
               />
             </div>
+            <button
+              type="button" className="btn btn-g btn-sm ti-rij-verwijder" aria-label={`Stap ${i + 1} verwijderen`}
+              onClick={() => verwijderOpbouwStap(i)}
+            >✕</button>
           </div>
         ))}
+        <button type="button" className="btn btn-g btn-sm" onClick={voegOpbouwStapToe}>+ Stap toevoegen</button>
       </div>
 
       <button className="btn btn-danger btn-sm" onClick={reset}>Trainingsdata wissen</button>

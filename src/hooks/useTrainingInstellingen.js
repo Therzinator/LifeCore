@@ -12,8 +12,18 @@ const STANDAARD = {
   stangCurl: 10,
   runKm: 25,
   opbouwStappen: OPBOUW_STAPPEN_STANDAARD,
+  // null = ongewijzigd gedrag (opbouwreeks begint bij de lege stang) — zie
+  // berekenOpbouwsets() in opbouw.js. Getal (kg) = eigen beginpunt i.p.v.
+  // de kale stang.
+  opbouwStartGewicht: null,
   programmaOvergangsdatum: null,
   geluidFragment: 'tweetonen',
+  // Opent de rusttimer automatisch als zwevend Picture-in-Picture-venster
+  // zodra een rustperiode start (zie usePipTimer.js) — zo staat 'm al klaar
+  // tegen de tijd dat je de app minimaliseert, i.p.v. dat je zelf op 'Open
+  // als zwevend venster' moet tikken. Alleen effect op platforms waar PiP
+  // ondersteund is (o.a. Android); elders negeert de hook dit stilzwijgend.
+  pipAutomatisch: true,
   eenheid: 'kg',
   // Voorkeurstijden voor de Agenda's lift/cardio-dag-suggesties (zie
   // agendaSignalen.js trainingCardioSignalen) — 's ochtends het liefst, met

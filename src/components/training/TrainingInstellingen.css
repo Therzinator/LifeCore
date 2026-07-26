@@ -23,6 +23,10 @@
 .ti-rij { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 .ti-rij .ti-veld-grp { flex: 1; min-width: 120px; }
 
+.ti-rij-ob { align-items: flex-end; }
+.ti-rij-ob .ti-veld-grp { min-width: 90px; }
+.ti-rij-ob .ti-rij-verwijder { flex: 0 0 auto; margin-bottom: var(--space-sm); }
+
 .ti-toggle-rij {
   display: flex;
   align-items: center;

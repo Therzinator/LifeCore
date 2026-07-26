@@ -34,21 +34,20 @@ export default defineConfig({
       // standaard geïnjecteerde registerSW.js doet dat niet en laat een
       // nieuwe versie stil in de 'waiting'-status hangen.
       injectRegister: false,
-      workbox: {
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            // Oefening-afbeeldingen (Free Exercise DB) — na de eerste keer
-            // bekijken ook offline beschikbaar, i.p.v. elke keer opnieuw op te
-            // halen van GitHub.
-            urlPattern: ({ url }) => url.hostname === 'raw.githubusercontent.com',
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'lifecore-oefening-afbeeldingen',
-              expiration: { maxEntries: 100, maxAgeSeconds: 180 * 24 * 60 * 60 },
-            },
-          },
-        ],
+      // injectManifest i.p.v. de standaard generateSW: die laatste genereert
+      // de hele service worker automatisch en laat geen ruimte voor eigen
+      // event-listeners. Nodig sinds src/sw.js zelf notificationclick afvangt
+      // (zie useRustTimer.js toonEindNotificatie) — zonder die listener bleef
+      // een systeemnotificatie na een tik gewoon in de meldingenbalk hangen.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      injectManifest: {
+        // Sourcemaps van de service worker zelf horen niet in de precache-
+        // manifest te belanden (die verandert bij elke build en zou de app-
+        // shell-cache onnodig laten 'bijwerken' terwijl er niets functioneels
+        // wijzigde).
+        globIgnores: ['**/sw.js.map'],
       },
       manifest: {
         name: 'LifeCore',

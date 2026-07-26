@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, useCallback, useContext } from 'react';
 import { useRustTimer } from '../hooks/useRustTimer.js';
 import { useTrainingInstellingen } from '../hooks/useTrainingInstellingen.js';
 import { usePipTimer } from '../hooks/usePipTimer.js';
@@ -17,7 +17,20 @@ export function RustTimerProvider({ children }) {
   const { instellingen } = useTrainingInstellingen();
   const timer = useRustTimer(instellingen.geluidFragment);
   const pip = usePipTimer(timer.resterend, timer.totaal, PIP_LABEL);
-  return <RustTimerContext.Provider value={{ ...timer, pip }}>{children}</RustTimerContext.Provider>;
+
+  // start() wordt altijd rechtstreeks vanuit een klik/tik (set afvinken)
+  // aangeroepen — dat is de enige geldige gelegenheid om ook meteen PiP te
+  // activeren (de Picture-in-Picture-API weigert een aanvraag die niet
+  // synchroon binnen zo'n user-gesture valt). Zo staat het zwevende venster
+  // al klaar tegen de tijd dat de gebruiker de app minimaliseert, i.p.v. dat
+  // ze daarvoor apart op 'Open als zwevend venster' moeten tikken.
+  const start = useCallback((seconden, tussensignaal) => {
+    timer.start(seconden, tussensignaal);
+    if (instellingen.pipAutomatisch && pip.ondersteund && !pip.actief) pip.activeer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- timer.start/pip.activeer zijn stabiele useCallback-referenties; alleen instellingen.pipAutomatisch/pip.ondersteund/pip.actief bepalen het gedrag hier.
+  }, [instellingen.pipAutomatisch, pip.ondersteund, pip.actief]);
+
+  return <RustTimerContext.Provider value={{ ...timer, start, pip }}>{children}</RustTimerContext.Provider>;
 }
 
 export function useRustTimerContext() {

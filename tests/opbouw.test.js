@@ -41,4 +41,15 @@ describe('berekenOpbouwsets', () => {
     const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'squat');
     expect(sets.map((s) => s.label)).toEqual(['Lege stang', '40%', '60%', '80%']);
   });
+
+  it('gebruikt een eigen startgewicht i.p.v. de lege stang als dat is ingesteld', () => {
+    const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'squat', 30);
+    expect(sets.map((s) => s.label)).toEqual(['Startgewicht', '40%', '60%', '80%']);
+    expect(sets[0].gewicht).toBe(30);
+  });
+
+  it('negeert het eigen startgewicht voor deadlift-achtige oefeningen', () => {
+    const sets = berekenOpbouwsets(100, 'recht', 2.5, {}, undefined, 'deadlift', 30);
+    expect(sets.map((s) => s.label)).toEqual(['50%', '70%', '85%']);
+  });
 });

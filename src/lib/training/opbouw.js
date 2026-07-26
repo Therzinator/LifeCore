@@ -23,7 +23,7 @@ const OPBOUW_STAPPEN_DEADLIFT = [
 
 const DEADLIFT_ACHTIGE_IDS = new Set(['deadlift', 'sumo-deadlift']);
 
-export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap = 2.5, instStangen = {}, opbouwStappen = OPBOUW_STAPPEN_STANDAARD, oefeningId = null) {
+export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap = 2.5, instStangen = {}, opbouwStappen = OPBOUW_STAPPEN_STANDAARD, oefeningId = null, startGewicht = null) {
   const isDeadliftAchtig = DEADLIFT_ACHTIGE_IDS.has(oefeningId);
   const stappen = isDeadliftAchtig ? OPBOUW_STAPPEN_DEADLIFT : opbouwStappen;
   const stangGewicht = stangType === 'curl'
@@ -31,8 +31,16 @@ export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap 
     : (instStangen.stangRecht ?? STANG_RECHT_STD);
   const rond = (g) => Math.round(g / gewichtStap) * gewichtStap;
 
+  // startGewicht (optioneel, in Training-instellingen) overschrijft het
+  // standaard beginpunt van de opbouwreeks (de lege stang) — bv. voor wie
+  // altijd met een lichte startbelasting i.p.v. de kale stang begint. null
+  // = ongewijzigd gedrag (lege stang), ook voor deadlift-achtige oefeningen
+  // blijft de eigen, kortere reeks (zonder losse beginset) ongemoeid.
+  const beginGewicht = startGewicht ?? stangGewicht;
+  const beginLabel = startGewicht != null ? 'Startgewicht' : 'Lege stang';
+
   const kandidaten = [
-    ...(isDeadliftAchtig ? [] : [{ label: 'Lege stang', gewicht: stangGewicht, reps: 5 }]),
+    ...(isDeadliftAchtig ? [] : [{ label: beginLabel, gewicht: beginGewicht, reps: 5 }]),
     ...stappen.map((stap) => ({
       label: `${stap.pct}%`,
       gewicht: rond(werkgewicht * (stap.pct / 100)),

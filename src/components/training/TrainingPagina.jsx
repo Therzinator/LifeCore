@@ -126,7 +126,7 @@ export default function TrainingPagina({ toonToast }) {
 
     const oefeningen = programma.programma[letter].map((oef) => {
       const gewicht = profiel.profiel.gewichten[oef.id] ?? 20;
-      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen, oef.id).length;
+      const opbouwLengte = berekenOpbouwsets(gewicht, oef.stangType, instellingen.gewichtStap, instStangen, instellingen.opbouwStappen, oef.id, instellingen.opbouwStartGewicht).length;
       return {
         id: oef.id, naam: oef.naam, sets: oef.sets, reps: oef.reps, type: oef.type,
         stangType: oef.stangType, spier: oef.spier, increment: oef.increment ?? instellingen.gewichtStap,

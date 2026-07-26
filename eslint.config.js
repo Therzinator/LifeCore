@@ -48,7 +48,7 @@ export default [
   },
   {
     // Web Worker-context: geen window/document, wel self als globale scope.
-    files: ['**/*Worker.js'],
+    files: ['**/*Worker.js', 'src/sw.js'],
     languageOptions: {
       globals: { self: 'readonly' },
     },
