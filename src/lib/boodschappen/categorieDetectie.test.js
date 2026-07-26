@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bepaalCategorie, groepeerOpAfdeling } from './categorieDetectie.js';
+import { bepaalCategorie, groepeerOpAfdeling, normaliseerTekst } from './categorieDetectie.js';
 
 describe('bepaalCategorie', () => {
   it('herkent groente en fruit', () => {
@@ -24,6 +24,23 @@ describe('bepaalCategorie', () => {
   it('valt terug op Overig voor een onbekend item', () => {
     expect(bepaalCategorie('een heel vreemd verzonnen ding')).toBe('Overig');
   });
+
+  it('geeft een handmatige overschrijving voorrang boven de trefwoord-detectie', () => {
+    const overrides = { hummus: 'Voorraadkast' };
+    expect(bepaalCategorie('hummus', overrides)).toBe('Voorraadkast');
+    expect(bepaalCategorie('Hummus', overrides)).toBe('Voorraadkast');
+  });
+
+  it('valt terug op trefwoord-detectie als er geen overschrijving voor die tekst is', () => {
+    const overrides = { hummus: 'Voorraadkast' };
+    expect(bepaalCategorie('appel', overrides)).toBe('Groente & Fruit');
+  });
+});
+
+describe('normaliseerTekst', () => {
+  it('trimt en verlaagt naar kleine letters, consistent met bepaalCategorie', () => {
+    expect(normaliseerTekst('  Hummus  ')).toBe('hummus');
+  });
 });
 
 describe('groepeerOpAfdeling', () => {
@@ -41,5 +58,12 @@ describe('groepeerOpAfdeling', () => {
 
   it('geeft een lege lijst terug zonder crash bij geen items', () => {
     expect(groepeerOpAfdeling([])).toEqual([]);
+  });
+
+  it('gebruikt overschrijvingen bij het groeperen, ook als dat een item naar een andere afdeling verplaatst', () => {
+    const items = [{ id: '1', tekst: 'hummus' }, { id: '2', tekst: 'appel' }];
+    const groepen = groepeerOpAfdeling(items, 'tekst', { hummus: 'Voorraadkast' });
+    expect(groepen.map((g) => g.afdeling)).toEqual(['Groente & Fruit', 'Voorraadkast']);
+    expect(groepen.find((g) => g.afdeling === 'Voorraadkast').items.map((i) => i.id)).toEqual(['1']);
   });
 });

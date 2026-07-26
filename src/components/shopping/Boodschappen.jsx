@@ -9,7 +9,7 @@ function exacteDatum(isoDatum) {
   return new Date(isoDatum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 import { detecteerFavorieten, detecteerPopulair } from '../../lib/werk/boodschappenLeren.js';
-import { groepeerOpAfdeling } from '../../lib/boodschappen/categorieDetectie.js';
+import { groepeerOpAfdeling, AFDELINGEN } from '../../lib/boodschappen/categorieDetectie.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
 import '../werk/HuishoudTaken.css';
@@ -18,13 +18,25 @@ import './Boodschappen.css';
 // Eén regel van de boodschappenlijst — los getrokken zodat 'm zowel binnen
 // een afdelingsgroep als (voor 'laatst gekocht', dat niet gegroepeerd is)
 // los gebruikt kan worden.
-function BoodschapItem({ item, boodschappen }) {
+// categorie: de huidige effectieve afdeling (override, of anders de
+// trefwoord-detectie) — meegegeven vanuit de groepering in Boodschappen
+// zodat hier niet opnieuw bepaald hoeft te worden welke afdeling actief is.
+function BoodschapItem({ item, boodschappen, categorie }) {
   return (
-    <div className="hh-item">
+    <div className="hh-item bd-item">
       <button className="hh-check" onClick={() => boodschappen.toggleGekocht(item.id)} aria-label="Markeer als gekocht" title="Gekocht" />
       <span className="hh-tekst">
         <BewerkbareTekst waarde={item.tekst} onWijzig={(t) => boodschappen.hernoemItem(item.id, t)} label="Naam" />
       </span>
+      <select
+        className="bd-categorie-select"
+        value={categorie}
+        onChange={(e) => boodschappen.zetCategorie(item.tekst, e.target.value)}
+        aria-label={`Supermarktafdeling voor ${item.tekst}`}
+        title="Supermarktafdeling aanpassen"
+      >
+        {AFDELINGEN.map((a) => <option key={a} value={a}>{a}</option>)}
+      </select>
       <div className="bd-aantal-ctrl">
         <button className="wt-mini-btn" onClick={() => boodschappen.zetAantal(item.id, item.aantal - 1)}>−</button>
         <span className="bd-aantal-val">{item.aantal}</span>
@@ -43,7 +55,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
   const [toonLaatstGekocht, setToonLaatstGekocht] = useState(false);
 
   const actief = boodschappen.items.filter((i) => i.opLijst);
-  const afdelingen = groepeerOpAfdeling(actief);
+  const afdelingen = groepeerOpAfdeling(actief, 'tekst', boodschappen.categorieOverrides);
   const laatstGekocht = boodschappen.items
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
     .sort((a, b) => new Date(b.laatstGekochtOp) - new Date(a.laatstGekochtOp));
@@ -131,7 +143,7 @@ export default function Boodschappen({ boodschappen, toonToast }) {
           <div key={afdeling} style={{ marginBottom: 'var(--space-sm)' }}>
             <label className="ti-lbl">{afdeling}</label>
             <div className="hh-lijst">
-              {items.map((i) => <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} />)}
+              {items.map((i) => <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} categorie={afdeling} />)}
             </div>
           </div>
         ))}

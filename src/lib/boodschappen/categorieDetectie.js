@@ -70,19 +70,33 @@ const VLAKKE_LIJST = Object.entries(TREFWOORDEN)
   .flatMap(([afdeling, woorden]) => woorden.map((woord) => ({ afdeling, woord })))
   .sort((a, b) => b.woord.length - a.woord.length);
 
-export function bepaalCategorie(tekst) {
+// overrides: { [genormaliseerdeTekst]: afdeling } — een gebruiker kan de
+// trefwoorden-detectie voor een specifiek product blijvend corrigeren (zie
+// zetCategorieOverride hieronder); die correctie krijgt voorrang boven de
+// automatische trefwoordmatch, en geldt daardoor voor élk item met diezelfde
+// naam, ook toekomstige — niet alleen het ene item dat op het moment van
+// corrigeren bestond.
+export function bepaalCategorie(tekst, overrides = {}) {
   const schoon = tekst.trim().toLowerCase();
+  if (overrides[schoon]) return overrides[schoon];
   const match = VLAKKE_LIJST.find(({ woord }) => schoon.includes(woord));
   return match?.afdeling ?? 'Overig';
+}
+
+// Genormaliseerde sleutel voor de overrides-lookup — los getrokken zodat de
+// UI (Boodschappen.jsx) exact dezelfde normalisatie gebruikt bij het
+// wegschrijven van een correctie als bepaalCategorie bij het opzoeken ervan.
+export function normaliseerTekst(tekst) {
+  return tekst.trim().toLowerCase();
 }
 
 // Groepeert items per afdeling, in de AFDELINGEN-looproute — lege
 // afdelingen worden overgeslagen zodat de lijst niet vol leeg-witruimte
 // staat op een dag met maar een paar boodschappen.
-export function groepeerOpAfdeling(items, tekstVeld = 'tekst') {
+export function groepeerOpAfdeling(items, tekstVeld = 'tekst', overrides = {}) {
   const groepen = new Map(AFDELINGEN.map((a) => [a, []]));
   items.forEach((item) => {
-    const afdeling = bepaalCategorie(item[tekstVeld]);
+    const afdeling = bepaalCategorie(item[tekstVeld], overrides);
     groepen.get(afdeling).push(item);
   });
   return AFDELINGEN

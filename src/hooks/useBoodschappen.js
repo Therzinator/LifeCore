@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { leesLokaal, schrijfLokaal, nieuwRecord } from '../lib/storage/lokaal.js';
 import { datumKey } from '../utils/datum.js';
+import { normaliseerTekst } from '../lib/boodschappen/categorieDetectie.js';
 import {
   haalItems, voegItemToe as voegItemToeGedeeld, werkItemBij, verwijderItem as verwijderItemGedeeld,
   abonneerOpItems, rijNaarItem,
@@ -8,6 +9,9 @@ import {
 import {
   haalBeurten, logBoodschappenBeurt, abonneerOpBeurten,
 } from '../lib/supabase/boodschappenBeurtenGedeeld.js';
+import {
+  haalCategorieOverrides, zetCategorieOverride, abonneerOpCategorieOverrides,
+} from '../lib/supabase/boodschappenCategorieGedeeld.js';
 
 function leegRecord() {
   return nieuwRecord({ items: [] });
@@ -54,6 +58,11 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
   const [beurtenRecord, setBeurtenRecordState] = useState(() => (
     huishoudenId ? leegBeurtenRecord() : leesLokaal('boodschappen_beurten', leegBeurtenRecord())
   ));
+  // { [genormaliseerdeTekst]: afdeling } — corrigeert de automatische
+  // trefwoord-detectie (categorieDetectie.js) blijvend per productnaam.
+  const [categorieOverrides, setCategorieOverrides] = useState(() => (
+    huishoudenId ? {} : leesLokaal('boodschappen_categorie_overrides', {})
+  ));
 
   useEffect(() => {
     if (!huishoudenId) return undefined;
@@ -78,6 +87,19 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     }
     laad();
     const stopAbonnement = abonneerOpBeurten(huishoudenId, laad);
+    return () => { actief = false; stopAbonnement(); };
+  }, [huishoudenId]);
+
+  useEffect(() => {
+    if (!huishoudenId) return undefined;
+
+    let actief = true;
+    async function laad() {
+      const overrides = await haalCategorieOverrides(huishoudenId);
+      if (actief) setCategorieOverrides(overrides);
+    }
+    laad();
+    const stopAbonnement = abonneerOpCategorieOverrides(huishoudenId, laad);
     return () => { actief = false; stopAbonnement(); };
   }, [huishoudenId]);
 
@@ -203,14 +225,35 @@ export function useBoodschappen(huishoudenId = null, userId = null) {
     });
   }, [huishoudenId]);
 
+  // Corrigeert de afdeling voor een productnaam blijvend (zie
+  // categorieDetectie.js bepaalCategorie) — geldt daardoor voor elk item met
+  // diezelfde (genormaliseerde) tekst, ook items die later worden toegevoegd.
+  const zetCategorie = useCallback((tekst, categorie) => {
+    const sleutel = normaliseerTekst(tekst);
+
+    if (huishoudenId) {
+      setCategorieOverrides((huidig) => ({ ...huidig, [sleutel]: categorie }));
+      zetCategorieOverride(huishoudenId, sleutel, categorie);
+      return;
+    }
+
+    setCategorieOverrides((huidig) => {
+      const bijgewerkt = { ...huidig, [sleutel]: categorie };
+      schrijfLokaal('boodschappen_categorie_overrides', bijgewerkt);
+      return bijgewerkt;
+    });
+  }, [huishoudenId]);
+
   return {
     items: record.items ?? [],
     beurten: beurtenRecord.beurten ?? [],
+    categorieOverrides,
     voegToe,
     zetAantal,
     toggleGekocht,
     heractiveren,
     hernoemItem,
     verwijder,
+    zetCategorie,
   };
 }

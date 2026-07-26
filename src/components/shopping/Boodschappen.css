@@ -1,6 +1,29 @@
 .bd-aantal-ctrl { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .bd-aantal-val { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); min-width: 16px; text-align: center; }
 
+/* .hh-item is een normale flex-rij zonder wrap (gedeeld met andere lijsten,
+   bv. Huishouden) — met de categorie-select erbij passen alle knoppen niet
+   meer naast een langere boodschap-naam op smalle schermen (de naam werd
+   afgekapt). .bd-item laat de rij daarom wél wrappen: de naam blijft op
+   zijn eigen regel, checkbox/select/aantal/verwijder wrappen zo nodig naar
+   een tweede regel i.p.v. de naam te verdringen. */
+.bd-item { flex-wrap: wrap; }
+.bd-item .hh-tekst { flex-basis: 140px; }
+
+/* Compact gehouden (max-width + kleine tekst) — de afdelingsnamen kunnen
+   lang zijn ('Huishouden & Verzorging'), maar dit staat op elke rij van de
+   lijst, dus mag niet domineren naast de boodschap-tekst zelf. */
+.bd-categorie-select {
+  flex-shrink: 0;
+  max-width: 84px;
+  font-size: var(--font-size-xs);
+  color: var(--txt-muted);
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  padding: 2px 2px;
+}
+
 .bd-inklap-knop {
   display: flex;
   align-items: center;
