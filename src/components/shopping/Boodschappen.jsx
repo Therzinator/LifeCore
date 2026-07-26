@@ -10,6 +10,9 @@ function exacteDatum(isoDatum) {
 }
 import { detecteerFavorieten, detecteerPopulair } from '../../lib/werk/boodschappenLeren.js';
 import { groepeerOpAfdeling, AFDELINGEN } from '../../lib/boodschappen/categorieDetectie.js';
+import { ketenNaarSlug, slugNaarNaam } from '../../lib/boodschappen/supermarktKetens.js';
+import { groepeerPerSupermarkt } from '../../lib/boodschappen/aanbiedingSamenvatting.js';
+import { checkAanbiedingen } from '../../lib/supabase/aanbiedingCheck.js';
 import SpraakInvoer from '../werk/SpraakInvoer.jsx';
 import BewerkbareTekst from '../ui/BewerkbareTekst.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
@@ -23,12 +26,21 @@ import './Boodschappen.css';
 // categorie: de huidige effectieve afdeling (override, of anders de
 // trefwoord-detectie) — meegegeven vanuit de groepering in Boodschappen
 // zodat hier niet opnieuw bepaald hoeft te worden welke afdeling actief is.
-function BoodschapItem({ item, boodschappen, categorie }) {
+// aanbieding: de beste gevonden kandidaat voor dit item (of undefined) —
+// resultaat van de handmatige 'Aanbiedingen checken'-actie in Boodschappen,
+// hier alleen weergegeven, niet zelf opgehaald.
+function BoodschapItem({ item, boodschappen, categorie, aanbieding }) {
   return (
     <div className="hh-item bd-item">
       <button className="hh-check" onClick={() => boodschappen.toggleGekocht(item.id)} aria-label="Markeer als gekocht" title="Gekocht" />
       <span className="hh-tekst">
         <BewerkbareTekst waarde={item.tekst} onWijzig={(t) => boodschappen.hernoemItem(item.id, t)} label="Naam" />
+        {aanbieding && (
+          <span className="bd-aanbieding-badge" title={aanbieding.naam}>
+            🏷️ €{aanbieding.prijs.toFixed(2)} bij {slugNaarNaam(aanbieding.retailer)}
+            {aanbieding.voordeel > 0 && ` (−€${aanbieding.voordeel.toFixed(2)})`}
+          </span>
+        )}
       </span>
       <select
         className="bd-categorie-select"
@@ -67,9 +79,30 @@ function BoodschapItem({ item, boodschappen, categorie }) {
 export default function Boodschappen({ boodschappen, toonToast }) {
   const [invoer, setInvoer] = useState('');
   const [toonLaatstGekocht, setToonLaatstGekocht] = useState(false);
+  const [aanbiedingen, setAanbiedingen] = useState({}); // { [itemId]: kandidaten[] }
+  const [aanbiedingenBezig, setAanbiedingenBezig] = useState(false);
 
   const actief = boodschappen.items.filter((i) => i.opLijst);
   const afdelingen = groepeerOpAfdeling(actief, 'tekst', boodschappen.categorieOverrides);
+  const supermarktSamenvatting = groepeerPerSupermarkt(actief, aanbiedingen);
+
+  // Handmatige actie (geen automatische achtergrond-check) — vraagt de
+  // PrijsProfeet-Edge Function per boodschap de actuele aanbiedingen op.
+  // Best-effort matching: de zoekopdracht is kale tekst, geen EAN-matching
+  // (die zit in het Pro-plan), dus niet elk resultaat is per se relevant —
+  // vandaar dat dit alleen als suggestie getoond wordt, niet automatisch aan
+  // de lijst zelf toegevoegd.
+  async function aanbiedingenChecken() {
+    if (actief.length === 0) { toonToast('Niets op de lijst om te checken', 'wn'); return; }
+    setAanbiedingenBezig(true);
+    const ketenSlugs = boodschappen.ketens.map(ketenNaarSlug).filter(Boolean);
+    const resultaat = await checkAanbiedingen(actief.map((i) => ({ id: i.id, tekst: i.tekst })), ketenSlugs);
+    setAanbiedingenBezig(false);
+    if (!resultaat) { toonToast('Kon aanbiedingen niet ophalen — alleen online beschikbaar', 'wn'); return; }
+    setAanbiedingen(resultaat);
+    const aantalGevonden = Object.values(resultaat).filter((k) => k.length > 0).length;
+    toonToast(aantalGevonden > 0 ? `${aantalGevonden} aanbieding(en) gevonden` : 'Geen actuele aanbiedingen gevonden voor deze lijst', aantalGevonden > 0 ? 'ok' : 'neu');
+  }
   const laatstGekocht = boodschappen.items
     .filter((i) => !i.opLijst && i.laatstGekochtOp)
     .sort((a, b) => new Date(b.laatstGekochtOp) - new Date(a.laatstGekochtOp));
@@ -158,15 +191,44 @@ export default function Boodschappen({ boodschappen, toonToast }) {
       <div className="card">
         <div className="td-label">Boodschappenlijst ({actief.length})</div>
         {actief.length === 0 && <p className="of-stap-tekst">Niets op de lijst.</p>}
+        {actief.length > 0 && (
+          <button
+            type="button" className="btn btn-g btn-sm" style={{ marginBottom: 'var(--space-sm)' }}
+            onClick={aanbiedingenChecken} disabled={aanbiedingenBezig}
+          >
+            {aanbiedingenBezig ? 'Aanbiedingen ophalen…' : '🏷️ Aanbiedingen checken'}
+          </button>
+        )}
         {afdelingen.map(({ afdeling, items }) => (
           <div key={afdeling} style={{ marginBottom: 'var(--space-sm)' }}>
             <label className="ti-lbl">{afdeling}</label>
             <div className="hh-lijst">
-              {items.map((i) => <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} categorie={afdeling} />)}
+              {items.map((i) => (
+                <BoodschapItem key={i.id} item={i} boodschappen={boodschappen} categorie={afdeling} aanbieding={aanbiedingen[i.id]?.[0]} />
+              ))}
             </div>
           </div>
         ))}
       </div>
+
+      {supermarktSamenvatting.length > 0 && (
+        <div className="card">
+          <div className="td-label">Aanbiedingen per supermarkt</div>
+          {supermarktSamenvatting.map((g) => (
+            <div key={g.retailerSlug} style={{ marginBottom: 'var(--space-sm)' }}>
+              <label className="ti-lbl">{g.retailerNaam} — voordeel €{g.totaalVoordeel.toFixed(2)}</label>
+              <div className="hh-lijst">
+                {g.items.map((it) => (
+                  <div className="hh-item" key={it.itemId}>
+                    <span className="hh-tekst">{it.boodschapTekst}</span>
+                    <span className="hhp-werk-badge">€{it.prijs.toFixed(2)} (−€{it.voordeel.toFixed(2)})</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="card">
         <button type="button" className="bd-inklap-knop" onClick={() => setToonLaatstGekocht((v) => !v)}>

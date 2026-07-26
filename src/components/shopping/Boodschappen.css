@@ -10,6 +10,13 @@
 .bd-item { flex-wrap: wrap; }
 .bd-item .hh-tekst { flex-basis: 140px; }
 
+.bd-aanbieding-badge {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--accent);
+  margin-top: 2px;
+}
+
 /* Compact gehouden (max-width + kleine tekst) — de afdelingsnamen kunnen
    lang zijn ('Huishouden & Verzorging'), maar dit staat op elke rij van de
    lijst, dus mag niet domineren naast de boodschap-tekst zelf. */
