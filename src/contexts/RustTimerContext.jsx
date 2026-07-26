@@ -1,8 +1,11 @@
 import { createContext, useContext } from 'react';
 import { useRustTimer } from '../hooks/useRustTimer.js';
 import { useTrainingInstellingen } from '../hooks/useTrainingInstellingen.js';
+import { usePipTimer } from '../hooks/usePipTimer.js';
 
 const RustTimerContext = createContext(null);
+
+const PIP_LABEL = 'Rust · volgende set';
 
 // Eén instantie boven de paginawissel-logica in App.jsx, zodat een lopende
 // rusttimer een navigatie naar een andere module overleeft — zonder dit zou
@@ -13,7 +16,8 @@ const RustTimerContext = createContext(null);
 export function RustTimerProvider({ children }) {
   const { instellingen } = useTrainingInstellingen();
   const timer = useRustTimer(instellingen.geluidFragment);
-  return <RustTimerContext.Provider value={timer}>{children}</RustTimerContext.Provider>;
+  const pip = usePipTimer(timer.resterend, timer.totaal, PIP_LABEL);
+  return <RustTimerContext.Provider value={{ ...timer, pip }}>{children}</RustTimerContext.Provider>;
 }
 
 export function useRustTimerContext() {

@@ -45,3 +45,8 @@
   display: flex;
   gap: var(--space-xs);
 }
+
+.rt-pip {
+  width: 100%;
+  margin-top: var(--space-xs);
+}

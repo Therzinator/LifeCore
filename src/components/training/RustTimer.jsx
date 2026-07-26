@@ -16,6 +16,16 @@ export default function RustTimer({ timer }) {
         <button className="btn btn-g btn-sm" onClick={timer.stop}>Stop</button>
         <button className="btn btn-g btn-sm" onClick={() => timer.plus(30)}>+30s</button>
       </div>
+      {timer.pip.ondersteund && (
+        <button
+          type="button"
+          className="btn btn-g btn-sm rt-pip"
+          onClick={timer.pip.activeer}
+          disabled={timer.pip.actief}
+        >
+          {timer.pip.actief ? 'Zwevend venster actief ✓' : '⧉ Open als zwevend venster'}
+        </button>
+      )}
     </div>
   );
 }

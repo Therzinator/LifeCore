@@ -27,6 +27,7 @@ export default [
         MediaRecorder: 'readonly',
         OfflineAudioContext: 'readonly',
         Notification: 'readonly',
+        HTMLVideoElement: 'readonly',
         __APP_VERSION__: 'readonly',
       },
     },

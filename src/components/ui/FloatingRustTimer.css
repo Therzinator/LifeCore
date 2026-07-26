@@ -69,3 +69,20 @@
   font-size: var(--font-size-xs);
   color: var(--txt-muted);
 }
+
+.frt-pip {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-3);
+  color: var(--accent);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}

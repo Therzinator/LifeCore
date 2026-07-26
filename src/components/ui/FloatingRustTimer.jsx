@@ -67,6 +67,17 @@ export default function FloatingRustTimer({ timer, onNavigeerNaarTraining, verbo
         <span className="frt-val">{minuten}:{seconden < 10 ? '0' : ''}{seconden}</span>
       </div>
       <div className="frt-lbl">Rust</div>
+      {timer.pip.ondersteund && !timer.pip.actief && (
+        <button
+          type="button"
+          className="frt-pip"
+          aria-label="Open als zwevend venster"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); timer.pip.activeer(); }}
+        >
+          ⧉
+        </button>
+      )}
     </div>
   );
 }
