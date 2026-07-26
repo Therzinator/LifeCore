@@ -39,11 +39,26 @@ export function berekenOpbouwsets(werkgewicht, stangType = 'recht', gewichtStap 
   const beginGewicht = startGewicht ?? stangGewicht;
   const beginLabel = startGewicht != null ? 'Startgewicht' : 'Lege stang';
 
+  // Met een expliciet ingesteld startgewicht interpoleren de percentage-
+  // stappen lineair TUSSEN dat startgewicht en het werkgewicht — de opbouw
+  // moet daar 'tussenin' zitten, niet los een percentage van het
+  // werkgewicht (dat kan anders een niet-oplopende reeks geven zodra het
+  // startgewicht dicht bij het werkgewicht ligt, bv. bij een lichtere
+  // oefening). Zonder eigen startgewicht (null, de kale-stang-standaard)
+  // blijft de vertrouwde 'percentage van werkgewicht'-formule intact — dat
+  // is het gangbare warm-up-patroon en het gedrag dat elke bestaande
+  // gebruiker al kent.
+  const stapGewicht = (pct) => (
+    startGewicht != null && !isDeadliftAchtig
+      ? rond(startGewicht + (werkgewicht - startGewicht) * (pct / 100))
+      : rond(werkgewicht * (pct / 100))
+  );
+
   const kandidaten = [
     ...(isDeadliftAchtig ? [] : [{ label: beginLabel, gewicht: beginGewicht, reps: 5 }]),
     ...stappen.map((stap) => ({
       label: `${stap.pct}%`,
-      gewicht: rond(werkgewicht * (stap.pct / 100)),
+      gewicht: stapGewicht(stap.pct),
       reps: stap.reps,
     })),
   ];
