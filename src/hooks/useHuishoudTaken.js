@@ -77,7 +77,10 @@ export function useHuishoudTaken(huishoudenId = null, userId = null) {
     setRecordState((huidig) => {
       const log = { ...(huidig.log ?? {}) };
       const taakLog = { ...(log[taakId] ?? {}) };
-      taakLog[periode] = !taakLog[periode];
+      // Het echte tijdstip bewaren i.p.v. alleen true/false — isVerschuldigd
+      // in huishoudPeriode.js gebruikt dit om te bepalen wanneer de taak
+      // weer aan de beurt is, TEN OPZICHTE VAN het moment van afronden zelf.
+      taakLog[periode] = taakLog[periode] ? null : new Date().toISOString();
       log[taakId] = taakLog;
       const bijgewerkt = nieuwRecord({ ...huidig, log });
       schrijfLokaal('huishoud_taken', bijgewerkt);

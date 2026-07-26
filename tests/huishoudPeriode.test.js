@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { huidigePeriodeKey, percentageAfgerond, percentagePerWeek } from '../src/lib/werk/huishoudPeriode.js';
+import {
+  huidigePeriodeKey, percentageAfgerond, percentagePerWeek, laatstAfgerondOp, isVerschuldigd,
+} from '../src/lib/werk/huishoudPeriode.js';
 
 // Let op: test-tijdstippen gebruiken bewust 12:00 lokale tijd, niet middernacht
 // — een Date op exact lokale middernacht kan bij toISOString() een dag
@@ -63,5 +65,68 @@ describe('percentagePerWeek', () => {
 
   it('geeft lege lijsten zonder week-taken', () => {
     expect(percentagePerWeek([], {})).toEqual({ labels: [], percentages: [] });
+  });
+});
+
+describe('laatstAfgerondOp', () => {
+  it('geeft null als de taak nog nooit is afgerond', () => {
+    const taak = { id: 'a', frequentie: 'week' };
+    expect(laatstAfgerondOp(taak, {})).toBeNull();
+    expect(laatstAfgerondOp(taak, { a: {} })).toBeNull();
+  });
+
+  it('geeft het meest recente afrondingstijdstip, ook als er meerdere gelogd staan', () => {
+    const taak = { id: 'a', frequentie: 'week' };
+    const log = {
+      a: {
+        '2026-01-05': '2026-01-08T10:00:00.000Z',
+        '2026-01-19': '2026-01-21T14:30:00.000Z',
+        '2026-01-12': null, // ongedaan gemaakte afvinking telt niet mee
+      },
+    };
+    expect(laatstAfgerondOp(taak, log)).toEqual(new Date('2026-01-21T14:30:00.000Z'));
+  });
+
+  it('is precies op het echte afrondingstijdstip, ook als dat laat in de periode valt', () => {
+    // Weektaak op zondag afgerond (6 dagen na de maandag-periodesleutel) —
+    // laatstAfgerondOp moet die zondag geven, niet de maandag ervoor (dat
+    // zou de taak tot 6 dagen te vroeg als verschuldigd tonen).
+    const taak = { id: 'a', frequentie: 'week' };
+    const zondag = '2026-01-11T18:00:00.000Z';
+    const log = { a: { '2026-01-05': zondag } };
+    expect(laatstAfgerondOp(taak, log)).toEqual(new Date(zondag));
+  });
+});
+
+describe('isVerschuldigd', () => {
+  it('is verschuldigd als de taak nog nooit is afgerond', () => {
+    expect(isVerschuldigd({ id: 'a', frequentie: 'week' }, {})).toBe(true);
+  });
+
+  it('wordt pas verschuldigd zodra de frequentie in dagen verstreken is sinds de laatste afronding', () => {
+    const taak = { id: 'a', frequentie: 'week' };
+    const log = { a: { '2026-01-05': new Date(2026, 0, 5, 9).toISOString() } };
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 11, 12))).toBe(false); // 6 dagen later
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 12, 12))).toBe(true); // 7 dagen later
+
+  });
+
+  it('blijft niet-verschuldigd tot 7 dagen na een LATE afronding, niet na de kalenderweek', () => {
+    // Weektaak afgerond op zondag i.p.v. maandag — de 7 dagen tellen vanaf
+    // die zondag, dus de eerstvolgende maandag (1 dag later) is nog niet
+    // verschuldigd, ook al is de kalenderweek dan alweer voorbij.
+    const taak = { id: 'a', frequentie: 'week' };
+    const zondag = new Date(2026, 0, 11, 18);
+    const log = { a: { '2026-01-05': zondag.toISOString() } };
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 12, 12))).toBe(false);
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 18, 19))).toBe(true); // 7 dagen na zondag
+  });
+
+  it('gebruikt intervalDagen voor frequentie "aangepast"', () => {
+    const taak = { id: 'd', frequentie: 'aangepast', intervalDagen: 3 };
+    const afgerond = new Date(2026, 0, 5, 12).toISOString();
+    const log = { d: { [huidigePeriodeKey('aangepast', new Date(2026, 0, 5, 12), 3)]: afgerond } };
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 6, 12))).toBe(false);
+    expect(isVerschuldigd(taak, log, new Date(2026, 0, 10, 12))).toBe(true);
   });
 });

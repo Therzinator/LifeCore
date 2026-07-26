@@ -32,6 +32,45 @@ export function huidigePeriodeKey(frequentie, nu = new Date(), intervalDagen = n
   return maandagVan(nu);
 }
 
+// Aantal dagen dat bij een frequentie hoort — de bandbreedte waarbinnen een
+// taak weer 'verschuldigd' wordt TEN OPZICHTE VAN de laatst afgeronde
+// periode, i.p.v. een vaste kalendergrens (week/maand) die altijd op een
+// vast ritme reset ongeacht wanneer de taak daadwerkelijk gedaan is.
+function intervalInDagen(frequentie, intervalDagen) {
+  if (frequentie === 'maand') return 30;
+  if (frequentie === 'aangepast') return intervalDagen > 0 ? intervalDagen : 30;
+  return 7;
+}
+
+// Meest recente tijdstip waarop een taak daadwerkelijk is afgerond. De
+// periode-log slaat sinds kort per periode-sleutel het echte afrondings-
+// tijdstip op (ISO-string) i.p.v. alleen true/false — zie useHuishoudTaken.js
+// (lokaal) en huishoudGedeeld.js logRijenNaarMap (gedeeld, leest het
+// afgerond_op-veld dat al in de db stond maar voorheen genegeerd werd).
+// Bewust NIET afgeleid uit de periode-SLEUTEL zelf (bv. de maandag van de
+// week): dat zou een systematische bias van tot wel bijna de hele
+// periodelengte geven voor wie een taak laat in de periode afrondt (bv. een
+// weektaak die je op zondag doet zou dan al zes dagen 'te vroeg' als
+// verschuldigd getoond worden na de eerstvolgende maandag).
+export function laatstAfgerondOp(taak, log) {
+  const taakLog = log?.[taak.id];
+  if (!taakLog) return null;
+  const tijdstippen = Object.values(taakLog).filter(Boolean).map((v) => new Date(v));
+  if (tijdstippen.length === 0) return null;
+  return tijdstippen.reduce((laatste, d) => (d > laatste ? d : laatste));
+}
+
+// Moet deze taak nu als suggestie klaarstaan? Nooit afgerond, of de
+// ingestelde frequentie is verstreken sinds de laatst afgeronde periode —
+// pas zodra de taak weer wordt afgerond begint de 'timer' opnieuw vanaf dat
+// moment, in plaats van automatisch te resetten op een vaste kalendergrens.
+export function isVerschuldigd(taak, log, nu = new Date()) {
+  const laatst = laatstAfgerondOp(taak, log);
+  if (!laatst) return true;
+  const dagen = Math.floor((nu - laatst) / (1000 * 60 * 60 * 24));
+  return dagen >= intervalInDagen(taak.frequentie, taak.intervalDagen);
+}
+
 // Eerste dag van de huidige cyclus van een 'aangepast'-interval-taak, als
 // datumKey-string — dezelfde epoch-verankerde cyclusgrens als aangepastKey
 // hierboven. Gebruikt om een 'standaard in agenda'-herhalend blok (zie

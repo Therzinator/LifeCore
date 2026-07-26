@@ -9,12 +9,16 @@ export function rijNaarTaak(rij) {
 }
 
 // Logregels (één rij per afgevinkte periode) -> dezelfde geneste
-// {taakId: {periode: true}}-vorm die de lokale blob-modus altijd al gebruikte.
+// {taakId: {periode: ...}}-vorm die de lokale blob-modus gebruikt — met als
+// waarde het echte afgerond_op-tijdstip (al aanwezig in de db, voorheen
+// genegeerd) i.p.v. kaal true, zodat isVerschuldigd (huishoudPeriode.js) kan
+// bepalen wanneer de taak weer aan de beurt is vanaf het moment van afronden
+// zelf, niet vanaf een vaste kalendergrens.
 export function logRijenNaarMap(rijen) {
   const log = {};
   for (const rij of rijen ?? []) {
     if (!log[rij.taak_id]) log[rij.taak_id] = {};
-    log[rij.taak_id][rij.periode] = true;
+    log[rij.taak_id][rij.periode] = rij.afgerond_op;
   }
   return log;
 }

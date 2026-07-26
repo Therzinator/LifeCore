@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { parseSpraakTekst } from '../../lib/werk/tekstParser.js';
-import { percentageAfgerond, huidigePeriodeKey } from '../../lib/werk/huishoudPeriode.js';
+import { percentageAfgerond, huidigePeriodeKey, isVerschuldigd } from '../../lib/werk/huishoudPeriode.js';
 import SpraakInvoer from './SpraakInvoer.jsx';
 import GetalVeld from '../ui/GetalVeld.jsx';
 import './HuishoudTaken.css';
@@ -27,6 +27,10 @@ export default function HuishoudTaken({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- alleen bij het geladen worden checken/bootstrappen; latere taak-toevoegingen hoeven geen nieuwe generatie te triggeren (zie useHuishoudWeekschema).
   }, [huishoudTaken.geladen, weekschema.geladen]);
 
+  function voltooi(taak) {
+    huishoudTaken.toggleDezePeriode(taak.id, taak.frequentie, taak.intervalDagen);
+  }
+
   function takenToevoegen() {
     const teksten = parseSpraakTekst(invoer);
     if (teksten.length === 0) { toonToast('Geen taken gevonden in de tekst', 'wn'); return; }
@@ -39,6 +43,10 @@ export default function HuishoudTaken({
   const maandStats = percentageAfgerond(huishoudTaken.taken, huishoudTaken.log, 'maand');
   const huidigeWeek = huidigePeriodeKey('week');
   const huidigeMaand = huidigePeriodeKey('maand');
+  // Los van de vaste kalendergrens hieronder (die per week/maand reset,
+  // ongeacht wanneer de taak echt gedaan is) — een taak staat hier zodra de
+  // ingestelde frequentie verstreken is sinds de laatst afgeronde periode.
+  const suggesties = huishoudTaken.taken.filter((t) => isVerschuldigd(t, huishoudTaken.log));
 
   return (
     <div>
@@ -61,6 +69,24 @@ export default function HuishoudTaken({
           </div>
         )}
       </div>
+
+      {suggesties.length > 0 && (
+        <div className="card">
+          <div className="td-label">Suggesties</div>
+          <p className="ti-hint">
+            Verschuldigd op basis van wanneer je &apos;m voor het laatst hebt afgerond — niet op een vaste
+            week-/maandgrens. Pas na afronden telt de frequentie weer opnieuw vanaf dat moment.
+          </p>
+          <div className="hh-lijst">
+            {suggesties.map((t) => (
+              <div className="hh-item" key={t.id}>
+                <span className="hh-tekst">{t.tekst}</span>
+                <button className="btn btn-p btn-sm" onClick={() => voltooi(t)}>✓ Gedaan</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <SpraakInvoer waarde={invoer} onWaarde={setInvoer} placeholder="bijv. was doen, ramen zemen, stofzuigen..." />
