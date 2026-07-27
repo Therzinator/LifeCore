@@ -2,9 +2,10 @@ import { useWelzijnInstellingen } from './useWelzijnInstellingen.js';
 import { useVragenlijstGeschiedenis } from './useVragenlijstGeschiedenis.js';
 import { useWerkInstellingen } from './useWerkInstellingen.js';
 import { useTrainingInstellingen } from './useTrainingInstellingen.js';
+import { useEigenBedrijfInstellingen } from './useEigenBedrijfInstellingen.js';
 import {
   trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
-  huishoudTaakSignalen,
+  huishoudTaakSignalen, eigenBedrijfBlokSignalen,
 } from '../lib/agenda/agendaSignalen.js';
 
 // Dunne hook, zelfde opzet als useKruisSignalen: leest de bron-hooks van
@@ -26,6 +27,7 @@ export function useAgendaSignalen(
   const welzijnGeschiedenis = useVragenlijstGeschiedenis('welzijn_check');
   const { instellingen: werkInstellingen } = useWerkInstellingen();
   const { instellingen: trainingInstellingen } = useTrainingInstellingen();
+  const { instellingen: eigenBedrijfInstellingen } = useEigenBedrijfInstellingen();
 
   const voorkeurTijden = {
     ochtend: trainingInstellingen.voorkeurTijdOchtend,
@@ -39,6 +41,7 @@ export function useAgendaSignalen(
     ...klusjesDagSignalen(bereikStart, bereikEind, werkInstellingen.klusjesDag, dagTypeOverrides),
     ...huishoudProjectSignalen(huishoudProjecten, bereikStart, bereikEind),
     ...huishoudTaakSignalen(huishoudTaken.taken, huishoudTaken.log, bereikStart, bereikEind),
+    ...eigenBedrijfBlokSignalen(bereikStart, bereikEind, eigenBedrijfInstellingen.blokken),
     welzijnSignaal(welzijnGeschiedenis.laatste?.datum, welzijnInstellingen.cadansDagen),
   ].filter((s) => s && s.datum >= bereikStart && s.datum <= bereikEind)
     .sort((a, b) => a.datum.localeCompare(b.datum));

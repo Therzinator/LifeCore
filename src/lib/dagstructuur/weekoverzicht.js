@@ -1,5 +1,6 @@
 import { dagIndexVan, maandagVan, datumKey } from '../../utils/datum.js';
 import { CARDIO_ACTIVITEITEN } from '../cardio/checklist.js';
+import { blokkenVoorDagIndex } from '../eigenbedrijf/blokken.js';
 
 const DAG_LABELS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
 
@@ -18,8 +19,12 @@ function isCardioGedaanOp(cardioDagenRecord, datumIso) {
 }
 
 // Combineert training-liftdagen en cardio-activiteit tot één 7-daags
-// overzicht van de huidige week (maandag t/m zondag).
-export function bepaalWeekoverzicht(trainingSessies, cardioDagenRecord) {
+// overzicht van de huidige week (maandag t/m zondag). eigenBedrijfBlokken
+// is additief — het overschrijft nooit het lift/cardio/rust-type van een
+// dag (di/do/za zijn al cardio-dagen), maar levert een los 'eigenBedrijf'-
+// veld op zodat de UI er een eigen merkje bovenop kan tonen. De default []
+// houdt bestaande aanroepers (en tests/weekoverzicht.test.js) ongewijzigd.
+export function bepaalWeekoverzicht(trainingSessies, cardioDagenRecord, eigenBedrijfBlokken = []) {
   const vandaagIso = new Date().toISOString();
   const vandaagIndex = dagIndexVan(vandaagIso);
   const dezeMaandag = maandagVan(vandaagIso);
@@ -41,6 +46,9 @@ export function bepaalWeekoverzicht(trainingSessies, cardioDagenRecord) {
     const gedaan = type === 'lift' ? liftGedaan.has(i) : type === 'cardio' ? cardioGedaan.has(i) : null;
     const dagDatum = new Date(dezeMaandag);
     dagDatum.setDate(dagDatum.getDate() + i);
-    return { label, type, gedaan, vandaag: i === vandaagIndex, datum: datumKey(dagDatum) };
+    const eigenBedrijf = blokkenVoorDagIndex(eigenBedrijfBlokken, i);
+    return {
+      label, type, gedaan, vandaag: i === vandaagIndex, datum: datumKey(dagDatum), eigenBedrijf,
+    };
   });
 }

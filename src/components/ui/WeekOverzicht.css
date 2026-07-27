@@ -37,6 +37,8 @@
 .wo-dag-dot.klaar { background: var(--accent-dim); border-color: var(--accent-mid); color: var(--accent); }
 .wo-dag-dot.vandaag { border-width: 2px; }
 
+.wo-dag-eb { font-size: 11px; line-height: 1; margin-top: -2px; }
+
 .wo-legenda {
   display: flex;
   gap: var(--space-md);
@@ -49,3 +51,4 @@
 .wo-legenda-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .wo-legenda-dot.lift { background: var(--accent-mid); }
 .wo-legenda-dot.cardio { background: var(--warn); }
+.wo-legenda-dot.eigenbedrijf { background: var(--eigenbedrijf); }

@@ -28,6 +28,11 @@
   --danger:    #FF5757;
   --danger-dim:rgba(255,87,87,.14);
 
+  /* Eigen bedrijf (TJB Solutions) — apart van het app-brede accent, want
+     dit is een agenda-blok-categoriekleur (zelfde soort semantische
+     stabiliteit als de andere agenda-stipkleuren), geen UI-thema-kleur. */
+  --eigenbedrijf: #5cb85c;
+
   /* Tekst — bijna wit, hoog contrast tegen het donkere canvas */
   --txt:       #F0F0F4;
   --txt-muted: rgba(240,240,244,.62);

@@ -2,6 +2,7 @@ import { LIFT_DAGEN, CARDIO_DAGEN } from '../dagstructuur/weekoverzicht.js';
 import { dagIndexVan, datumKey } from '../../utils/datum.js';
 import { volgendeCheckDatum } from '../welzijn/vragenset.js';
 import { huidigePeriodeKey } from '../werk/huishoudPeriode.js';
+import { blokkenVoorDagIndex } from '../eigenbedrijf/blokken.js';
 
 // Alle losse signalen die de Agenda toont zijn afgeleide, pure functies over
 // bestaande module-data (zelfde principe als de kruismodule-signalenlaag,
@@ -112,6 +113,33 @@ export function huishoudTaakSignalen(taken, log, bereikStart, bereikEind) {
       signalen.push({
         id: `huishoudtaak_${taak.id}_${datum}`, bron: 'huishouden', datum,
         tekst: taak.tekst, type: 'huishoudtaak',
+      });
+    });
+  });
+  return signalen;
+}
+
+const EIGEN_BEDRIJF_TEKST = {
+  facturabel: 'Eigen bedrijf: Meten=Weten/Constatum (facturabel)',
+  platform: 'Eigen bedrijf: eigen platform (niet-facturabel)',
+  flexibel: 'Eigen bedrijf: flexibel blok',
+  toets: 'Eigen bedrijf: zondag-toetsmoment',
+};
+
+// Vaste TJB Solutions-weekblokken (zie useEigenBedrijfInstellingen) —
+// zelfde patroon als klusjesDagSignalen, maar dan voor een instelbare lijst
+// blokken i.p.v. één vaste dag, en zonder override-mechanisme (een TJB-blok
+// verschuiven doet de gebruiker via de instellingen zelf, niet per dag zoals
+// een werkdag-uitzondering). Hergebruikt het bestaande 'eigenbedrijf'-type
+// (icoon 🌱, groene stip), dus geen nieuwe agenda-CSS nodig.
+export function eigenBedrijfBlokSignalen(bereikStart, bereikEind, blokken) {
+  const signalen = [];
+  alleDatumsInBereik(bereikStart, bereikEind).forEach((datum) => {
+    blokkenVoorDagIndex(blokken, dagIndexVan(datum)).forEach((blok) => {
+      signalen.push({
+        id: `eigenbedrijf_${blok.id}_${datum}`, bron: 'werk', datum,
+        tekst: `${EIGEN_BEDRIJF_TEKST[blok.soort] ?? 'Eigen bedrijf'} (${blok.start}–${blok.eind})`,
+        type: 'eigenbedrijf',
       });
     });
   });

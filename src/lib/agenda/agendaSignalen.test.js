@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   trainingCardioSignalen, werkdagSignalen, welzijnSignaal, huishoudProjectSignalen, klusjesDagSignalen,
-  huishoudTaakSignalen,
+  huishoudTaakSignalen, eigenBedrijfBlokSignalen,
 } from './agendaSignalen.js';
 
 describe('trainingCardioSignalen', () => {
@@ -114,6 +114,32 @@ describe('welzijnSignaal', () => {
 
   it('geeft null als er nog nooit een check is geweest', () => {
     expect(welzijnSignaal(null, 14)).toBeNull();
+  });
+});
+
+describe('eigenBedrijfBlokSignalen', () => {
+  const blokken = [
+    { id: 'eb_di', dagNr: 2, start: '19:30', eind: '21:30', soort: 'facturabel' },
+    { id: 'eb_do', dagNr: 4, start: '19:30', eind: '21:30', soort: 'platform' },
+  ];
+
+  it('geeft één signaal per blok op de ingestelde weekdag', () => {
+    // 2026-07-13 is een maandag, dus di=2026-07-14, do=2026-07-16.
+    const signalen = eigenBedrijfBlokSignalen('2026-07-13', '2026-07-19', blokken);
+    expect(signalen.map((s) => s.datum)).toEqual(['2026-07-14', '2026-07-16']);
+    expect(signalen.every((s) => s.type === 'eigenbedrijf')).toBe(true);
+    expect(signalen[0].tekst).toContain('facturabel');
+    expect(signalen[1].tekst).toContain('niet-facturabel');
+  });
+
+  it('geeft meerdere signalen op één dag als er meerdere blokken op die dag staan', () => {
+    const tweeOpDinsdag = [...blokken, { id: 'eb_di2', dagNr: 2, start: '12:00', eind: '13:00', soort: 'flexibel' }];
+    const signalen = eigenBedrijfBlokSignalen('2026-07-14', '2026-07-14', tweeOpDinsdag);
+    expect(signalen).toHaveLength(2);
+  });
+
+  it('geeft niets terug zonder blokken', () => {
+    expect(eigenBedrijfBlokSignalen('2026-07-13', '2026-07-19', [])).toEqual([]);
   });
 });
 

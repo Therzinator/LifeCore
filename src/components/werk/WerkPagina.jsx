@@ -6,6 +6,9 @@ import { useAdhdDag } from '../../hooks/useAdhdDag.js';
 import { useKlusboek } from '../../hooks/useKlusboek.js';
 import { useAdhdInstellingen } from '../../hooks/useAdhdInstellingen.js';
 import { useKruisSignalen } from '../../hooks/useKruisSignalen.js';
+import { useEigenBedrijfInstellingen } from '../../hooks/useEigenBedrijfInstellingen.js';
+import { useEigenBedrijfSessies } from '../../hooks/useEigenBedrijfSessies.js';
+import { useEigenBedrijfToetsen } from '../../hooks/useEigenBedrijfToetsen.js';
 import { useRegistreerSubstap } from '../../contexts/SubstapContext.jsx';
 import WerkTaken from './WerkTaken.jsx';
 import WerkInstellingen from './WerkInstellingen.jsx';
@@ -15,6 +18,8 @@ import AdhdKlusboek from '../adhd/AdhdKlusboek.jsx';
 import AdhdFocusTimer from '../adhd/AdhdFocusTimer.jsx';
 import AdhdAfsluiten from '../adhd/AdhdAfsluiten.jsx';
 import AdhdInstellingen from '../adhd/AdhdInstellingen.jsx';
+import EigenBedrijf from './EigenBedrijf.jsx';
+import EigenBedrijfInstellingen from './EigenBedrijfInstellingen.jsx';
 import ModuleInstellingenKnop from '../ui/ModuleInstellingenKnop.jsx';
 import './WerkPagina.css';
 
@@ -25,6 +30,7 @@ const TABS = [
   { id: 'klusboek', label: 'Klusboek' },
   { id: 'focus', label: 'Focus-timer' },
   { id: 'afsluiten', label: 'Afsluiten' },
+  { id: 'eigenbedrijf', label: 'Eigen bedrijf' },
 ];
 
 // Huishouden, Kluslijst, Ontspullen en Boodschappen zijn verhuisd naar de
@@ -46,7 +52,17 @@ export default function WerkPagina({ toonToast, onNavigeer }) {
   const {
     instellingen: focusInstellingen, bewaar: bewaarFocusInstellingen, reset: resetFocusInstellingen,
   } = useAdhdInstellingen();
-  const { focusMoetVerlagen } = useKruisSignalen({ focus: focusInstellingen.pasDaglimietAanBijUitputting });
+  const {
+    instellingen: eigenBedrijfInstellingen, bewaar: bewaarEigenBedrijf,
+    voegBlokToe: voegEigenBedrijfBlokToe, werkBlokBij: werkEigenBedrijfBlokBij, verwijderBlok: verwijderEigenBedrijfBlok,
+  } = useEigenBedrijfInstellingen();
+  const eigenBedrijfSessies = useEigenBedrijfSessies();
+  const eigenBedrijfToetsen = useEigenBedrijfToetsen();
+  const { signalen: kruisSignalen, focusMoetVerlagen } = useKruisSignalen({ focus: focusInstellingen.pasDaglimietAanBijUitputting });
+  // Koppeling 6 (zie lib/signalen/kruisverbanden.js) is bron én doel tegelijk
+  // 'werk' — dit filtert 'm eruit voor de banner in de Eigen bedrijf-tab,
+  // los van focusMoetVerlagen (koppeling 3, een ander mechanisme).
+  const overschrijdingSignaal = kruisSignalen.find((s) => s.id === 'eigenbedrijf_overschrijding')?.tekst ?? null;
   const [tab, setTab] = useState('taken');
   const [focusContext, setFocusContext] = useState({ taak: null, blokAdvies: null });
   useRegistreerSubstap(TABS.find((t) => t.id === tab)?.label);
@@ -104,6 +120,15 @@ export default function WerkPagina({ toonToast, onNavigeer }) {
             toonToast={toonToast}
           />
         </ModuleInstellingenKnop>
+        <ModuleInstellingenKnop titel="Eigen bedrijf-instellingen">
+          <EigenBedrijfInstellingen
+            instellingen={eigenBedrijfInstellingen}
+            bewaar={bewaarEigenBedrijf}
+            voegBlokToe={voegEigenBedrijfBlokToe}
+            werkBlokBij={werkEigenBedrijfBlokBij}
+            verwijderBlok={verwijderEigenBedrijfBlok}
+          />
+        </ModuleInstellingenKnop>
       </div>
 
       <div className="card">
@@ -140,6 +165,15 @@ export default function WerkPagina({ toonToast, onNavigeer }) {
           />
         )}
         {tab === 'afsluiten' && <AdhdAfsluiten adhdDag={adhdDag} werkTaken={werkTaken} toonToast={toonToast} />}
+        {tab === 'eigenbedrijf' && (
+          <EigenBedrijf
+            instellingen={eigenBedrijfInstellingen}
+            sessies={eigenBedrijfSessies}
+            toetsen={eigenBedrijfToetsen}
+            toonToast={toonToast}
+            overschrijdingSignaal={overschrijdingSignaal}
+          />
+        )}
       </div>
     </div>
   );

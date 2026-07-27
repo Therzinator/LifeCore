@@ -98,6 +98,7 @@ Elke `Signaal`-vorm: `{ id, bron, doel, ernst: 'aandacht'|'info', tekst, actie? 
 | 3 | Welzijn | Signaal A (aanhoudend hoge uitputting) actief | Focus/ADHD | Daglimiet (`dagLimiet.js`) krijgt een extra verlagingsfactor, exact zoals nu al gebeurt bij lage ochtend-energie — geen nieuw mechanisme, hergebruik van bestaande logica | "Pas daglimiet aan bij aanhoudende uitputting" |
 | 4 | Training | Laatste sessie > 3 weken geleden | Ochtend (activering) | Neutrale melding bij de plank/push-up-stap: "Het is een tijd geleden sinds je laatste training — vandaag hoeft niet zwaar te zijn", geen schuldframing | "Toon trainingsherinnering in ochtendroutine" |
 | 5 | Werk | Ongebruikelijk veel afgeronde taken/overuren deze week | Welzijn | Geen geforceerde vervroeging — toont alleen: "Het is nog N dagen tot je volgende check, maar gezien een drukke week kun je 'm ook nu al doen", drempel is puur zichtbaarheid, nooit een blokkade | "Toon vroege-check-suggestie" |
+| 6 | Eigen bedrijf | N weken op rij (instelbaar) ruim boven het geplande aantal TJB Solutions-uren | Eigen bedrijf (zelf-koppeling) | Guilt-free banner in de Eigen bedrijf-tab + agendasignaal op vandaag: "Je zit nu N weken op rij ruim boven je eigen TJB Solutions-schema. Geen paniek — misschien klopt het schema niet meer, in plaats van dat jij iets fout doet." | "Signaal bij overschrijding" (aan/uit + weken-op-rij + %-boven-schema), in Eigen bedrijf-instellingen zelf |
 
 Elke koppeling staat op zichzelf: signaal 3 kan aan staan terwijl 1 en 2 uit
 staan, etc. Drempelwaarden voor koppeling 3-5 volgen dezelfde
@@ -106,7 +107,12 @@ koppeling 4's "3 weken" sluit aan bij de bestaande cadans-logica van
 Training (een trainingsschema gaat uit van 2-3x/week; 3 weken zonder sessie
 is drie gemiste cycli, niet één gemiste dag), koppeling 3 hergebruikt
 letterlijk de bestaande energie-gebaseerde reductiefactor uit
-`dagLimiet.js` in plaats van een nieuw getal te verzinnen.
+`dagLimiet.js` in plaats van een nieuw getal te verzinnen. Koppeling 6's
+standaard "2 weken op rij, 25% boven schema" is bewust het kleinst
+mogelijke patroon (de cyclus zelf is al wekelijks, dus 2 op rij is het
+minimum om van een incident te kunnen spreken) — en, anders dan koppeling
+2-5, is bron en doel hier dezelfde module: de toggle staat daarom in Eigen
+bedrijf's eigen instellingen, niet in een andere module.
 
 ## Guilt-free: per koppeling uit te zetten
 
@@ -131,7 +137,7 @@ geen losse "kruisverbanden-instellingen"-pagina die niemand vindt.
 
 ## Vervolg
 
-Alle vijf koppelingen zijn gebouwd. Overzicht van waar elke toggle staat:
+Alle zes koppelingen zijn gebouwd. Overzicht van waar elke toggle staat:
 
 | # | Toggle-naam | Instellingen van |
 |---|-------------|-------------------|
@@ -140,7 +146,8 @@ Alle vijf koppelingen zijn gebouwd. Overzicht van waar elke toggle staat:
 | 3 | "Pas daglimiet aan bij aanhoudende uitputting" | Focus |
 | 4 | "Toon trainingsherinnering in ochtendroutine" | Ochtend |
 | 5 | "Toon vroege-check-suggestie" | Welzijn |
+| 6 | "Signaal bij overschrijding" (+ weken-op-rij + %-boven-schema) | Eigen bedrijf (bron- én doel-module) |
 
-Alle vijf staan standaard **aan** (behalve koppeling 1's percentage, dat op
+Alle zes staan standaard **aan** (behalve koppeling 1's percentage, dat op
 een gematigde 50% start). Uitzetten kost één tik in de instellingen van de
 module waar je de suggestie tegenkomt — geen aparte "kruisverbanden"-pagina.

@@ -1,5 +1,7 @@
 import { bepaalSignalen as welzijnSignalen } from '../welzijn/signalering.js';
-import { maandagVan } from '../../utils/datum.js';
+import { maandagVan, datumKey } from '../../utils/datum.js';
+import { geplandeMinuten } from '../eigenbedrijf/blokken.js';
+import { weekTotalen } from '../eigenbedrijf/uren.js';
 
 // Kruismodule-signalenlaag — zie docs/SIGNALEN.md voor het volledige ontwerp.
 // Koppeling 1 (Welzijn → Mindfulness) staat hier bewust NIET in: die is al
@@ -93,4 +95,57 @@ export function koppeling5_werkNaarWelzijn(weekReeks, actief) {
     ernst: 'info',
     tekst: 'Deze week valt op als drukker dan gebruikelijk. Je burn-out/herstel-check hoeft niet te wachten tot de geplande datum als je nu al behoefte hebt aan een check.',
   };
+}
+
+// KOPPELING 6 — Eigen bedrijf → Eigen bedrijf (zelf-koppeling)
+// Bron en doel zijn hier bewust dezelfde module: de toggle en de
+// drempelinstellingen (wekenOpRij/pctBovenSchema) leven in Eigen bedrijf's
+// eigen instellingen (useEigenBedrijfInstellingen), niet in een andere
+// module — anders dan koppeling 2-5 hoeft de aanroeper dus geen los
+// toggle-argument door te geven, useKruisSignalen leest deze instelling
+// rechtstreeks uit dezelfde hook als de blokken/drempels zelf.
+//
+// Kijkt alleen naar AFGERONDE weken (nooit de lopende week — die toont het
+// zondag-toetsmoment al live) en loopt terug tot de eerste week die wél
+// gelogde tijd heeft maar niet over de drempel zit — dat breekt de reeks.
+// Een week zonder enige gelogde sessie breekt de reeks niet (waarschijnlijk
+// gewoon niet gelogd, geen uitspraak over overschrijding) maar telt ook
+// niet mee als overschrijding. Begrensde terugblik (EIGEN_BEDRIJF_MAX_
+// TERUGBLIK_WEKEN) voorkomt een onbegrensde lus bij oude/lege data.
+const EIGEN_BEDRIJF_MAX_TERUGBLIK_WEKEN = 26;
+
+export function koppeling6_eigenBedrijfOverschrijding(sessies, blokken, { wekenOpRij, pctBovenSchema }, actief) {
+  if (!actief) return null;
+  const gepland = geplandeMinuten(blokken).werkTotaal;
+  if (gepland <= 0) return null;
+
+  const drempelMinuten = gepland * (1 + pctBovenSchema / 100);
+  const huidigeWeek = maandagVan(new Date().toISOString());
+  const cursor = new Date(huidigeWeek);
+  cursor.setDate(cursor.getDate() - 7); // eerste AFGERONDE week, niet de lopende
+
+  let opRij = 0;
+  for (let i = 0; i < EIGEN_BEDRIJF_MAX_TERUGBLIK_WEKEN; i += 1) {
+    const weekMaandag = datumKey(cursor);
+    const totaal = weekTotalen(sessies, weekMaandag).totaal;
+
+    if (totaal === 0) {
+      cursor.setDate(cursor.getDate() - 7);
+      continue;
+    }
+    if (totaal < drempelMinuten) break;
+
+    opRij += 1;
+    if (opRij >= wekenOpRij) {
+      return {
+        id: 'eigenbedrijf_overschrijding',
+        bron: 'werk',
+        doel: 'werk',
+        ernst: 'aandacht',
+        tekst: `Je zit nu ${opRij} weken op rij ruim boven je eigen TJB Solutions-schema. Geen paniek — misschien klopt het schema niet meer, in plaats van dat jij iets fout doet.`,
+      };
+    }
+    cursor.setDate(cursor.getDate() - 7);
+  }
+  return null;
 }

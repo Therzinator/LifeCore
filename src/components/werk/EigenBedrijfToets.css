@@ -1,0 +1,23 @@
+.ebt-guiltfree {
+  font-size: var(--font-size-sm);
+  color: var(--warn);
+  background: var(--warn-dim);
+  border-radius: var(--r-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.ebt-textarea {
+  width: 100%;
+  min-height: 60px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  color: var(--txt);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm);
+  outline: none;
+  resize: vertical;
+}
+.ebt-textarea:focus { border-color: var(--accent-mid); box-shadow: 0 0 0 3px var(--accent-dim); }

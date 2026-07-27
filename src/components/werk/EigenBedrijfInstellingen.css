@@ -1,0 +1,15 @@
+.ebi-blok {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.ebi-blok:last-of-type { border-bottom: none; }
+
+.ebi-verwijder {
+  background: none;
+  border: none;
+  color: var(--txt-faint);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  padding: var(--space-xs) 0 0;
+}
+.ebi-verwijder:hover { color: var(--danger); }

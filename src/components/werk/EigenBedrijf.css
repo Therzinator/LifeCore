@@ -1,0 +1,27 @@
+.eb-lijst { display: flex; flex-direction: column; }
+
+.eb-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+}
+.eb-item:last-child { border-bottom: none; }
+
+.eb-item-datum { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-faint); flex-shrink: 0; }
+.eb-item-tekst { flex: 1; min-width: 0; font-size: var(--font-size-sm); overflow-wrap: break-word; }
+.eb-item-categorie { color: var(--txt-muted); font-size: var(--font-size-xs); }
+.eb-item-duur { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--txt-muted); flex-shrink: 0; }
+
+.eb-verwijder {
+  background: none;
+  border: none;
+  color: var(--txt-faint);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.eb-verwijder:hover { color: var(--danger); }

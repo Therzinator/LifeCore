@@ -67,7 +67,7 @@
 .ag-stip.werk { background: var(--txt-muted); }
 .ag-stip.sociaal { background: #e05a7a; }
 .ag-stip.ontspanning { background: #4aa8e0; }
-.ag-stip.eigenbedrijf { background: #5cb85c; }
+.ag-stip.eigenbedrijf { background: var(--eigenbedrijf); }
 .ag-stip.vrij { background: #5cb85c; }
 .ag-stip.overig { background: var(--txt-muted); }
 
