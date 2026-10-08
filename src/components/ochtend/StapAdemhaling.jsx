@@ -12,7 +12,7 @@ import './StapAdemhaling.css';
 const FASE_LABEL = { inademen: 'Adem in', vasthouden: 'Vasthouden', uitademen: 'Adem uit' };
 // Programma-optie: vaste duur voor ogen-dicht gebruik, i.p.v. zelf bijhouden
 // wanneer je stopt. 'Vrij' (null) blijft het bestaande open-einde-gedrag.
-const DUUR_OPTIES = [2, 3, 5];
+const DUUR_OPTIES = [2, 3, 5, 10];
 const GELUID_OPTIES = [
   { id: 'geen', label: '🔇 Geen' },
   { id: 'instrumenteel', label: '🎵 Instrumenteel' },
